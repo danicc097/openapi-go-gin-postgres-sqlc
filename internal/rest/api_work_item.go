@@ -2,11 +2,14 @@ package rest
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
@@ -54,8 +57,17 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 	}
 
 	switch body := b.(type) {
-	case CreateDemoWorkItemRequest:
-		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, caller, body.DemoWorkItemCreateParams)
+	case models.CreateDemoWorkItemRequest:
+		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, caller, services.DemoWorkItemCreateParams{
+			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
+				DemoProject: body.DemoProject,
+				Base:        body.Base,
+			},
+			WorkItemCreateParams: services.WorkItemCreateParams{
+				// TagIDs: body.TagIDs,
+				// Members: body.Members,
+			},
+		})
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
@@ -66,8 +78,8 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			WorkItemBase: fillBaseWorkItemResponse(workItem),
 			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
-	case CreateDemoTwoWorkItemRequest:
-		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, caller, body.DemoTwoWorkItemCreateParams)
+	case models.CreateDemoTwoWorkItemRequest:
+		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, caller, services.DemoTwoWorkItemCreateParams{})
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
@@ -84,7 +96,9 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		return nil, nil
 	}
 
-	return CreateWorkitem201JSONResponse{union: rawMessage(res)}, nil
+	var resJson *CreateWorkitem201JSONResponse
+	json.Unmarshal(rawMessage(res), &resJson)
+	return *resJson, nil
 }
 
 func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error) {

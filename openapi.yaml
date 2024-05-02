@@ -1390,6 +1390,7 @@ components:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       required:
         - message
         - userID
@@ -1437,6 +1438,7 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       required:
         - workItemID
       type: object
@@ -1465,6 +1467,7 @@ components:
           type: boolean
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       required:
         - workItemID
         - ref
@@ -1504,10 +1507,12 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         name:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         stepOrder:
           type: integer
         timeTrackable:
@@ -1540,6 +1545,7 @@ components:
           type: string
         notificationID:
           type: integer
+          x-go-type: NotificationID
         notificationType:
           $ref: '#/components/schemas/NotificationType'
         receiver:
@@ -1572,6 +1578,7 @@ components:
           $ref: '#/components/schemas/ProjectName'
         projectID:
           type: integer
+          x-go-type: ProjectID
         updatedAt:
           format: date-time
           type: string
@@ -1597,8 +1604,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         teamID:
           type: integer
+          x-go-type: TeamID
         updatedAt:
           format: date-time
           type: string
@@ -1628,6 +1637,7 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
         comment:
           type: string
         durationMinutes:
@@ -1639,13 +1649,16 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         timeEntryID:
           type: integer
+          x-go-type: TimeEntryID
         userID:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
       required:
         - timeEntryID
         - activityID
@@ -1758,6 +1771,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         metadata:
           additionalProperties: {}
           type: object
@@ -1766,6 +1780,7 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
         title:
           type: string
         updatedAt:
@@ -1773,8 +1788,10 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemID
         - title
@@ -1804,8 +1821,10 @@ components:
           $ref: '#/components/schemas/ModelsUserID'
         workItemCommentID:
           type: integer
+          x-go-type: WorkItemCommentID
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       required:
         - workItemCommentID
         - workItemID
@@ -1827,6 +1846,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         metadata:
           additionalProperties: {}
           type: object
@@ -1835,10 +1855,12 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
         title:
           type: string
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - description
         - kanbanStepID
@@ -1865,8 +1887,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         workItemTagID:
           type: integer
+          x-go-type: WorkItemTagID
       required:
         - workItemTagID
         - projectID
@@ -1904,8 +1928,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemTypeID
         - projectID
@@ -2028,6 +2054,7 @@ components:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       type: object
       x-gen-struct: UpdateWorkItemCommentRequest
       x-is-generated: true
@@ -2203,10 +2230,6 @@ components:
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-is-generated: true
       description: is generated from scopes.json keys.
-    Scopes:
-      type: array
-      items:
-        $ref: '#/components/schemas/Scope'
     Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
@@ -2297,6 +2320,15 @@ components:
           demo: '#/components/schemas/DemoWorkItemResponse'
           demo_two: '#/components/schemas/DemoTwoWorkItemResponse'
       x-use-server-type: true
+      # TODO: since this is a rest type but defined in spec, for server gen we require referencing models
+      # we will pass all x-spec-rest-type schemas to oapi-codegen and if so, we prepend `models.`
+      # to server generation (no models are generated in server).
+      # TODO: get rid of x-use-server-type when everything is merged
+      x-spec-rest-type: true
+    Scopes:
+      type: array
+      items:
+        $ref: '#/components/schemas/Scope'
     CreateWorkItemRequest:
       oneOf:
         - $ref: '#/components/schemas/CreateDemoWorkItemRequest'
@@ -2321,8 +2353,6 @@ components:
         - isProductive
         - name
       type: object
-    ModelsWorkItemRole:
-      type: string
     NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: is generated from database enum 'notification_type'.
       type: string
@@ -2395,6 +2425,7 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
         comment:
           type: string
         durationMinutes:
@@ -2406,11 +2437,13 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         userID:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
       required:
         - activityID
         - comment
@@ -2423,6 +2456,7 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
         comment:
           type: string
         durationMinutes:
@@ -2434,11 +2468,13 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         userID:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
       type: object
       x-gen-struct: UpdateTimeEntryRequest
       x-is-generated: true
@@ -2461,6 +2497,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         members:
           items:
             $ref: '#/components/schemas/ModelsWorkItemM2MAssigneeWIA'
@@ -2477,6 +2514,7 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         timeEntries:
           items:
             $ref: '#/components/schemas/ModelsTimeEntry'
@@ -2494,6 +2532,7 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
         workItemTags:
           items:
             $ref: '#/components/schemas/ModelsWorkItemTag'
@@ -2503,6 +2542,7 @@ components:
           $ref: '#/components/schemas/ModelsWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemID
         - title
@@ -2538,6 +2578,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         members:
           items:
             $ref: '#/components/schemas/ModelsWorkItemM2MAssigneeWIA'
@@ -2554,6 +2595,7 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         timeEntries:
           items:
             $ref: '#/components/schemas/ModelsTimeEntry'
@@ -2571,6 +2613,7 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
         workItemTags:
           items:
             $ref: '#/components/schemas/ModelsWorkItemTag'
@@ -2580,6 +2623,7 @@ components:
           $ref: '#/components/schemas/ModelsWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemID
         - title
@@ -2613,6 +2657,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         members:
           items:
             $ref: '#/components/schemas/ModelsWorkItemM2MAssigneeWIA'
@@ -2629,6 +2674,7 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         timeEntries:
           items:
             $ref: '#/components/schemas/ModelsTimeEntry'
@@ -2646,6 +2692,7 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
         workItemTags:
           items:
             $ref: '#/components/schemas/ModelsWorkItemTag'
@@ -2655,6 +2702,7 @@ components:
           $ref: '#/components/schemas/ModelsWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemID
         - title
@@ -2877,6 +2925,7 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
         deletedAt:
           format: date-time
           nullable: true
@@ -2889,6 +2938,7 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
       required:
         - activityID
         - projectID
@@ -2909,8 +2959,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         teamID:
           type: integer
+          x-go-type: TeamID
         updatedAt:
           format: date-time
           type: string
@@ -3001,8 +3053,10 @@ components:
           $ref: '#/components/schemas/ModelsUserID'
         workItemCommentID:
           type: integer
+          x-go-type: WorkItemCommentID
         workItemID:
           type: integer
+          x-go-type: WorkItemID
       required:
         - workItemCommentID
         - workItemID
@@ -3028,8 +3082,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         workItemTagID:
           type: integer
+          x-go-type: WorkItemTagID
       required:
         - workItemTagID
         - projectID
@@ -3043,6 +3099,7 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
         comment:
           type: string
         durationMinutes:
@@ -3054,13 +3111,16 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
         timeEntryID:
           type: integer
+          x-go-type: TimeEntryID
         userID:
           $ref: '#/components/schemas/ModelsUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
       required:
         - timeEntryID
         - activityID
@@ -3087,6 +3147,7 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
         lastMessageAt:
           format: date-time
           type: string
@@ -3105,6 +3166,7 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
         title:
           type: string
         updatedAt:
@@ -3112,8 +3174,10 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - ref
         - line
@@ -3138,12 +3202,14 @@ components:
           $ref: '#/components/schemas/ModelsNotification'
         notificationID:
           type: integer
+          x-go-type: NotificationID
         read:
           type: boolean
         userID:
           $ref: '#/components/schemas/ModelsUserID'
         userNotificationID:
           type: integer
+          x-go-type: UserNotificationID
       required:
         - userNotificationID
         - notificationID
@@ -3164,8 +3230,10 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
       required:
         - workItemTypeID
         - projectID

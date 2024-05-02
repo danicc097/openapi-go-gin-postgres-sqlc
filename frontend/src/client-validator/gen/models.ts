@@ -94,7 +94,6 @@ export type Topics = Topic[]
 export type UuidUUID = string
 export type WorkItemResponse = DemoWorkItemResponse | DemoTwoWorkItemResponse
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
-export type ModelsWorkItemRole = string
 /**
  * is generated from work_item_types table.
  */

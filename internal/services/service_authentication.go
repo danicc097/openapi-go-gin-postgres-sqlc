@@ -130,7 +130,10 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 	// update guest when verified
 	if u.RoleRank == guestRole.Rank && userinfo.EmailVerified {
-		u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID, CtxUser{User: superAdmin}, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
+		u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID, CtxUser{User: superAdmin}, &models.UpdateUserAuthRequest{
+			Role:   &guestRole.Name,
+			Scopes: nil,
+		})
 		if err != nil {
 			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update user auth after email verification")
 		}

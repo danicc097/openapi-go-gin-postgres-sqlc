@@ -47,6 +47,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserRequest{
 					FirstName: pointers.New("changed"),
+					LastName:  nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.user.User),
@@ -59,7 +60,10 @@ func TestUser_UpdateUser(t *testing.T) {
 		{
 			name: "cannot_update_different_user",
 			args: args{
-				params: &models.UpdateUserRequest{},
+				params: &models.UpdateUserRequest{
+					FirstName: nil,
+					LastName:  nil,
+				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.advancedUser.User),
 			},
@@ -163,7 +167,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "cannot_update_to_role_higher_than_self",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: pointers.New(models.RoleAdmin),
+					Role:   pointers.New(models.RoleAdmin),
+					Scopes: nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.manager.User),
@@ -175,6 +180,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
+					Role:   nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.manager.User),
@@ -186,6 +192,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
+					Role:   nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.admin.User),
@@ -200,6 +207,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleAdmin)),
+					Role:   nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.admin.User),
@@ -214,6 +222,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
+					Role:   nil,
 				},
 				id:     testUsers.manager.UserID,
 				caller: *services.NewCtxUser(testUsers.manager.User),
@@ -224,7 +233,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "cannot_demote_role_if_not_admin",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: pointers.New(models.RoleGuest),
+					Role:   pointers.New(models.RoleGuest),
+					Scopes: nil,
 				},
 				id:     testUsers.advancedUser.UserID,
 				caller: *services.NewCtxUser(testUsers.manager.User),
@@ -236,6 +246,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
+					Role:   nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.manager.User),
@@ -247,6 +258,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
+					Role:   nil,
 				},
 				id:     testUsers.user.UserID,
 				caller: *services.NewCtxUser(testUsers.admin.User),
@@ -260,7 +272,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			name: "can_demote_role_if_admin",
 			args: args{
 				params: &models.UpdateUserAuthRequest{
-					Role: pointers.New(models.RoleGuest),
+					Role:   pointers.New(models.RoleGuest),
+					Scopes: nil,
 				},
 				id:     testUsers.advancedUser.UserID,
 				caller: *services.NewCtxUser(testUsers.admin.User),

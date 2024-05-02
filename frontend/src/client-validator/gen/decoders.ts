@@ -57,7 +57,6 @@ import {
   Topics,
   Topic,
   Scope,
-  Scopes,
   Role,
   WorkItemRole,
   UpdateUserRequest,
@@ -65,9 +64,9 @@ import {
   ValidationError,
   UuidUUID,
   WorkItemResponse,
+  Scopes,
   CreateWorkItemRequest,
   ModelsActivityCreateParams,
-  ModelsWorkItemRole,
   NotificationType,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
@@ -707,18 +706,6 @@ export const ScopeDecoder: Decoder<Scope> = {
     return validateJson(json, schema, ScopeDecoder.definitionName)
   },
 }
-export const ScopesDecoder: Decoder<Scopes> = {
-  definitionName: 'Scopes',
-  schemaRef: '#/definitions/Scopes',
-
-  decode(json: unknown): Scopes {
-    const schema = ajv.getSchema(ScopesDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ScopesDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ScopesDecoder.definitionName)
-  },
-}
 export const RoleDecoder: Decoder<Role> = {
   definitionName: 'Role',
   schemaRef: '#/definitions/Role',
@@ -803,6 +790,18 @@ export const WorkItemResponseDecoder: Decoder<WorkItemResponse> = {
     return validateJson(json, schema, WorkItemResponseDecoder.definitionName)
   },
 }
+export const ScopesDecoder: Decoder<Scopes> = {
+  definitionName: 'Scopes',
+  schemaRef: '#/definitions/Scopes',
+
+  decode(json: unknown): Scopes {
+    const schema = ajv.getSchema(ScopesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ScopesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ScopesDecoder.definitionName)
+  },
+}
 export const CreateWorkItemRequestDecoder: Decoder<CreateWorkItemRequest> = {
   definitionName: 'CreateWorkItemRequest',
   schemaRef: '#/definitions/CreateWorkItemRequest',
@@ -825,18 +824,6 @@ export const ModelsActivityCreateParamsDecoder: Decoder<ModelsActivityCreatePara
       throw new Error(`Schema ${ModelsActivityCreateParamsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ModelsActivityCreateParamsDecoder.definitionName)
-  },
-}
-export const ModelsWorkItemRoleDecoder: Decoder<ModelsWorkItemRole> = {
-  definitionName: 'ModelsWorkItemRole',
-  schemaRef: '#/definitions/ModelsWorkItemRole',
-
-  decode(json: unknown): ModelsWorkItemRole {
-    const schema = ajv.getSchema(ModelsWorkItemRoleDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsWorkItemRoleDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsWorkItemRoleDecoder.definitionName)
   },
 }
 export const NotificationTypeDecoder: Decoder<NotificationType> = {

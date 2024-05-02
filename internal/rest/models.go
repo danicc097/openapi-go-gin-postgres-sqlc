@@ -48,7 +48,7 @@ type NotificationResponse struct {
 type UserResponse struct {
 	*models.User
 	// Role replaces db RoleRank
-	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *models.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]models.Team     `json:"teams"`
@@ -109,7 +109,7 @@ type SharedWorkItemJoins struct {
 type WorkItemBase struct {
 	models.WorkItem
 	SharedWorkItemJoins
-	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
+	ProjectName models.ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
 type DemoWorkItemResponse struct {
@@ -124,7 +124,7 @@ type DemoTwoWorkItemResponse struct {
 }
 
 type ProjectBoard struct {
-	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
+	ProjectName models.ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
 type CreateProjectBoardRequest struct {
@@ -194,12 +194,12 @@ type UpdateTimeEntryRequest struct {
 }
 
 type CreateDemoWorkItemRequest struct {
-	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
+	ProjectName models.ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 	services.DemoWorkItemCreateParams
 }
 
 type CreateDemoTwoWorkItemRequest struct {
-	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
+	ProjectName models.ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
 

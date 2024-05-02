@@ -430,6 +430,7 @@ func CustomSchemaErrorFunc(err *openapi3.SchemaError) string {
 	_ = json.Unmarshal(s, &schema)
 
 	ve := &models.ValidationError{
+		Ctx: nil,
 		Loc: err.JSONPointer(),
 		Msg: err.Reason,
 		Detail: struct {

@@ -1544,7 +1544,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 			openAPISchema = camelExport(strings.Split(typeOverride, ".")[1])
 		} else {
 			// db schema (same package)
-			openAPISchema = "Db" + camelExport(typeOverride)
+			openAPISchema = camelExport(typeOverride)
 		}
 	}
 
@@ -2137,7 +2137,7 @@ func (f *Funcs) initial_opts(v any) string {
 		}
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.GoName))
 		buf.WriteString(`
-		filters: make(map[string][]any), 
+		filters: make(map[string][]any),
 		having: make(map[string][]any),
 		orderBy: make(map[string]Direction),
 }`)
@@ -4077,7 +4077,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 	fieldType := f.typefn(field.Type)
 	if field.IsPrimary {
-		field.OpenAPISchema = "Db" + field.Type
+		field.OpenAPISchema = field.Type
 		if mode != "IDTypes" {
 			pc := strings.Count(fieldType, "*")
 			fieldType = strings.Repeat("*", pc) + table.GoName + "ID"

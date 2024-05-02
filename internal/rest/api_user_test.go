@@ -105,7 +105,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		require.NoError(t, err)
 		want, err := json.Marshal(&rest.UserResponse{
 			User:     ufixture.User,
-			Role:     rest.Role(role),
+			Role:     role,
 			Teams:    ufixture.MemberTeamsJoin,
 			Projects: ufixture.MemberProjectsJoin,
 		})
@@ -152,7 +152,8 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			t.Parallel()
 
 			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.RoleManager),
+				Role:   pointers.New(models.RoleManager),
+				Scopes: nil,
 			}
 			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
@@ -174,7 +175,8 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			})
 
 			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.RoleManager),
+				Role:   pointers.New(models.RoleManager),
+				Scopes: nil,
 			}
 			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
 			require.NoError(t, err)
@@ -184,7 +186,8 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("invalid_role_update", func(t *testing.T) {
 			t.Parallel()
 			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.Role("bad")),
+				Role:   pointers.New(models.Role("bad")),
+				Scopes: nil,
 			}
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
@@ -196,6 +199,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			t.Parallel()
 			updateAuthParams := models.UpdateUserAuthRequest{
 				Scopes: &[]models.Scope{models.Scope("bad")},
+				Role:   nil,
 			}
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 

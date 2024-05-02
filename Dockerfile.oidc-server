@@ -3,7 +3,7 @@ FROM golang:1.21-alpine3.18 AS build
 WORKDIR /go/src
 COPY ./vendor/ ./vendor/
 COPY ./cmd/oidc-server/main.go go.mod go.sum ./
-COPY ./internal/models/ ./internal/models/
+COPY ./internal/repos/postgresql/gen/models/ ./internal/repos/postgresql/gen/models/
 # RUN go mod download # it will access network/cache, which is not necessary with -mod=vendor
 ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \

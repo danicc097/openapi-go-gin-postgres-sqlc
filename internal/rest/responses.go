@@ -92,7 +92,10 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 			resp.Status = http.StatusUnauthorized
 		case models.ErrorCodePrivate:
 			if os.Getenv("TESTING") != "" {
-				resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
+				resp = models.HTTPError{
+					Title:  "internal error",
+					Detail: "internal error",
+				}
 			}
 
 			fallthrough

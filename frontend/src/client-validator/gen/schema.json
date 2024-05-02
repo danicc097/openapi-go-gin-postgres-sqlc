@@ -149,7 +149,8 @@
           "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -220,7 +221,8 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -264,7 +266,8 @@
           "type": "boolean"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -322,14 +325,16 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "name": {
           "type": "string",
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "stepOrder": {
           "type": "integer"
@@ -378,7 +383,8 @@
           ]
         },
         "notificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "NotificationID"
         },
         "notificationType": {
           "$ref": "#/definitions/NotificationType"
@@ -426,7 +432,8 @@
           "$ref": "#/definitions/ProjectName"
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "updatedAt": {
           "format": "date-time",
@@ -465,10 +472,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TeamID"
         },
         "updatedAt": {
           "format": "date-time",
@@ -511,7 +520,8 @@
     "ModelsTimeEntry": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ActivityID"
         },
         "comment": {
           "type": "string",
@@ -533,10 +543,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "timeEntryID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TimeEntryID"
         },
         "userID": {
           "$ref": "#/definitions/ModelsUserID"
@@ -545,7 +557,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -716,7 +729,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "metadata": {
           "additionalProperties": {},
@@ -729,7 +743,8 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TeamID"
         },
         "title": {
           "type": "string",
@@ -742,10 +757,12 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -787,10 +804,12 @@
           "$ref": "#/definitions/ModelsUserID"
         },
         "workItemCommentID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemCommentID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -819,7 +838,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "metadata": {
           "additionalProperties": {},
@@ -832,14 +852,16 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TeamID"
         },
         "title": {
           "type": "string",
           "minLength": 1
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -877,10 +899,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "workItemTagID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTagID"
         }
       },
       "required": [
@@ -936,10 +960,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -1123,7 +1149,8 @@
           "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "type": "object",
@@ -1376,12 +1403,6 @@
       "x-is-generated": true,
       "description": "is generated from scopes.json keys."
     },
-    "Scopes": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Scope"
-      }
-    },
     "Role": {
       "type": "string",
       "enum": [
@@ -1500,7 +1521,14 @@
           "$ref": "#/definitions/DemoTwoWorkItemResponse"
         }
       ],
-      "x-use-server-type": true
+      "x-use-server-type": true,
+      "x-spec-rest-type": true
+    },
+    "Scopes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Scope"
+      }
     },
     "CreateWorkItemRequest": {
       "oneOf": [
@@ -1535,9 +1563,6 @@
         "name"
       ],
       "type": "object"
-    },
-    "ModelsWorkItemRole": {
-      "type": "string"
     },
     "NotificationType": {
       "description": "is generated from database enum 'notification_type'.",
@@ -1648,7 +1673,8 @@
     "CreateTimeEntryRequest": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ActivityID"
         },
         "comment": {
           "type": "string",
@@ -1670,7 +1696,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "userID": {
           "$ref": "#/definitions/ModelsUserID"
@@ -1679,7 +1706,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -1695,7 +1723,8 @@
     "UpdateTimeEntryRequest": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ActivityID"
         },
         "comment": {
           "type": "string"
@@ -1716,7 +1745,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "userID": {
           "$ref": "#/definitions/ModelsUserID"
@@ -1725,7 +1755,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "WorkItemID"
         }
       },
       "type": "object",
@@ -1760,7 +1791,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "members": {
           "items": {
@@ -1788,7 +1820,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "timeEntries": {
           "items": {
@@ -1819,7 +1852,8 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         },
         "workItemTags": {
           "items": {
@@ -1834,7 +1868,8 @@
           "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -1883,7 +1918,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "members": {
           "items": {
@@ -1911,7 +1947,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "timeEntries": {
           "items": {
@@ -1942,7 +1979,8 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         },
         "workItemTags": {
           "items": {
@@ -1957,7 +1995,8 @@
           "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -2003,7 +2042,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "members": {
           "items": {
@@ -2031,7 +2071,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "timeEntries": {
           "items": {
@@ -2062,7 +2103,8 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         },
         "workItemTags": {
           "items": {
@@ -2077,7 +2119,8 @@
           "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -2363,7 +2406,8 @@
     "ActivityResponse": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ActivityID"
         },
         "deletedAt": {
           "format": "date-time",
@@ -2383,7 +2427,8 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         }
       },
       "required": [
@@ -2414,10 +2459,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TeamID"
         },
         "updatedAt": {
           "format": "date-time",
@@ -2564,10 +2611,12 @@
           "$ref": "#/definitions/ModelsUserID"
         },
         "workItemCommentID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemCommentID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -2604,10 +2653,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "workItemTagID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTagID"
         }
       },
       "required": [
@@ -2624,7 +2675,8 @@
     "TimeEntryResponse": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ActivityID"
         },
         "comment": {
           "type": "string",
@@ -2646,10 +2698,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "TeamID"
         },
         "timeEntryID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TimeEntryID"
         },
         "userID": {
           "$ref": "#/definitions/ModelsUserID"
@@ -2658,7 +2712,8 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "WorkItemID"
         }
       },
       "required": [
@@ -2697,7 +2752,8 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "KanbanStepID"
         },
         "lastMessageAt": {
           "format": "date-time",
@@ -2728,7 +2784,8 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "TeamID"
         },
         "title": {
           "type": "string",
@@ -2741,10 +2798,12 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemID"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -2773,7 +2832,8 @@
           "$ref": "#/definitions/ModelsNotification"
         },
         "notificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "NotificationID"
         },
         "read": {
           "type": "boolean"
@@ -2782,7 +2842,8 @@
           "$ref": "#/definitions/ModelsUserID"
         },
         "userNotificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "UserNotificationID"
         }
       },
       "required": [
@@ -2812,10 +2873,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "ProjectID"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "WorkItemTypeID"
         }
       },
       "required": [
@@ -3032,9 +3095,6 @@
     "Scope": {
       "$ref": "#/definitions/Scope"
     },
-    "Scopes": {
-      "$ref": "#/definitions/Scopes"
-    },
     "Role": {
       "$ref": "#/definitions/Role"
     },
@@ -3056,14 +3116,14 @@
     "WorkItemResponse": {
       "$ref": "#/definitions/WorkItemResponse"
     },
+    "Scopes": {
+      "$ref": "#/definitions/Scopes"
+    },
     "CreateWorkItemRequest": {
       "$ref": "#/definitions/CreateWorkItemRequest"
     },
     "ModelsActivityCreateParams": {
       "$ref": "#/definitions/ModelsActivityCreateParams"
-    },
-    "ModelsWorkItemRole": {
-      "$ref": "#/definitions/ModelsWorkItemRole"
     },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"

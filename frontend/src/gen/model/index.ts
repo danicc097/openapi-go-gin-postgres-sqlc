@@ -77,7 +77,6 @@ export * from './modelsWorkItemCreateParamsMetadata';
 export * from './modelsWorkItemID';
 export * from './modelsWorkItemM2MAssigneeWIA';
 export * from './modelsWorkItemMetadata';
-export * from './modelsWorkItemRole';
 export * from './modelsWorkItemTag';
 export * from './modelsWorkItemTagCreateParams';
 export * from './modelsWorkItemType';

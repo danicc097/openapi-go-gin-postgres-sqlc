@@ -504,7 +504,6 @@ export interface components {
      * @enum {string}
      */
     Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review" | "work-item-comment:create" | "work-item-comment:edit" | "work-item-comment:delete";
-    Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
      * @enum {string}
@@ -567,6 +566,7 @@ export interface components {
     };
     UuidUUID: string;
     WorkItemResponse: components["schemas"]["DemoWorkItemResponse"] | components["schemas"]["DemoTwoWorkItemResponse"];
+    Scopes: components["schemas"]["Scope"][];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
     ModelsActivityCreateParams: {
       description: string;
@@ -574,7 +574,6 @@ export interface components {
       name: string;
       projectID?: number;
     };
-    ModelsWorkItemRole: string;
     /**
      * @description is generated from database enum 'notification_type'.
      * @enum {string}

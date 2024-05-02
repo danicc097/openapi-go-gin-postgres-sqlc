@@ -16,9 +16,8 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	uuid "github.com/google/uuid"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -3959,7 +3958,7 @@ func (r PingResponse) StatusCode() int {
 type GetProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *db.Project
+	JSON200      *ModelsProject
 }
 
 // Status returns HTTPResponse.Status
@@ -5605,7 +5604,7 @@ func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest db.Project
+		var dest ModelsProject
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

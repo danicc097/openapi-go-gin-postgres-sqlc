@@ -33,8 +33,8 @@ func handleError(err error) {
 }
 
 // GenerateSpecSchemas creates OpenAPI schemas from code.
-func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
-	reflector := newSpecReflector()
+func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs, dbIDs []string) {
+	reflector := newSpecReflector(dbIDs)
 
 	sns := internalslices.Unique(structNames)
 	for idx, structName := range sns {
@@ -79,7 +79,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
 	fmt.Println(string(s))
 }
 
-func newSpecReflector() *openapi3.Reflector {
+func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	reflectTypeNames := map[string]map[string]string{}
@@ -109,6 +109,14 @@ func newSpecReflector() *openapi3.Reflector {
 			}
 
 			return schemaName
+		}),
+		jsonschema.InterceptProperty(func(name string, field reflect.StructField, propertySchema *jsonschema.Schema) error {
+			if slices.Contains(dbIDs, field.Name) {
+				propertySchema.ExtraProperties = map[string]any{
+					"x-go-type": field.Name,
+				}
+			}
+			return nil
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			if params.PropertySchema != nil {
@@ -154,18 +162,6 @@ func newSpecReflector() *openapi3.Reflector {
 				t = t.Elem()
 			}
 
-			// duplicate from gen itself
-			if strings.HasSuffix(t.PkgPath(), "internal/models") {
-				if t.Kind() == reflect.Struct {
-					// will generate duplicate models otherwise
-					params.Schema.ExtraProperties = map[string]any{
-						"x-TO-BE-DELETED": true,
-					}
-
-					return true, nil
-				}
-			}
-
 			// PkgPath is empty for top level struct instance via struct{} (see docs)
 			// therefore we cannot append vendor extensions via gen_schema.
 			// for top level schemas we must check for Db[A-Z]* and append
@@ -173,6 +169,7 @@ func newSpecReflector() *openapi3.Reflector {
 			if n := t.Name(); isDbType {
 				params.Schema.ExtraProperties = map[string]any{
 					"x-go-type": strings.TrimPrefix(n, "Db"),
+					// in case this is needed later, import-mappings config affects this
 					// "x-go-name": strings.TrimPrefix(n, "Db"),
 					// "x-go-type-import": map[string]any{
 					// 	"name": "db",

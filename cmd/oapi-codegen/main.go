@@ -39,11 +39,12 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg, typesStr, serverTypesStr string
+	var cfgPath, modelsPkg, typesStr, serverTypesStr, specRestTypesStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
 	flag.StringVar(&typesStr, "types", "", "list of type names to use in place of generated oapi-codegen ones")
 	flag.StringVar(&serverTypesStr, "server-types", "", "list of types to use in server generation instead of generated types package")
+	flag.StringVar(&specRestTypesStr, "spec-rest-types", "", "list of types that are meant for rest package but defined in spec only (requiring models import)")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -53,6 +54,7 @@ func main() {
 	}
 	types := strings.Split(typesStr, ",")
 	serverTypes := strings.Split(serverTypesStr, ",")
+	specRestTypes := strings.Split(specRestTypesStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -79,7 +81,15 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg, templates, modelsPkg, types, serverTypes)
+	output, err := generate(
+		spec,
+		cfg,
+		templates,
+		modelsPkg,
+		types,
+		specRestTypes,
+		serverTypes,
+	)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -96,7 +106,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types, serverTypes []string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types, specRestTypes, serverTypes []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -141,6 +151,14 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"is_db_struct": func(t string) bool {
 			return strings.HasPrefix(t, "Db") && unicode.IsUpper([]rune(t)[2])
 		},
+		"is_spec_rest_type": func(t string) bool {
+			stName := strings.TrimPrefix(t, "externalRef0.")
+			if slices.Contains(specRestTypes, stName) {
+				return true
+			}
+
+			return false
+		},
 		"should_exclude_type": func(t string) bool {
 			stName := strings.TrimPrefix(t, "externalRef0.")
 			if slices.Contains(serverTypes, stName) {
@@ -168,7 +186,13 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			return config.Mode
 		},
 		"rest_type": func(s string) string {
-			return strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+
+			if slices.Contains(specRestTypes, stName) {
+				return "models." + stName
+			}
+
+			return stName
 		},
 		"camel": strcase.ToCamel,
 	}

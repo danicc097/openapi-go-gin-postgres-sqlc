@@ -383,7 +383,7 @@ x.gen.pregen() {
 
     codegen validate-spec -env=".env.$X_ENV"
     # useless after merging models and db
-    # ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
+    # ast-parser verify-no-import --imports "$GOMOD_PKG/internal/repos/postgresql/gen/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 
@@ -692,11 +692,11 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     x.db.gen.export-schema
-    rm -f "$PG_REPO_GEN"/db/*.sqlc.go
+    rm -f "$PG_REPO_GEN"/models/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
-    rm -f "$PG_REPO_GEN"/db/models.go                            # sqlc enums
-    sed -i 's/\bdb DBTX\b/d DBTX/g' "$PG_REPO_GEN"/db/querier.go # consistent with repo gowrap gen so we can use reposwrappers
+    rm -f "$PG_REPO_GEN"/models/models.go                            # sqlc enums
+    sed -i 's/\bdb DBTX\b/d DBTX/g' "$PG_REPO_GEN"/models/querier.go # consistent with repo gowrap gen so we can use reposwrappers
     gowrap gen \
       -g \
       -p "$GOMOD_PKG/$PG_REPO_GEN/models" \
@@ -717,22 +717,22 @@ x.gen.xo() {
 
     echo "Running generation"
 
-    rm -rf "$PG_REPO_GEN"/db/*.xo.go
+    rm -rf "$PG_REPO_GEN"/models/*.xo.go
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db --debug \
+    mkdir -p "$PG_REPO_GEN"/models
+    xo_schema -o "$PG_REPO_GEN"/models --debug \
       --schema public \
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    xo_schema -o "$PG_REPO_GEN"/db --debug \
+    xo_schema -o "$PG_REPO_GEN"/models --debug \
       --schema extra_schema \
       --ignore "*.created_at" \
       --ignore "*.updated_at" ||
       err "Failed xo extra_schema schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
+    mkdir -p "$PG_REPO_GEN"/models
+    xo_schema -o "$PG_REPO_GEN"/models \
       --schema cache ||
       err "Failed xo cache schema generation" &
 
@@ -850,6 +850,9 @@ x.gen.client-server() {
     mapfile -t server_types < <(yq e '.components.schemas[] | select(.x-use-server-type == true) | key' $SPEC_PATH)
     server_types_list=$(join_by "," ${server_types[*]})
 
+    mapfile -t spec_rest_types < <(yq e '.components.schemas[] | select(.x-spec-rest-type == true) | key' $SPEC_PATH)
+    spec_rest_types_list=$(join_by "," ${spec_rest_types[*]})
+
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
 
@@ -862,7 +865,7 @@ x.gen.client-server() {
 
     local models_config=$(
       cat <<EOF
-package: db
+package: models
 generate:
   models: true
   embedded-spec: true
@@ -881,7 +884,6 @@ package: rest
 generate:
   gin-server: true
   strict-server: true
-  models: true
   embedded-spec: true
 output: internal/rest/openapi_server.gen.go
 mode: server
@@ -889,7 +891,7 @@ exclude-rest-types: true
 skip-discriminator-utils: true
 is-rest-server-gen: true
 import-mapping:
-  "openapi.yaml": github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
+  "openapi.yaml": github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
 # additional-imports:
 #   - alias: .
 #     package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
@@ -909,17 +911,15 @@ test-client: true
 additional-imports:
   - alias: .
     package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
-  - alias: db
+  - alias: models
     package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
 EOF
     )
-    #  TODO: x-go-name for rest models created for gen/models should have suffix Public
-    # (will need gen in both gen_schema and outside, since struct instances dont have PkgPath in reflection)
-    # this will only affect oapi-codegen. however it will mess server gen up
+    # IMPORTANT: additional-imports packages affect x-go extensions
     # see https://github.com/deepmap/oapi-codegen?tab=readme-ov-file#openapi-extensions
 
     oapi-codegen --config <(echo "$models_config") --types "$rest_types_list" "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config <(echo "$server_config") --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation"
+    oapi-codegen --config <(echo "$server_config") --spec-rest-types "$spec_rest_types_list" --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation"
     oapi-codegen --config <(echo "$test_client_config") "$SPEC_PATH" || err "Failed client generation"
     # not used now. may be useful for a cli at some point
     # oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
@@ -929,9 +929,9 @@ EOF
     # TODO: remove once x-go-type in use for all db types.
     # models gen cannot be done if we have x-go-type...
     # sed -i 's/ \*Models\([A-Z]\)/ \*db\.\1/g; s/\[\]Models\([A-Z]\)/\[\]db\.\1/g; s/ Models\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Models\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
-    sed -i 's/ \*Models\([A-Z]\)/ \*db\.\1/g; s/\[\]Models\([A-Z]\)/\[\]db\.\1/g; s/ Models\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Models\)\([A-Z]\)/ db\.\3/g' internal/rest/resttesting/openapi_client_gen.go
+    # sed -i 's/ \*Models\([A-Z]\)/ \*db\.\1/g; s/\[\]Models\([A-Z]\)/\[\]db\.\1/g; s/ Models\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Models\)\([A-Z]\)/ db\.\3/g' internal/rest/resttesting/openapi_client_gen.go
     # db already imports models pkg
-    # sed -i 's/ \*Models\([A-Z]\)/ \*db\.\1/g; s/\[\]Models\([A-Z]\)/\[\]db\.\1/g; s/ Models\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Models\)\([A-Z]\)/ db\.\3/g' internal/models/openapi_types.gen.go
+    # sed -i 's/ \*Models\([A-Z]\)/ \*db\.\1/g; s/\[\]Models\([A-Z]\)/\[\]db\.\1/g; s/ Models\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Models\)\([A-Z]\)/ db\.\3/g' internal/repos/postgresql/gen/models/openapi_types.gen.go
 
     # ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
     codegen implement-server # depends on oapi-codegen output
@@ -1208,8 +1208,8 @@ linters-settings:
       # these are all adapters from service to db, so make sure they're always updated
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\..*$'
     exclude:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*UpdateParams$'
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*Joins$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*(UpdateParams|Joins)$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\.(HTTPError|ValidationError)$'
 # in case we want to run a linter on test files only
 # issues:
 #   exclude-rules:
@@ -2523,20 +2523,26 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
 
   for struct in "${structs_to_generate[@]}"; do
     if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
-      echo "Schema with x-gen-struct: $struct no longer exists. Deleting..."
+      echo "Schema with 'x-gen-struct: $struct' no longer exists. Deleting..."
       yq e "del(.components.schemas.$struct)" -i "$SPEC_PATH"
-      # this removes prefixes from all items instead...
-      # structs_to_generate=("${structs_to_generate[@]/$struct/}")
+      # structs_to_generate=("${structs_to_generate[@]/$struct/}")  # this removes prefixes from all items instead...
       array.remove_element structs_to_generate "$struct"
     fi
   done
 
+  local int_ids=()
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/models"
+  local uuid_ids=()
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/models"
+  local db_ids=("${int_ids[@]}" "${uuid_ids[@]}")
+
   struct_names_arg=$(join_by "," ${structs_to_generate[*]})
   existing_structs_arg=$(join_by "," ${existing_structs[*]})
+  db_ids_arg=$(join_by "," ${db_ids[*]})
 
   local gen_schema_spec_path="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
+  codegen gen-schema --struct-names $struct_names_arg --db-ids $db_ids_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || mark_failed_tool_build
 
