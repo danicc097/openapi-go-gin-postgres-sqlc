@@ -1684,7 +1684,7 @@ x.dev-utils.create-crud() {
         " "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
 
     echo "
-type ${pascal_name} struct {
+type ${pascal_name}Response struct {
 	models.${pascal_name}
 }
 
@@ -1730,7 +1730,7 @@ type Update${pascal_name}Request struct {
     echo "
 // ${pascal_name} defines the datastore/repository handling persisting ${sentence_name} records.
 type ${pascal_name} interface {
-	ByID(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, opts ...db.${pascal_name}SelectConfigOption) (*models.${pascal_name}, error)
+	ByID(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, opts ...models.${pascal_name}SelectConfigOption) (*models.${pascal_name}, error)
 	Create(ctx context.Context, d models.DBTX, params *models.${pascal_name}CreateParams) (*models.${pascal_name}, error)
 	Update(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, params *models.${pascal_name}UpdateParams) (*models.${pascal_name}, error)
 	Delete(ctx context.Context, d models.DBTX, id models.${pascal_name}ID) (*models.${pascal_name}, error)

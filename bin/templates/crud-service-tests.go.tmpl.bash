@@ -12,7 +12,6 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -49,8 +48,8 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 	require.NoError(t, err)
 
 	type args struct {
-		params            *db.${pascal_name}UpdateParams
-		id                db.${pascal_name}ID
+		params            *models.${pascal_name}UpdateParams
+		id                models.${pascal_name}ID
 		withUserInProject bool
 	}
 
@@ -59,13 +58,13 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 	tests := []struct {
 		name          string
 		args          args
-		want          db.${pascal_name}UpdateParams
+		want          models.${pascal_name}UpdateParams
 		errorContains []string
 	}{
 		{
 			name: "updated correctly",
 			args: args{
-				params: &db.${pascal_name}UpdateParams{
+				params: &models.${pascal_name}UpdateParams{
 					$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"
 done)
@@ -73,7 +72,7 @@ done)
 				withUserInProject: false, //
 				id:                ${lower_name}.${pascal_name}ID,
 			},
-			want: db.${pascal_name}UpdateParams{
+			want: models.${pascal_name}UpdateParams{
 				// generating fields based on randomized CreateParams since it's a superset of updateparams.
 				$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"

@@ -50,7 +50,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs, dbIDs []stri
 				continue
 			}
 
-			log.Fatalf("struct %s does not exist in rest or db packages but is referenced in x-gen-struct", structName)
+			log.Fatalf("struct %s does not exist in rest or models packages but is referenced in x-gen-struct", structName)
 		}
 		if !structs.HasJSONTag(st) {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", structName)
@@ -165,19 +165,20 @@ func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 			// PkgPath is empty for top level struct instance via struct{} (see docs)
 			// therefore we cannot append vendor extensions via gen_schema.
 			// for top level schemas we must check for Db[A-Z]* and append
-			isDbType := strings.HasSuffix(t.PkgPath(), "/db")
-			if n := t.Name(); isDbType {
-				params.Schema.ExtraProperties = map[string]any{
-					"x-go-type": strings.TrimPrefix(n, "Db"),
-					// in case this is needed later, import-mappings config affects this
-					// "x-go-name": strings.TrimPrefix(n, "Db"),
-					// "x-go-type-import": map[string]any{
-					// 	"name": "db",
-					// 	"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db",
-					// },
-					"x-is-generated": true,
-				}
-			}
+			// NOTE: now with models merged this is not needed
+			// isDbType := strings.HasSuffix(t.PkgPath(), "/models")
+			// if n := t.Name(); isDbType {
+			// 	params.Schema.ExtraProperties = map[string]any{
+			// 		"x-go-type": strings.TrimPrefix(n, "Db"),
+			// 		// in case this is needed later, import-mappings config affects this
+			// 		// "x-go-name": strings.TrimPrefix(n, "Db"),
+			// 		// "x-go-type-import": map[string]any{
+			// 		// 	"name": "db",
+			// 		// 	"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models",
+			// 		// },
+			// 		"x-is-generated": true,
+			// 	}
+			// }
 
 			var isCustomUUID bool
 			if t.Kind() == reflect.Struct && t.Field(0).Type == reflect.TypeOf(uuid.New()) {

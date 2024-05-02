@@ -13,10 +13,9 @@ import (
 	"testing"
 	"time"
 
-$(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\"")
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
+"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
@@ -31,13 +30,13 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
-		id     db.${pascal_name}ID
-		params db.${pascal_name}UpdateParams
+		id     models.${pascal_name}ID
+		params models.${pascal_name}UpdateParams
 	}
 	type params struct {
 		name        string
 		args        args
-		want        *db.${pascal_name}
+		want        *models.${pascal_name}
 		errContains string
 	}
 
@@ -46,11 +45,11 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			name: "updated",
 			args: args{
 				id:     ${lower_name}.${pascal_name}ID,
-				params: db.${pascal_name}UpdateParams{
+				params: models.${pascal_name}UpdateParams{
 					// TODO: set fields to update as in crud-api-tests.go.tmpl.bash
 				},
 			},
-			want: func() *db.${pascal_name} {
+			want: func() *models.${pascal_name} {
 				u := *${lower_name}
 				// TODO: set updated fields to expected values as in crud-api-tests.go.tmpl.bash
 
@@ -96,7 +95,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
-		id db.${pascal_name}ID
+		id models.${pascal_name}ID
 	}
 	type params struct {
 		name        string
@@ -124,7 +123,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 			_, err = ${camel_name}Repo.ByID(context.Background(), testPool, tc.args.id)
 			require.ErrorContains(t, err, errNoRows)
 			$([[ -z "$has_deleted_at" ]] && echo "/* row was deleted")
-			${lower_name}, err = ${camel_name}Repo.ByID(context.Background(), testPool, tc.args.id, db.WithDeleted${pascal_name}Only())
+			${lower_name}, err = ${camel_name}Repo.ByID(context.Background(), testPool, tc.args.id, models.WithDeleted${pascal_name}Only())
 			require.NoError(t, err)
 			assert.Equal(t, ${lower_name}.${pascal_name}ID, tc.args.id)
 			$([[ -z "$has_deleted_at" ]] && echo "*/")
@@ -142,11 +141,11 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
-	uniqueCallback := func(t *testing.T, res *db.${pascal_name}) {
+	uniqueCallback := func(t *testing.T, res *models.${pascal_name}) {
 		assert.Equal(t, res.${pascal_name}ID, ${lower_name}.${pascal_name}ID)
 	}
 
-	uniqueTestCases := []filterTestCase[*db.${pascal_name}]{
+	uniqueTestCases := []filterTestCase[*models.${pascal_name}]{
 		{
 			name:       "id",
 			filter:     ${lower_name}.${pascal_name}ID,
@@ -169,11 +168,11 @@ func Test${pascal_name}_Create(t *testing.T) {
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well
-		db.${pascal_name}CreateParams
+		models.${pascal_name}CreateParams
 	}
 
 	type args struct {
-		params db.${pascal_name}CreateParams
+		params models.${pascal_name}CreateParams
 	}
 
 	t.Run("correct_${camel_name}", func(t *testing.T) {

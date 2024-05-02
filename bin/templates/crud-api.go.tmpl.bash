@@ -40,7 +40,7 @@ func (h *StrictHandlers) Get${pascal_name}(c *gin.Context, request Get${pascal_n
 		return nil, nil
 	}
 
-	res := ${pascal_name}{
+	res := ${pascal_name}Response{
 		${pascal_name}: *${camel_name},
 		// joins, if any
 	}
