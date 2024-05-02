@@ -98,7 +98,8 @@ type ClientInterface interface {
     {{$opid}}{{if .HasBody}}WithBody{{end}}(ctx context.Context{{genParamArgs $pathParams}}{{ if is_sse_endpoint $opid }}, recorder ResponseRecorder{{end}}{{if $hasParams}}, params *{{$opid}}Params{{end}}{{if .HasBody}}, contentType string, body io.Reader{{end}}, reqEditors... RequestEditorFn) (*http.Response, error)
 {{range .Bodies}}
     {{if .IsSupportedByClient -}}
-    {{$opid}}{{.Suffix}}(ctx context.Context{{genParamArgs $pathParams}}{{ if is_sse_endpoint $opid }}, recorder ResponseRecorder{{end}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{$opid}}{{.NameTag}}RequestBody, reqEditors... RequestEditorFn) (*http.Response, error)
+    {{ $st := (printf "%v%v" $opid "Request") }}
+    {{$opid}}{{.Suffix}}(ctx context.Context{{genParamArgs $pathParams}}{{ if is_sse_endpoint $opid }}, recorder ResponseRecorder{{end}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{ rest_type $st}}{{end}}, reqEditors... RequestEditorFn) (*http.Response, error)
     {{end -}}
 {{end}}{{/* range .Bodies */}}
 {{end}}{{/* range . $opid := .OperationId */}}
@@ -132,7 +133,8 @@ func (c *Client) {{$opid}}{{if .HasBody}}WithBody{{end}}(ctx context.Context{{ i
 
 {{range .Bodies}}
 {{if .IsSupportedByClient -}}
-func (c *Client) {{$opid}}{{.Suffix}}(ctx context.Context{{genParamArgs $pathParams}}{{ if is_sse_endpoint $opid }}, recorder ResponseRecorder{{end}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{$opid}}{{.NameTag}}RequestBody, reqEditors... RequestEditorFn) (*http.Response, error) {
+{{ $st := (printf "%v%v" $opid "Request") }}
+func (c *Client) {{$opid}}{{.Suffix}}(ctx context.Context{{genParamArgs $pathParams}}{{ if is_sse_endpoint $opid }}, recorder ResponseRecorder{{end}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{ rest_type $st}}{{end}}, reqEditors... RequestEditorFn) (*http.Response, error) {
     req, err := New{{$opid}}Request{{.Suffix}}(c.Server{{genParamNames $pathParams}}{{if $hasParams}}, params{{end}}, body)
     if err != nil {
         return nil, err
@@ -163,8 +165,9 @@ func (c *Client) {{$opid}}{{.Suffix}}(ctx context.Context{{genParamArgs $pathPar
 
 {{range .Bodies}}
 {{if .IsSupportedByClient -}}
+{{ $st := (printf "%v%v" $opid "Request") }}
 // New{{$opid}}Request{{.Suffix}} calls the generic {{$opid}} builder with {{.ContentType}} body
-func New{{$opid}}Request{{.Suffix}}(server string{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{$opid}}{{.NameTag}}RequestBody) (*http.Request, error) {
+func New{{$opid}}Request{{.Suffix}}(server string{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{ rest_type $st}}{{end}}) (*http.Request, error) {
     var bodyReader io.Reader
     {{if eq .NameTag "JSON" -}}
         buf, err := json.Marshal(body)

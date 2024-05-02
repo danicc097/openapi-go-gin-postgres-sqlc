@@ -5,7 +5,6 @@ package main
 import (
 	"embed"
 	"flag"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -173,8 +172,8 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 
 			return false
 		},
-		"is_rest_type": func(t string) bool {
-			stName := strings.TrimPrefix(t, "externalRef0.")
+		"is_rest_type": func(s string) bool {
+			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
 			for _, typ := range append(types, serverTypes...) {
 				if stName == typ {
 					return true
@@ -194,9 +193,8 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 				return "models." + stName
 			}
 
-			// TODO: to allow for easier tests where we dont have to populate field by field
+			// to allow for easier tests where we dont have to populate field by field
 			if config.TestClient && slices.Contains(types, stName) {
-				fmt.Printf("stName: %v\n", stName)
 				return "rest." + stName
 			}
 

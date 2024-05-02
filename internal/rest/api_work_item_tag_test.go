@@ -8,6 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -55,10 +56,8 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			require.NoError(t, err)
 
 			witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
-			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, models.CreateWorkItemTagRequest{
-				Color:       witCreateParams.Color,
-				Description: witCreateParams.Description,
-				Name:        witCreateParams.Name,
+			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, rest.CreateWorkItemTagRequest{
+				WorkItemTagCreateParams: *witCreateParams,
 			}, ReqWithAPIKey(userf.APIKey.APIKey))
 
 			require.NoError(t, err)

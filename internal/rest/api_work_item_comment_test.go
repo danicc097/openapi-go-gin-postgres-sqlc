@@ -100,7 +100,9 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 		require.NoError(t, err)
 
 		randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.UserID, demoWorkItemf.WorkItemID)
-		body := models.CreateWorkItemCommentRequest(*randomWorkItemCommentCreateParams)
+		body := rest.CreateWorkItemCommentRequest{
+			WorkItemCommentCreateParams: *randomWorkItemCommentCreateParams,
+		}
 
 		res, err := srv.client.CreateWorkItemCommentWithResponse(context.Background(), int(demoWorkItemf.WorkItemID), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
@@ -183,19 +185,21 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	tests := []struct {
 		name                    string
 		status                  int
-		body                    models.UpdateWorkItemCommentRequest
+		body                    rest.UpdateWorkItemCommentRequest
 		validationErrorContains []string
 	}{
 		{
 			name:   "valid work item comment update",
 			status: http.StatusOK,
-			body: func() models.UpdateWorkItemCommentRequest {
+			body: func() rest.UpdateWorkItemCommentRequest {
 				randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.UserID, demoWorkItemf.WorkItemID)
 
-				return models.UpdateWorkItemCommentRequest{
-					Message:    pointers.New(randomWorkItemCommentCreateParams.Message),
-					UserID:     pointers.New(randomWorkItemCommentCreateParams.UserID),
-					WorkItemID: pointers.New(randomWorkItemCommentCreateParams.WorkItemID),
+				return rest.UpdateWorkItemCommentRequest{
+					WorkItemCommentUpdateParams: models.WorkItemCommentUpdateParams{
+						Message:    pointers.New(randomWorkItemCommentCreateParams.Message),
+						UserID:     pointers.New(randomWorkItemCommentCreateParams.UserID),
+						WorkItemID: pointers.New(randomWorkItemCommentCreateParams.WorkItemID),
+					},
 				}
 			}(),
 		},

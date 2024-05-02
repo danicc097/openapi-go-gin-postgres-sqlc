@@ -18,6 +18,7 @@ import (
 
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	uuid "github.com/google/uuid"
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -123,7 +124,7 @@ type ClientInterface interface {
 	// UpdateActivity request with any body
 	UpdateActivityWithBody(ctx context.Context, activityID models.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateActivity(ctx context.Context, activityID models.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateActivity(ctx context.Context, activityID models.ActivityID, body rest.UpdateActivityRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdminPing request
 	AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -152,7 +153,7 @@ type ClientInterface interface {
 	// CreateActivity request with any body
 	CreateActivityWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateActivity(ctx context.Context, projectName ProjectName, body rest.CreateActivityRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectBoard request
 	GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -173,17 +174,17 @@ type ClientInterface interface {
 	// CreateTeam request with any body
 	CreateTeamWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateTeam(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateTeam(ctx context.Context, projectName ProjectName, body rest.CreateTeamRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkItemTag request with any body
 	CreateWorkItemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateWorkItemTag(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateWorkItemTag(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkItemType request with any body
 	CreateWorkItemTypeWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateWorkItemType(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateWorkItemType(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -197,12 +198,12 @@ type ClientInterface interface {
 	// UpdateTeam request with any body
 	UpdateTeamWithBody(ctx context.Context, teamID models.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateTeam(ctx context.Context, teamID models.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateTeam(ctx context.Context, teamID models.TeamID, body rest.UpdateTeamRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateTimeEntry request with any body
 	CreateTimeEntryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateTimeEntry(ctx context.Context, body rest.CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteTimeEntry request
 	DeleteTimeEntry(ctx context.Context, timeEntryID models.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -213,7 +214,7 @@ type ClientInterface interface {
 	// UpdateTimeEntry request with any body
 	UpdateTimeEntryWithBody(ctx context.Context, timeEntryID models.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateTimeEntry(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateTimeEntry(ctx context.Context, timeEntryID models.TimeEntryID, body rest.UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -243,7 +244,7 @@ type ClientInterface interface {
 	// UpdateWorkItemTag request with any body
 	UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID models.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemTag(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemTag(ctx context.Context, workItemTagID models.WorkItemTagID, body rest.UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkItemType request
 	DeleteWorkItemType(ctx context.Context, workItemTypeID models.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -254,7 +255,7 @@ type ClientInterface interface {
 	// UpdateWorkItemType request with any body
 	UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID models.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemType(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemType(ctx context.Context, workItemTypeID models.WorkItemTypeID, body rest.UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -276,7 +277,7 @@ type ClientInterface interface {
 	// CreateWorkItemComment request with any body
 	CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateWorkItemComment(ctx context.Context, workItemID int, body rest.CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkItemComment request
 	DeleteWorkItemComment(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -287,7 +288,7 @@ type ClientInterface interface {
 	// UpdateWorkItemComment request with any body
 	UpdateWorkItemCommentWithBody(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemComment(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemComment(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body rest.UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) DeleteActivity(ctx context.Context, activityID models.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -347,7 +348,7 @@ func (c *Client) UpdateActivityWithBody(ctx context.Context, activityID models.A
 	}
 }
 
-func (c *Client) UpdateActivity(ctx context.Context, activityID models.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateActivity(ctx context.Context, activityID models.ActivityID, body rest.UpdateActivityRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateActivityRequest(c.Server, activityID, body)
 	if err != nil {
 		return nil, err
@@ -537,7 +538,7 @@ func (c *Client) CreateActivityWithBody(ctx context.Context, projectName Project
 	}
 }
 
-func (c *Client) CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateActivity(ctx context.Context, projectName ProjectName, body rest.CreateActivityRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateActivityRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -689,7 +690,7 @@ func (c *Client) CreateTeamWithBody(ctx context.Context, projectName ProjectName
 	}
 }
 
-func (c *Client) CreateTeam(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTeam(ctx context.Context, projectName ProjectName, body rest.CreateTeamRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTeamRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -727,7 +728,7 @@ func (c *Client) CreateWorkItemTagWithBody(ctx context.Context, projectName Proj
 	}
 }
 
-func (c *Client) CreateWorkItemTag(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemTag(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTagRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -765,7 +766,7 @@ func (c *Client) CreateWorkItemTypeWithBody(ctx context.Context, projectName Pro
 	}
 }
 
-func (c *Client) CreateWorkItemType(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemType(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTypeRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -860,7 +861,7 @@ func (c *Client) UpdateTeamWithBody(ctx context.Context, teamID models.TeamID, c
 	}
 }
 
-func (c *Client) UpdateTeam(ctx context.Context, teamID models.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTeam(ctx context.Context, teamID models.TeamID, body rest.UpdateTeamRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTeamRequest(c.Server, teamID, body)
 	if err != nil {
 		return nil, err
@@ -898,7 +899,7 @@ func (c *Client) CreateTimeEntryWithBody(ctx context.Context, contentType string
 	}
 }
 
-func (c *Client) CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTimeEntry(ctx context.Context, body rest.CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTimeEntryRequest(c.Server, body)
 	if err != nil {
 		return nil, err
@@ -974,7 +975,7 @@ func (c *Client) UpdateTimeEntryWithBody(ctx context.Context, timeEntryID models
 	}
 }
 
-func (c *Client) UpdateTimeEntry(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTimeEntry(ctx context.Context, timeEntryID models.TimeEntryID, body rest.UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTimeEntryRequest(c.Server, timeEntryID, body)
 	if err != nil {
 		return nil, err
@@ -1183,7 +1184,7 @@ func (c *Client) UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID mo
 	}
 }
 
-func (c *Client) UpdateWorkItemTag(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemTag(ctx context.Context, workItemTagID models.WorkItemTagID, body rest.UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTagRequest(c.Server, workItemTagID, body)
 	if err != nil {
 		return nil, err
@@ -1259,7 +1260,7 @@ func (c *Client) UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID 
 	}
 }
 
-func (c *Client) UpdateWorkItemType(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemType(ctx context.Context, workItemTypeID models.WorkItemTypeID, body rest.UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTypeRequest(c.Server, workItemTypeID, body)
 	if err != nil {
 		return nil, err
@@ -1411,7 +1412,7 @@ func (c *Client) CreateWorkItemCommentWithBody(ctx context.Context, workItemID i
 	}
 }
 
-func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body rest.CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemCommentRequest(c.Server, workItemID, body)
 	if err != nil {
 		return nil, err
@@ -1487,7 +1488,7 @@ func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID m
 	}
 }
 
-func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body rest.UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, workItemCommentID, body)
 	if err != nil {
 		return nil, err
@@ -1575,7 +1576,7 @@ func NewGetActivityRequest(server string, activityID models.ActivityID) (*http.R
 }
 
 // NewUpdateActivityRequest calls the generic UpdateActivity builder with application/json body
-func NewUpdateActivityRequest(server string, activityID models.ActivityID, body UpdateActivityJSONRequestBody) (*http.Request, error) {
+func NewUpdateActivityRequest(server string, activityID models.ActivityID, body rest.UpdateActivityRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -1937,7 +1938,7 @@ func NewGetProjectRequest(server string, projectName ProjectName) (*http.Request
 }
 
 // NewCreateActivityRequest calls the generic CreateActivity builder with application/json body
-func NewCreateActivityRequest(server string, projectName ProjectName, body CreateActivityJSONRequestBody) (*http.Request, error) {
+func NewCreateActivityRequest(server string, projectName ProjectName, body rest.CreateActivityRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2146,7 +2147,7 @@ func NewInitializeProjectRequestWithBody(server string, projectName ProjectName,
 }
 
 // NewCreateTeamRequest calls the generic CreateTeam builder with application/json body
-func NewCreateTeamRequest(server string, projectName ProjectName, body CreateTeamJSONRequestBody) (*http.Request, error) {
+func NewCreateTeamRequest(server string, projectName ProjectName, body rest.CreateTeamRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2193,7 +2194,7 @@ func NewCreateTeamRequestWithBody(server string, projectName ProjectName, conten
 }
 
 // NewCreateWorkItemTagRequest calls the generic CreateWorkItemTag builder with application/json body
-func NewCreateWorkItemTagRequest(server string, projectName ProjectName, body CreateWorkItemTagJSONRequestBody) (*http.Request, error) {
+func NewCreateWorkItemTagRequest(server string, projectName ProjectName, body rest.CreateWorkItemTagRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2240,7 +2241,7 @@ func NewCreateWorkItemTagRequestWithBody(server string, projectName ProjectName,
 }
 
 // NewCreateWorkItemTypeRequest calls the generic CreateWorkItemType builder with application/json body
-func NewCreateWorkItemTypeRequest(server string, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody) (*http.Request, error) {
+func NewCreateWorkItemTypeRequest(server string, projectName ProjectName, body rest.CreateWorkItemTypeRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2423,7 +2424,7 @@ func NewGetTeamRequest(server string, teamID models.TeamID) (*http.Request, erro
 }
 
 // NewUpdateTeamRequest calls the generic UpdateTeam builder with application/json body
-func NewUpdateTeamRequest(server string, teamID models.TeamID, body UpdateTeamJSONRequestBody) (*http.Request, error) {
+func NewUpdateTeamRequest(server string, teamID models.TeamID, body rest.UpdateTeamRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2470,7 +2471,7 @@ func NewUpdateTeamRequestWithBody(server string, teamID models.TeamID, contentTy
 }
 
 // NewCreateTimeEntryRequest calls the generic CreateTimeEntry builder with application/json body
-func NewCreateTimeEntryRequest(server string, body CreateTimeEntryJSONRequestBody) (*http.Request, error) {
+func NewCreateTimeEntryRequest(server string, body rest.CreateTimeEntryRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2578,7 +2579,7 @@ func NewGetTimeEntryRequest(server string, timeEntryID models.TimeEntryID) (*htt
 }
 
 // NewUpdateTimeEntryRequest calls the generic UpdateTimeEntry builder with application/json body
-func NewUpdateTimeEntryRequest(server string, timeEntryID models.TimeEntryID, body UpdateTimeEntryJSONRequestBody) (*http.Request, error) {
+func NewUpdateTimeEntryRequest(server string, timeEntryID models.TimeEntryID, body rest.UpdateTimeEntryRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -2945,7 +2946,7 @@ func NewGetWorkItemTagRequest(server string, workItemTagID models.WorkItemTagID)
 }
 
 // NewUpdateWorkItemTagRequest calls the generic UpdateWorkItemTag builder with application/json body
-func NewUpdateWorkItemTagRequest(server string, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody) (*http.Request, error) {
+func NewUpdateWorkItemTagRequest(server string, workItemTagID models.WorkItemTagID, body rest.UpdateWorkItemTagRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -3060,7 +3061,7 @@ func NewGetWorkItemTypeRequest(server string, workItemTypeID models.WorkItemType
 }
 
 // NewUpdateWorkItemTypeRequest calls the generic UpdateWorkItemType builder with application/json body
-func NewUpdateWorkItemTypeRequest(server string, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody) (*http.Request, error) {
+func NewUpdateWorkItemTypeRequest(server string, workItemTypeID models.WorkItemTypeID, body rest.UpdateWorkItemTypeRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -3334,7 +3335,7 @@ func NewUpdateWorkitemRequest(server string, workItemID models.WorkItemID) (*htt
 }
 
 // NewCreateWorkItemCommentRequest calls the generic CreateWorkItemComment builder with application/json body
-func NewCreateWorkItemCommentRequest(server string, workItemID int, body CreateWorkItemCommentJSONRequestBody) (*http.Request, error) {
+func NewCreateWorkItemCommentRequest(server string, workItemID int, body rest.CreateWorkItemCommentRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -3463,7 +3464,7 @@ func NewGetWorkItemCommentRequest(server string, workItemID models.WorkItemID, w
 }
 
 // NewUpdateWorkItemCommentRequest calls the generic UpdateWorkItemComment builder with application/json body
-func NewUpdateWorkItemCommentRequest(server string, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody) (*http.Request, error) {
+func NewUpdateWorkItemCommentRequest(server string, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body rest.UpdateWorkItemCommentRequest) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -3568,7 +3569,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateActivity request with any body
 	UpdateActivityWithBodyWithResponse(ctx context.Context, activityID models.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
-	UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body UpdateActivityRequest, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+	UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body rest.UpdateActivityRequest, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
 	// AdminPing request
 	AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error)
@@ -3597,7 +3598,7 @@ type ClientWithResponsesInterface interface {
 	// CreateActivity request with any body
 	CreateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
 
-	CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityRequest, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
+	CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateActivityRequest, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
 
 	// GetProjectBoard request
 	GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
@@ -3618,17 +3619,17 @@ type ClientWithResponsesInterface interface {
 	// CreateTeam request with any body
 	CreateTeamWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
-	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body CreateTeamRequest, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
+	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateTeamRequest, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
 	// CreateWorkItemTag request with any body
 	CreateWorkItemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
-	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
+	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
 	// CreateWorkItemType request with any body
 	CreateWorkItemTypeWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
-	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
+	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
@@ -3642,12 +3643,12 @@ type ClientWithResponsesInterface interface {
 	// UpdateTeam request with any body
 	UpdateTeamWithBodyWithResponse(ctx context.Context, teamID models.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
-	UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body UpdateTeamRequest, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
+	UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body rest.UpdateTeamRequest, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
 	// CreateTimeEntry request with any body
 	CreateTimeEntryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
 
-	CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
+	CreateTimeEntryWithResponse(ctx context.Context, body rest.CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
 
 	// DeleteTimeEntry request
 	DeleteTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, reqEditors ...RequestEditorFn) (*DeleteTimeEntryResponse, error)
@@ -3658,7 +3659,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateTimeEntry request with any body
 	UpdateTimeEntryWithBodyWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
 
-	UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
+	UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body rest.UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
 
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -3688,7 +3689,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemTag request with any body
 	UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
-	UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
+	UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body rest.UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
 	// DeleteWorkItemType request
 	DeleteWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error)
@@ -3699,7 +3700,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemType request with any body
 	UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
-	UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
+	UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body rest.UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
@@ -3721,7 +3722,7 @@ type ClientWithResponsesInterface interface {
 	// CreateWorkItemComment request with any body
 	CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
 
-	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
+	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body rest.CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
 
 	// DeleteWorkItemComment request
 	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
@@ -3732,7 +3733,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemComment request with any body
 	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 
-	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
+	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body rest.UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 }
 
 type DeleteActivityResponse struct {
@@ -4810,7 +4811,7 @@ func (c *ClientWithResponses) UpdateActivityWithBodyWithResponse(ctx context.Con
 	return ParseUpdateActivityResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
+func (c *ClientWithResponses) UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body rest.UpdateActivityRequest, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
 	rsp, err := c.UpdateActivity(ctx, activityID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -4899,7 +4900,7 @@ func (c *ClientWithResponses) CreateActivityWithBodyWithResponse(ctx context.Con
 	return ParseCreateActivityResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error) {
+func (c *ClientWithResponses) CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateActivityRequest, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error) {
 	rsp, err := c.CreateActivity(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -4968,7 +4969,7 @@ func (c *ClientWithResponses) CreateTeamWithBodyWithResponse(ctx context.Context
 	return ParseCreateTeamResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error) {
+func (c *ClientWithResponses) CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateTeamRequest, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error) {
 	rsp, err := c.CreateTeam(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -4985,7 +4986,7 @@ func (c *ClientWithResponses) CreateWorkItemTagWithBodyWithResponse(ctx context.
 	return ParseCreateWorkItemTagResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error) {
+func (c *ClientWithResponses) CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error) {
 	rsp, err := c.CreateWorkItemTag(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5002,7 +5003,7 @@ func (c *ClientWithResponses) CreateWorkItemTypeWithBodyWithResponse(ctx context
 	return ParseCreateWorkItemTypeResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error) {
+func (c *ClientWithResponses) CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body rest.CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error) {
 	rsp, err := c.CreateWorkItemType(ctx, projectName, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5046,7 +5047,7 @@ func (c *ClientWithResponses) UpdateTeamWithBodyWithResponse(ctx context.Context
 	return ParseUpdateTeamResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
+func (c *ClientWithResponses) UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body rest.UpdateTeamRequest, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
 	rsp, err := c.UpdateTeam(ctx, teamID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5063,7 +5064,7 @@ func (c *ClientWithResponses) CreateTimeEntryWithBodyWithResponse(ctx context.Co
 	return ParseCreateTimeEntryResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error) {
+func (c *ClientWithResponses) CreateTimeEntryWithResponse(ctx context.Context, body rest.CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error) {
 	rsp, err := c.CreateTimeEntry(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5098,7 +5099,7 @@ func (c *ClientWithResponses) UpdateTimeEntryWithBodyWithResponse(ctx context.Co
 	return ParseUpdateTimeEntryResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error) {
+func (c *ClientWithResponses) UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body rest.UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error) {
 	rsp, err := c.UpdateTimeEntry(ctx, timeEntryID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5194,7 +5195,7 @@ func (c *ClientWithResponses) UpdateWorkItemTagWithBodyWithResponse(ctx context.
 	return ParseUpdateWorkItemTagResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
+func (c *ClientWithResponses) UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body rest.UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
 	rsp, err := c.UpdateWorkItemTag(ctx, workItemTagID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5229,7 +5230,7 @@ func (c *ClientWithResponses) UpdateWorkItemTypeWithBodyWithResponse(ctx context
 	return ParseUpdateWorkItemTypeResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
+func (c *ClientWithResponses) UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body rest.UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
 	rsp, err := c.UpdateWorkItemType(ctx, workItemTypeID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5299,7 +5300,7 @@ func (c *ClientWithResponses) CreateWorkItemCommentWithBodyWithResponse(ctx cont
 	return ParseCreateWorkItemCommentResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
+func (c *ClientWithResponses) CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body rest.CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
 	rsp, err := c.CreateWorkItemComment(ctx, workItemID, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -5334,7 +5335,7 @@ func (c *ClientWithResponses) UpdateWorkItemCommentWithBodyWithResponse(ctx cont
 	return ParseUpdateWorkItemCommentResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
+func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body rest.UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
 	rsp, err := c.UpdateWorkItemComment(ctx, workItemID, workItemCommentID, body, reqEditors...)
 	if err != nil {
 		return nil, err
