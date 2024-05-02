@@ -1,4 +1,4 @@
-f#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
@@ -108,7 +108,7 @@ $(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 
 
 		random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
-		body := models.Create${pascal_name}Request{
+		body := rest.Create${pascal_name}Request{
 			${pascal_name}CreateParams: *random${pascal_name}CreateParams,
 		}
 
@@ -165,7 +165,7 @@ $(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&models.${pascal_name}{${pascal_name}: *${camel_name}f.${pascal_name}})
+		want, err := json.Marshal(&rest.${pascal_name}Response{${pascal_name}: *${camel_name}f.${pascal_name}})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "") // ignore private JSON fields
@@ -190,16 +190,16 @@ $(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 	tests := []struct {
 		name                    string
 		status                  int
-		body                    models.Update${pascal_name}Request
+		body                    rest.Update${pascal_name}Request
 		validationErrorContains []string
 	}{
 		{
 			name:   "valid ${sentence_name} update",
 			status: http.StatusOK,
-			body: func() models.Update${pascal_name}Request {
+			body: func() rest.Update${pascal_name}Request {
 				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
-				return models.Update${pascal_name}Request{
+				return rest.Update${pascal_name}Request{
 					${pascal_name}UpdateParams: models.${pascal_name}UpdateParams{
 $(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: pointers.New(random${pascal_name}CreateParams.$f),"
@@ -212,7 +212,7 @@ done)
 		// {
 		// 	name:                    "invalid ${sentence_name} update param",
 		// 	status:                  http.StatusBadRequest,
-		// 	body:                    models.Update${pascal_name}Request{},
+		// 	body:                    rest.Update${pascal_name}Request{},
 		// 	validationErrorContains: []string{"[\" field <JSON >\"]", "<error>"},
 		// },
 	}

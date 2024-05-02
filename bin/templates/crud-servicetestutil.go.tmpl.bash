@@ -10,6 +10,7 @@ import (
 	"context"
 
 $(test -n "$has_deleted_at" && echo "	\"time\"")
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
   "github.com/stretchr/testify/require"
 )
