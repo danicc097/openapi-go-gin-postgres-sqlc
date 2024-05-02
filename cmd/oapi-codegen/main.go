@@ -5,6 +5,7 @@ package main
 import (
 	"embed"
 	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -188,8 +189,15 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"rest_type": func(s string) string {
 			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
 
-			if slices.Contains(specRestTypes, stName) {
+			// rest type not defined in rest/models.go -> use generated type
+			if !config.TestClient && slices.Contains(specRestTypes, stName) {
 				return "models." + stName
+			}
+
+			// TODO: to allow for easier tests where we dont have to populate field by field
+			if config.TestClient && slices.Contains(types, stName) {
+				fmt.Printf("stName: %v\n", stName)
+				return "rest." + stName
 			}
 
 			return stName

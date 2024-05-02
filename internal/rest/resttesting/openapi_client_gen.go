@@ -3568,7 +3568,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateActivity request with any body
 	UpdateActivityWithBodyWithResponse(ctx context.Context, activityID models.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
-	UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+	UpdateActivityWithResponse(ctx context.Context, activityID models.ActivityID, body UpdateActivityRequest, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
 	// AdminPing request
 	AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error)
@@ -3597,7 +3597,7 @@ type ClientWithResponsesInterface interface {
 	// CreateActivity request with any body
 	CreateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
 
-	CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
+	CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityRequest, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
 
 	// GetProjectBoard request
 	GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
@@ -3618,17 +3618,17 @@ type ClientWithResponsesInterface interface {
 	// CreateTeam request with any body
 	CreateTeamWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
-	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
+	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body CreateTeamRequest, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
 	// CreateWorkItemTag request with any body
 	CreateWorkItemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
-	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
+	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
 	// CreateWorkItemType request with any body
 	CreateWorkItemTypeWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
-	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
+	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
@@ -3642,12 +3642,12 @@ type ClientWithResponsesInterface interface {
 	// UpdateTeam request with any body
 	UpdateTeamWithBodyWithResponse(ctx context.Context, teamID models.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
-	UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
+	UpdateTeamWithResponse(ctx context.Context, teamID models.TeamID, body UpdateTeamRequest, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
 	// CreateTimeEntry request with any body
 	CreateTimeEntryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
 
-	CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
+	CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryRequest, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
 
 	// DeleteTimeEntry request
 	DeleteTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, reqEditors ...RequestEditorFn) (*DeleteTimeEntryResponse, error)
@@ -3658,7 +3658,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateTimeEntry request with any body
 	UpdateTimeEntryWithBodyWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
 
-	UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
+	UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID models.TimeEntryID, body UpdateTimeEntryRequest, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
 
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -3688,7 +3688,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemTag request with any body
 	UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
-	UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
+	UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID models.WorkItemTagID, body UpdateWorkItemTagRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
 	// DeleteWorkItemType request
 	DeleteWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error)
@@ -3699,7 +3699,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemType request with any body
 	UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
-	UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
+	UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID models.WorkItemTypeID, body UpdateWorkItemTypeRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
@@ -3721,7 +3721,7 @@ type ClientWithResponsesInterface interface {
 	// CreateWorkItemComment request with any body
 	CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
 
-	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
+	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
 
 	// DeleteWorkItemComment request
 	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
@@ -3732,7 +3732,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemComment request with any body
 	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 
-	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
+	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID, body UpdateWorkItemCommentRequest, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 }
 
 type DeleteActivityResponse struct {

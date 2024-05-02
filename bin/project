@@ -920,7 +920,7 @@ EOF
 
     oapi-codegen --config <(echo "$models_config") --types "$rest_types_list" "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config <(echo "$server_config") --spec-rest-types "$spec_rest_types_list" --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation"
-    oapi-codegen --config <(echo "$test_client_config") "$SPEC_PATH" || err "Failed client generation"
+    oapi-codegen --config <(echo "$test_client_config") --types "$rest_types_list" --spec-rest-types "$spec_rest_types_list" "$SPEC_PATH" || err "Failed client generation"
     # not used now. may be useful for a cli at some point
     # oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
 
