@@ -843,7 +843,8 @@ x.gen.client-server() {
     paths_file=".openapi.paths.yaml"
 
     local all_types=()
-    mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
+    # mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
+    go-utils.find_all_types all_types "$REST_MODELS"
     rest_types_list=$(join_by "," ${all_types[*]})
 
     # TODO should work for references that are not used in, e.g. Topics
@@ -918,9 +919,11 @@ EOF
     # IMPORTANT: additional-imports packages affect x-go extensions
     # see https://github.com/deepmap/oapi-codegen?tab=readme-ov-file#openapi-extensions
 
-    oapi-codegen --config <(echo "$models_config") --types "$rest_types_list" "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config <(echo "$server_config") --spec-rest-types "$spec_rest_types_list" --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation"
-    oapi-codegen --config <(echo "$test_client_config") --types "$rest_types_list" --spec-rest-types "$spec_rest_types_list" "$SPEC_PATH" || err "Failed client generation"
+    # TODO: we already have structs.gen.go indexed by "Models(models struct)" or plain rest type...
+    # however this might be faster if the build is cached (templates unchanged). could construct internally as map set anyway
+    oapi-codegen --config <(echo "$models_config") --types "$rest_types_list" "$SPEC_PATH" || err "Failed types generation" &
+    oapi-codegen --config <(echo "$server_config") --spec-rest-types "$spec_rest_types_list" --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation" &
+    oapi-codegen --config <(echo "$test_client_config") --types "$rest_types_list" --spec-rest-types "$spec_rest_types_list" "$SPEC_PATH" || err "Failed client generation" &
     # not used now. may be useful for a cli at some point
     # oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
 
@@ -936,7 +939,7 @@ EOF
     # ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
     codegen implement-server # depends on oapi-codegen output
 
-    files=$(find "internal/rest/" -name "*.go")
+    files=$(find "internal/rest/" -name "api_*[^_test].go" -o -name "openapi_*.go")
     goimports -w $files
     gofumpt -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

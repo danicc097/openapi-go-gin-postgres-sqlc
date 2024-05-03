@@ -2088,7 +2088,7 @@ type GetProjectWorkitemsResponseObject interface {
 	VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error
 }
 
-type GetProjectWorkitems200JSONResponse models.WorkItemResponse
+type GetProjectWorkitems200JSONResponse externalRef0.WorkItemResponse
 
 func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2793,7 +2793,7 @@ type CreateWorkitemResponseObject interface {
 	VisitCreateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkitem201JSONResponse models.WorkItemResponse
+type CreateWorkitem201JSONResponse externalRef0.WorkItemResponse
 
 func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2868,7 +2868,7 @@ type GetWorkItemResponseObject interface {
 	VisitGetWorkItemResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItem200JSONResponse models.WorkItemResponse
+type GetWorkItem200JSONResponse externalRef0.WorkItemResponse
 
 func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2885,7 +2885,7 @@ type UpdateWorkitemResponseObject interface {
 	VisitUpdateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkitem200JSONResponse models.WorkItemResponse
+type UpdateWorkitem200JSONResponse externalRef0.WorkItemResponse
 
 func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

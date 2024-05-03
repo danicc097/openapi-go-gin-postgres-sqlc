@@ -52,7 +52,11 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
-	types := strings.Split(typesStr, ",")
+	typesArr := strings.Split(typesStr, ",")
+	types := make(map[string]struct{}, len(typesArr))
+	for _, t := range typesArr {
+		types[t] = struct{}{}
+	}
 	serverTypes := strings.Split(serverTypesStr, ",")
 	specRestTypes := strings.Split(specRestTypesStr, ",")
 
@@ -106,7 +110,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types, specRestTypes, serverTypes []string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types map[string]struct{}, specRestTypes, serverTypes []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -164,20 +168,18 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			if slices.Contains(serverTypes, stName) {
 				return false
 			}
-			for _, typ := range types {
-				if stName == typ {
-					return true
-				}
+			if _, ok := types[stName]; ok {
+				return true
 			}
 
 			return false
 		},
 		"is_rest_type": func(s string) bool {
 			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
-			for _, typ := range append(types, serverTypes...) {
-				if stName == typ {
-					return true
-				}
+
+			// NOTE: x-server-type marked schemas get generated with import-mapping successfully
+			if _, ok := types[stName]; ok {
+				return true
 			}
 
 			return false
@@ -194,8 +196,10 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			}
 
 			// to allow for easier tests where we dont have to populate field by field
-			if config.TestClient && slices.Contains(types, stName) {
-				return "rest." + stName
+			if config.TestClient {
+				if _, ok := types[stName]; ok {
+					return "rest." + stName
+				}
 			}
 
 			return stName
