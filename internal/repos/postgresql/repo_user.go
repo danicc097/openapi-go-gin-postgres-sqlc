@@ -50,7 +50,7 @@ func (u *User) Paginated(ctx context.Context, d models.DBTX, params repos.GetPag
 	}
 
 	// handle custom keys as desired. They should be set in spec directly and
-	// not via rest/models.go
+	// not via rest/models.spec.go
 	if r := params.RoleRank; r != nil {
 		filters["role_rank = $i"] = []interface{}{r}
 	}

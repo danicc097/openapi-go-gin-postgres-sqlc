@@ -74,8 +74,8 @@ var (
 	structsCmd        = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
 	typesCmd          = flag.NewFlagSet(string(findTypesFlagSet), flag.ExitOnError)
 	interfacesCmd     = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
-	findRedeclaredCmd = flag.NewFlagSet(string(findRedeclaredFlagSet), flag.ExitOnError) // ast-parser find-redeclared internal/rest/models.go [--delete]
-	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models" internal/rest/models.go
+	findRedeclaredCmd = flag.NewFlagSet(string(findRedeclaredFlagSet), flag.ExitOnError) // ast-parser find-redeclared internal/rest/models.spec.go [--delete]
+	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models" internal/rest/models.spec.go
 
 	subcommands = map[string]*flag.FlagSet{
 		typesCmd.Name():          typesCmd,
@@ -119,7 +119,7 @@ func main() {
 		excludeGenerics = true
 	}
 
-	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
+	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.spec.go
 	switch flag := os.Args[1]; flagSet(flag) {
 	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet, findTypesFlagSet:
 		itemsCh := make(chan []string)

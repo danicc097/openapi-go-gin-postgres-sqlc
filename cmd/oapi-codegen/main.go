@@ -188,7 +188,7 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"rest_type": func(s string) string {
 			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
 
-			// rest type not defined in rest/models.go -> use generated type
+			// rest type not defined in rest/models.spec.go -> use generated type
 			if !config.TestClient && slices.Contains(specRestTypes, stName) {
 				return "models." + stName
 			}
