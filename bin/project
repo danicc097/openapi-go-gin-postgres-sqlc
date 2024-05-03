@@ -2517,8 +2517,11 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
   local existing_structs=()
-  go-utils.find_structs existing_structs "$PG_REPO_GEN/models"
+  go-utils.find_structs existing_structs "$PG_REPO_GEN/models" # we know type () construct is not used in generated code
   mapfile -t existing_structs < <(array.add_prefix "Models" "${existing_structs[@]}")
+  if grep -EHn '^type \($' "$REST_MODELS"; then
+    err "Type grouping is not supported to allow for faster gen. Fix matches above."
+  fi
   go-utils.find_structs existing_structs "$REST_MODELS"
 
   for struct in "${structs_to_generate[@]}"; do
