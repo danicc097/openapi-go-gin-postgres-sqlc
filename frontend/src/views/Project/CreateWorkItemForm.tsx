@@ -45,7 +45,15 @@ export default function CreateWorkItemForm() {
     mode: 'all',
     reValidateMode: 'onChange',
     defaultValues: {
-      projectName: uiSlice.project, // ts discriminated type, must use switch for default values so we get type safety
+      // ts discriminated type, must use switch for default values so we get type safety
+      ...(uiSlice.project === 'demo' && {
+        projectName: 'demo',
+        demoProject: {},
+      }),
+      ...(uiSlice.project === 'demo_two' && {
+        projectName: 'demo_two',
+        demoTwoProject: {},
+      }),
     },
   })
   const formName = 'createDemoWorkItemForm'
