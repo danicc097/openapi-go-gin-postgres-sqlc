@@ -2562,13 +2562,12 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
-    # TODO: bring back when gen_schema can be compiled
-    # if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
-    #   services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    # fi
-    # if [[ $custom_schema =~ ^Models[A-Z].*$ ]]; then
-    #   db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    # fi
+    if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
+      services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
+    if [[ $custom_schema =~ ^Models[A-Z].*$ ]]; then
+      db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
