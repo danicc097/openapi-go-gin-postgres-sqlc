@@ -223,9 +223,13 @@ to_snake() {
   echo "${kebab//-/_}"
 }
 
+# https://stackoverflow.com/questions/57804252/consistent-syntax-for-obtaining-output-of-a-command-efficiently-in-bash
+# also see https://github.com/dimo414/bash-cache if needed for more expensive functions
+
+# via nameref
 to_pascal() {
-  local string=$1
-  local pascal_case=""
+  local -n __to_pascal_res="$1"
+  local string="$2"
 
   # Replace spaces with nothing and capitalize the following letter
   string="${string// \([a-z]\)/\U\1}"
@@ -239,18 +243,20 @@ to_pascal() {
 
   for word in $string; do
     if [[ " ${exceptions[*]} " =~ " $word " ]]; then
-      pascal_case+="${word^^}" # Uppercase the whole word
+      __to_pascal_res+="${word^^}" # Uppercase the whole word
     else
-      pascal_case+="${word^}" # Capitalize the first letter
+      __to_pascal_res+="${word^}" # Capitalize the first letter
     fi
   done
-
-  echo "$pascal_case"
 }
 
+# via nameref
 to_camel() {
-  local pascal_case=$(to_pascal "$1")
-  echo "${pascal_case,}"
+  local -n __to_camel_res="$1"
+  local string="$2"
+
+  to_pascal __to_camel_res "$string"
+  __to_camel_res="${__to_camel_res,}"
 }
 
 function to_kebab() {

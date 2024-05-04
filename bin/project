@@ -403,7 +403,8 @@ x.gen.pregen() {
 
     local ops=""
     for i in ${!opids[@]}; do
-      new_opid="$(to_pascal ${opids[$i]})"
+      local new_opid=""
+      to_pascal new_opid "${opids[$i]}"
       ops+=".${opid_paths[$i]}=\"${new_opid}\" |" # cant have space
     done
 
@@ -516,7 +517,10 @@ sync_spec_with_db() {
     [[ ${#kanban_steps[@]} -gt 0 ]] || {
       echo "${YELLOW}[WARNING] No kanban steps found for project '$project' in database $POSTGRES_DB${OFF}" && continue
     }
-    schema_name="$(to_pascal $project)KanbanSteps"
+
+    local pascal_project=""
+    to_pascal pascal_project "$project"
+    schema_name="${pascal_project}KanbanSteps"
     replace_enum_in_spec "$schema_name" kanban_steps "kanban_steps table"
 
     ### work item types
@@ -527,7 +531,7 @@ sync_spec_with_db() {
     [[ ${#work_item_types[@]} -gt 0 ]] || {
       echo "${YELLOW}[WARNING] No work item types found for project '$project' in database $POSTGRES_DB${OFF}" && continue
     }
-    schema_name="$(to_pascal $project)WorkItemTypes"
+    schema_name="${pascal_project}WorkItemTypes"
     replace_enum_in_spec "$schema_name" work_item_types "work_item_types table"
   done
 
@@ -578,12 +582,14 @@ EOF
   generate_model_mappings_dicts "Project" models.ProjectID projects_rows "Name"
 
   for project in ${db_projects[@]}; do
+    local pascal_project=""
+    to_pascal pascal_project "$project"
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select kanban_step_id,name from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
-    prefix="$(to_pascal "$project")KanbanSteps"
+    prefix="${pascal_project}KanbanSteps"
     generate_model_mappings_dicts $prefix models.KanbanStepID kanban_steps_rows
 
     {
@@ -593,7 +599,6 @@ EOF
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
       [[ ${#kanban_steps_order_rows[@]} -gt 0 ]] || continue
-      prefix="$(to_pascal "$project")KanbanSteps"
       echo "var (
     ${prefix}StepOrderByID = map[models.KanbanStepID]int{
   "
@@ -606,15 +611,13 @@ EOF
       done
       echo "})"
     } >>$model_mappings_path
-  done
 
-  for project in ${db_projects[@]}; do
     mapfile -t work_item_types_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select work_item_type_id,name from work_item_types where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
     [[ ${#work_item_types_rows[@]} -gt 0 ]] || continue
-    prefix="$(to_pascal "$project")WorkItemTypes"
+    prefix="${pascal_project}WorkItemTypes"
     generate_model_mappings_dicts $prefix models.WorkItemTypeID work_item_types_rows
   done
 
@@ -636,9 +639,9 @@ generate_model_mappings_dicts() {
     for row in "${__arr[@]}"; do
       first=$(cut_first "$row" "|") # always safe
       mapfile -t arr <<<"${first}"
-      local id="${arr[0]}"
-      local name="${arr[1]}"
-      echo "${id}: models.${prefix}${prefix_suffix}$(to_pascal "$name"),"
+      local id="${arr[0]}" name="${arr[1]}" pascal_name=""
+      to_pascal pascal_name "$name"
+      echo "${id}: models.${prefix}${prefix_suffix}${pascal_name},"
     done
 
     echo "}"
@@ -647,9 +650,9 @@ generate_model_mappings_dicts() {
     for row in "${__arr[@]}"; do
       first=$(cut_first "$row" "|") # always safe
       mapfile -t arr <<<"${first}"
-      local id="${arr[0]}"
-      local name="${arr[1]}"
-      echo "models.${prefix}${prefix_suffix}$(to_pascal "$name"): ${id},"
+      local id="${arr[0]}" name="${arr[1]}" pascal_name=""
+      to_pascal pascal_name "$name"
+      echo "models.${prefix}${prefix_suffix}${pascal_name}: ${id},"
     done
 
     echo "})"
@@ -1608,8 +1611,9 @@ orval_frontend_branded_types() {
   local int_ids=()
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/models"
   for entity in "${int_ids[@]}"; do
-    local camel=$(to_camel "$entity")
-    local pascal=$(to_pascal "$entity")
+    local camel="" pascal=""
+    to_camel camel $entity
+    to_pascal pascal $entity
     replace_commands+=(
       "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
@@ -1620,8 +1624,9 @@ orval_frontend_branded_types() {
   local uuid_ids=()
   go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/models"
   for entity in "${uuid_ids[@]}"; do
-    local camel=$(to_camel "$entity")
-    local pascal=$(to_pascal "$entity")
+    local camel="" pascal=""
+    to_camel camel $entity
+    to_pascal pascal $entity
     replace_commands+=(
       "-e" "s/${camel}?: Models${pascal}/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: Models${pascal}/${camel}: EntityIDs.${pascal}/g"
@@ -1635,13 +1640,15 @@ orval_frontend_branded_types() {
 
   local exports=()
   for entity in "${int_ids[@]}"; do
-    local camel=$(to_camel "$entity")
-    local pascal=$(to_pascal "$entity")
+    local camel="" pascal=""
+    to_camel camel $entity
+    to_pascal pascal $entity
     exports+=("export type ${pascal} = Branded<number, '${camel}'>") # swaggest requires pointer to struct
   done
   for entity in "${uuid_ids[@]}"; do
-    local camel=$(to_camel "$entity")
-    local pascal=$(to_pascal "$entity")
+    local camel="" pascal=""
+    to_camel camel $entity
+    to_pascal pascal $entity
     exports+=("export type ${pascal} = Branded<string, '${camel}'>") # swaggest requires pointer to struct
   done
   out="$FRONTEND_GEN/entity-ids.ts"
@@ -1815,8 +1822,10 @@ load_exported_crud_gen_vars() {
     esac
   done
 
-  export pascal_name="$(to_pascal $name)"
-  export camel_name="$(to_camel $name)"
+  declare -g camel_name="" pascal_name=""
+  to_camel camel_name $entity
+  to_pascal pascal_name $entity
+
   export kebab_name="$(to_kebab $name)"
   export sentence_name="$(to_lower_sentence $name)"
   export snake_name="$(to_snake $name)"
@@ -2303,34 +2312,37 @@ xo_generate_spec_helpers() {
   local anchors=()
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/models"
   for entity in ${int_ids[@]}; do
-    camel=$(to_camel $entity)
-    pascal=$(to_pascal $entity)
-    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+    local camel_name="" pascal_name=""
+    to_camel camel_name "$entity"
+    to_pascal pascal_name "$entity"
+    anchors+=("x-${camel_name}Parameter: &x-${camel_name}Parameter
   # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
   schema:
     type: integer
-    x-go-type: models.${pascal}
+    x-go-type: models.${pascal_name}
     x-go-type-import:
       name: db
       path: $GOMOD_PKG/internal/repos/postgresql/gen/models
-  name: ${camel}
+  name: ${camel_name}
 ")
   done
   local uuid_ids=()
   go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/models"
   for entity in "${uuid_ids[@]}"; do
-    camel=$(to_camel $entity)
-    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+    local camel_name="" pascal_name=""
+    to_camel camel_name "$entity"
+    to_pascal pascal_name "$entity"
+    anchors+=("x-${camel_name}Parameter: &x-${camel_name}Parameter
   # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
   schema:
     type: integer
-    x-go-type: models.${pascal}
+    x-go-type: models.${pascal_name}
     x-go-type-import:
       name: db
       path: $GOMOD_PKG/internal/repos/postgresql/gen/models
-  name: ${camel}
+  name: ${camel_name}
 ")
   done
 
@@ -2429,7 +2441,8 @@ sync_db_enums_with_spec() {
 
   mapfile -t db_enum_names < <(docker.postgres.psql -d $POSTGRES_DB -c "$enum_query" 2>/dev/null)
   for db_enum_name in "${db_enum_names[@]}"; do
-    local schema_name="$(to_pascal $db_enum_name)"
+    local schema_name=""
+    to_pascal schema_name "$db_enum_name"
     local enum_values=()
     mapfile -t enum_values < <(docker.postgres.psql -d $POSTGRES_DB -c "SELECT unnest(enum_range(NULL::\"$db_enum_name\"));" 2>/dev/null)
 
@@ -2485,7 +2498,8 @@ replace_enum_in_spec() {
 find_deleted_pkg_schemas() {
   local -n __all_types="$1"
   local pkg="$2"
-  local pkg_prefix=$(to_pascal $pkg)
+  local pkg_prefix=""
+  to_pascal pkg_prefix "$pkg"
   echo "Finding deleted structs or enums from package '$pkg_prefix'..."
   mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
@@ -2578,10 +2592,11 @@ $(join_by $'\n' "${clashes[@]}")"
     err "Services prefix is restricted to generated structs. Please rename or delete:
 $(join_by $'\n' "${services_prefix_clashes[@]}")"
   fi
-  if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
-    err "Models prefix is restricted to generated structs. Please rename or delete:
-$(join_by $'\n' "${db_prefix_clashes[@]}")"
-  fi
+  # TODO: need to add x-is-generated: true to all schemas in final temp spec from gen_schema
+  #   if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
+  #     err "Models prefix is restricted to generated structs. Please rename or delete:
+  # $(join_by $'\n' "${db_prefix_clashes[@]}")"
+  #   fi
 
   schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
 

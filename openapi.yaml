@@ -324,7 +324,7 @@ x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
   !!merge <<: *x-uuidIDParameterBase
   schema:
     type: integer
-    x-go-type: models.WorkItemTypeID
+    x-go-type: models.ExtraSchemaPagElementID
     x-go-type-import:
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
@@ -334,7 +334,7 @@ x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
   !!merge <<: *x-uuidIDParameterBase
   schema:
     type: integer
-    x-go-type: models.WorkItemTypeID
+    x-go-type: models.ExtraSchemaUserID
     x-go-type-import:
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
@@ -344,7 +344,7 @@ x-userIDParameter: &x-userIDParameter
   !!merge <<: *x-uuidIDParameterBase
   schema:
     type: integer
-    x-go-type: models.WorkItemTypeID
+    x-go-type: models.UserID
     x-go-type-import:
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
