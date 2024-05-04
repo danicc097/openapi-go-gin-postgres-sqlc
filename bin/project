@@ -1114,12 +1114,12 @@ x.gen() {
 
     x.lint.sql
 
+    go generate ./...
+
     x.gen.gowrap &
     x.gen.proto &
-    # might be race between these
-    { retry 5 go generate ./...; } &
-    { retry 5 x.gen.xo; } &
-    { retry 5 x.gen.sqlc; } &
+    x.gen.xo &
+    x.gen.sqlc &
     x.gen.jet >/dev/null &
     generate_repo_constructor &
 
