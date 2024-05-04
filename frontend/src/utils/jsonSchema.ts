@@ -13,6 +13,9 @@ export type Format = 'date-time' | 'date'
 export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null' | 'number'
 
 export function parseSchemaFields(schema: JSONSchema4): Record<Primitive, SchemaField> {
+  if (schema.oneOf || schema.allOf || schema.anyOf) {
+    throw Error('Can not parse oneOf, anyOf, allOf schemas. Please provide the discriminated schema instead')
+  }
   const schemaFields = {}
 
   function traverseSchema(obj: JSONSchema4, path: string[] = [], parent: JSONSchema4 | null = null) {
