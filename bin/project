@@ -1284,8 +1284,10 @@ x.lint.sql() {
     "db"
   )
   for slq_dir in ${SQL_DIRS[@]}; do
-    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -path "db/schema.sql")
+    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -path "db/schema.sql") &
   done
+
+  wait_without_error
 }
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
