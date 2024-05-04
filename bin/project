@@ -1824,9 +1824,10 @@ load_exported_crud_gen_vars() {
     esac
   done
 
-  declare -g camel_name="" pascal_name=""
-  to_camel camel_name $entity
-  to_pascal pascal_name $entity
+  camel_name="" pascal_name=""
+  to_camel camel_name $name
+  to_pascal pascal_name $name
+  export camel_name pascal_name
 
   export kebab_name="$(to_kebab $name)"
   export sentence_name="$(to_lower_sentence $name)"
