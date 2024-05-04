@@ -2,7 +2,7 @@ import Cookies from 'js-cookie'
 import { devtools, persist } from 'zustand/middleware'
 import { create } from 'zustand'
 import { CONFIG } from 'src/config'
-import { Project } from 'src/gen/model'
+import { ProjectName } from 'src/gen/model'
 
 export const LOGIN_COOKIE_KEY = CONFIG.LOGIN_COOKIE_KEY
 
@@ -14,8 +14,8 @@ interface UIState {
   accessToken: string
   burgerOpened: boolean
   setBurgerOpened: (v: boolean) => void
-  project: Project
-  setProject: (p: Project) => void
+  project: ProjectName
+  setProject: (p: ProjectName) => void
   team: string | null
   setTeam: (p: string | null) => void
 }
@@ -31,7 +31,7 @@ const useUISlice = create<UIState>()(
           burgerOpened: false,
           setBurgerOpened: (v: boolean) => set((state) => ({ burgerOpened: v })),
           project: 'demo',
-          setProject: (v: Project) => set((state) => ({ project: v })),
+          setProject: (v: ProjectName) => set((state) => ({ project: v })),
           team: '',
           setTeam: (v: string) => set((state) => ({ team: v })),
         }

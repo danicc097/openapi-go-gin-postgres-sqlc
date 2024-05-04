@@ -50,7 +50,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { ThemeSwitcher } from 'src/components/ThemeSwitcher'
 import TestMantineV7 from 'src/components/Layout/TestMantineV7'
 import { CONFIG } from 'src/config'
-import { Project } from 'src/gen/model'
+import { ProjectName } from 'src/gen/model'
 import { PROJECTS_LABEL } from 'src/services/project'
 import { entries } from 'src/utils/object'
 
@@ -156,7 +156,7 @@ export default function Layout({ children }: LayoutProps) {
                 maw={150}
                 placeholder="Select project"
                 data={entries(PROJECTS_LABEL).map(([k, v]) => ({ value: k, label: v }))}
-                onOptionSubmit={(v: Project) => {
+                onOptionSubmit={(v: ProjectName) => {
                   ui.setProject(v)
                   ui.setTeam(null)
                 }}

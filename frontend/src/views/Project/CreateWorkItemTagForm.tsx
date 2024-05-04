@@ -6,7 +6,7 @@ import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 import { Button, Card, Popover, Space, Text, Textarea } from '@mantine/core'
 import DynamicForm, { type SelectOptions, type DynamicFormOptions, InputOptions } from 'src/utils/formGeneration'
-import type { CreateWorkItemTagRequest, DbWorkItemTag, WorkItemRole } from 'src/gen/model'
+import type { CreateWorkItemTagRequest, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
 import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
@@ -27,7 +27,7 @@ import { IconCheck, IconCross, IconX } from '@tabler/icons'
 import { notifications } from '@mantine/notifications'
 import { useUISlice } from 'src/slices/ui'
 
-export default function Project() {
+export default function CreateWorkItemTagForm() {
   const formSlice = useFormSlice()
   const uiSlice = useUISlice()
 

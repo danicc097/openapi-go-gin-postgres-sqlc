@@ -1,6 +1,6 @@
-import { Project } from 'src/gen/model'
+import { ProjectName } from 'src/gen/model'
 
-export const PROJECTS_LABEL: Record<Project, string> = {
+export const PROJECTS_LABEL: Record<ProjectName, string> = {
   demo: 'Demo',
   demo_two: 'Demo two',
 }

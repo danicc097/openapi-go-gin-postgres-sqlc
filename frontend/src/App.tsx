@@ -21,12 +21,13 @@ import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
 import _ from 'lodash'
 
-import Project from 'src/views/Project/Project'
+import CreateWorkItemTagForm from 'src/views/Project/CreateWorkItemTagForm'
 import { AppTourProvider } from 'src/tours/AppTourProvider'
 import DemoGeneratedForm from 'src/views/DemoGeneratedForm/DemoGeneratedForm'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 
 import 'src/utils/dayjs'
+import CreateWorkItemForm from 'src/views/Project/CreateWorkItemForm'
 
 function ErrorFallback({ error }: any) {
   return (
@@ -45,7 +46,8 @@ const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectMa
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
 const routes = Object.freeze({
-  '/project': <Project />,
+  '/project/create-work-item': <CreateWorkItemForm />,
+  '/project/create-work-item-tag': <CreateWorkItemTagForm />,
   '/': <h1>Home</h1>,
   '/settings/user-permissions-management': (
     <ProtectedRoute>
