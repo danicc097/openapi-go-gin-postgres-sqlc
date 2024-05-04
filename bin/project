@@ -572,8 +572,6 @@ package internal
 import (
   "$GOMOD_PKG/$PG_REPO_GEN/models"
 )
-
-
 EOF
 
   mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
@@ -588,24 +586,26 @@ EOF
     prefix="$(to_pascal "$project")KanbanSteps"
     generate_model_mappings_dicts $prefix models.KanbanStepID kanban_steps_rows
 
-    kanban_steps_rows=()
-    mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
+    {
+      kanban_steps_order_rows=()
+      mapfile -t kanban_steps_order_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
           select kanban_step_id,step_order from kanban_steps where project_id = (
             select project_id from projects where name = '$project'
             );" 2>/dev/null)
-    [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
-    prefix="$(to_pascal "$project")KanbanSteps"
-    echo "var (
+      [[ ${#kanban_steps_order_rows[@]} -gt 0 ]] || continue
+      prefix="$(to_pascal "$project")KanbanSteps"
+      echo "var (
     ${prefix}StepOrderByID = map[models.KanbanStepID]int{
-  " >>$model_mappings_path
-    for row in "${kanban_steps_rows[@]}"; do
-      first=$(cut_first "$row" "|") # always safe
-      mapfile -t arr <<<"${first}"
-      local id="${arr[0]}"
-      local kanban_step="${arr[1]}"
-      echo "${id}: ${kanban_step}," >>$model_mappings_path
-    done
-    echo "})" >>$model_mappings_path
+  "
+      for row in "${kanban_steps_order_rows[@]}"; do
+        first=$(cut_first "$row" "|") # always safe
+        mapfile -t arr <<<"${first}"
+        local id="${arr[0]}"
+        local kanban_step="${arr[1]}"
+        echo "${id}: ${kanban_step},"
+      done
+      echo "})"
+    } >>$model_mappings_path
   done
 
   for project in ${db_projects[@]}; do
@@ -625,31 +625,35 @@ EOF
 # inserted exclusively via migrations
 generate_model_mappings_dicts() {
   local prefix="$1"
-  local idType="$2"
+  local id_type="$2"
   local -n __arr="$3" # db rows
   local prefix_suffix="$4"
-  echo "var (
-	${prefix}NameByID = map[${idType}]models.${prefix}${prefix_suffix}{
-  " >>$model_mappings_path
-  for row in "${__arr[@]}"; do
-    first=$(cut_first "$row" "|") # always safe
-    mapfile -t arr <<<"${first}"
-    local id="${arr[0]}"
-    local name="${arr[1]}"
-    echo "${id}: models.${prefix}${prefix_suffix}$(to_pascal "$name")," >>$model_mappings_path
-  done
-  echo "}
-	${prefix}IDByName = map[models.${prefix}${prefix_suffix}]${idType}{
-  " >>$model_mappings_path
-  for row in "${__arr[@]}"; do
-    first=$(cut_first "$row" "|") # always safe
-    mapfile -t arr <<<"${first}"
-    local id="${arr[0]}"
-    local name="${arr[1]}"
-    echo "models.${prefix}${prefix_suffix}$(to_pascal "$name"): ${id}," >>$model_mappings_path
-  done
-  echo "})
-  " >>$model_mappings_path
+
+  {
+    echo "var ("
+    echo "${prefix}NameByID = map[${id_type}]models.${prefix}${prefix_suffix}{"
+
+    for row in "${__arr[@]}"; do
+      first=$(cut_first "$row" "|") # always safe
+      mapfile -t arr <<<"${first}"
+      local id="${arr[0]}"
+      local name="${arr[1]}"
+      echo "${id}: models.${prefix}${prefix_suffix}$(to_pascal "$name"),"
+    done
+
+    echo "}"
+    echo "${prefix}IDByName = map[models.${prefix}${prefix_suffix}]${id_type}{"
+
+    for row in "${__arr[@]}"; do
+      first=$(cut_first "$row" "|") # always safe
+      mapfile -t arr <<<"${first}"
+      local id="${arr[0]}"
+      local name="${arr[1]}"
+      echo "models.${prefix}${prefix_suffix}$(to_pascal "$name"): ${id},"
+    done
+
+    echo "})"
+  } >>"$model_mappings_path"
 }
 
 clean_yq_array() {
