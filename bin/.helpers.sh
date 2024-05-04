@@ -225,11 +225,18 @@ to_snake() {
 
 # https://stackoverflow.com/questions/57804252/consistent-syntax-for-obtaining-output-of-a-command-efficiently-in-bash
 # also see https://github.com/dimo414/bash-cache if needed for more expensive functions
+declare -Ag memoized_to_pascal
 
 # via nameref
 to_pascal() {
   local -n __to_pascal_res="$1"
   local string="$2"
+
+  local memoized="${memoized_to_pascal[$string]}"
+  if [[ -n "$memoized" ]]; then
+    __to_pascal_res="$memoized"
+    return
+  fi
 
   # Replace spaces with nothing and capitalize the following letter
   string="${string// \([a-z]\)/\U\1}"
@@ -248,6 +255,8 @@ to_pascal() {
       __to_pascal_res+="${word^}" # Capitalize the first letter
     fi
   done
+
+  memoized_to_pascal["$string"]="$__to_pascal_res"
 }
 
 # via nameref
