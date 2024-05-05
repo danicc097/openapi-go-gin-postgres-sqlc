@@ -419,29 +419,48 @@ x.gen.pregen() {
 
     update_roles_and_scopes
 
-    ######## Generate shared policies once the spec has been validated
-    echo "Writing shared auth policies"
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" &
+    validate_spec &
+    update_spec_with_structs &
 
-    yq -o=json e "
-    .paths[][]
-    | explode(.)
-    | {
-      .operationId: {
-        \"scopes\": .x-required-scopes,
-        \"role\": .x-required-role,
-        \"requiresAuthentication\": has(\"security\")
-        }
-      }
-    | select(.[]) as \$i ireduce ({}; . + \$i)
-  " $SPEC_PATH >$OPID_AUTH_PATH
-
-    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH"
-
-    update_spec_with_structs
+    wait_without_error
 
     remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
+}
+
+validate_spec() {
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and (has("x-is-generated") | not)) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct can only be used in generated schemas (x-is-generated). Found in:
+$(join_by $'\n' "${invalid_schemas[@]}")"
+
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and key != .x-gen-struct) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct must match schema name. Please rename:
+$(join_by $'\n' "${invalid_schemas[@]}")"
+
+  local clashes=() services_prefix_clashes=() db_prefix_clashes=()
+  for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
+    if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
+      line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
+      clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
+    if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
+      services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
+    if [[ $custom_schema =~ ^Models[A-Z].*$ ]]; then
+      db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
+  done
+
+  if [[ ${#clashes[@]} -gt 0 ]]; then
+    err "The following non-generated schemas would have been overridden by internal/rest/models.spec.go structs. Please rename or delete:
+$(join_by $'\n' "${clashes[@]}")"
+  fi
+  if [[ ${#services_prefix_clashes[@]} -gt 0 ]]; then
+    err "Services prefix is restricted to generated structs. Please rename or delete:
+$(join_by $'\n' "${services_prefix_clashes[@]}")"
+  fi
 }
 
 update_roles_and_scopes() {
@@ -497,6 +516,22 @@ update_roles_and_scopes() {
             \"items\": {\"enum\": ${enum_values[Scope]}}
           }
         }" -i -oj .vscode/openapi-schema.json
+
+  ######## Generate shared policies once the spec has been validated
+  echo "Writing shared auth policies"
+
+  yq -o=json e "
+    .paths[][]
+    | explode(.)
+    | {
+      .operationId: {
+        \"scopes\": .x-required-scopes,
+        \"role\": .x-required-role,
+        \"requiresAuthentication\": has(\"security\")
+        }
+      }
+    | select(.[]) as \$i ireduce ({}; . + \$i)
+  " $SPEC_PATH >$OPID_AUTH_PATH
 }
 
 sync_spec_with_db() {
@@ -1163,7 +1198,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen ast-parser; do
+    for cmd in jet oapi-codegen codegen; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || mark_failed_tool_build; } &
     done
@@ -2370,7 +2405,7 @@ mark_failed_tool_build() {
 # generate db structs for use with swaggest/openapi-go.
 generate_structs_map() {
   # cached most of the time. building here since it must be called before tools build
-  go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
+  # go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
 
   local path="$PG_REPO_GEN/models"
   local structs=()
@@ -2521,14 +2556,6 @@ find_deleted_pkg_schemas() {
 }
 
 update_spec_with_structs() {
-  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and (has("x-is-generated") | not)) | key' $SPEC_PATH)
-  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct can only be used in generated schemas (x-is-generated). Found in:
-$(join_by $'\n' "${invalid_schemas[@]}")"
-
-  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and key != .x-gen-struct) | key' $SPEC_PATH)
-  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct must match schema name. Please rename:
-$(join_by $'\n' "${invalid_schemas[@]}")"
-
   mapfile -t structs_to_generate < <(yq e '.components.schemas[] | select(has("x-gen-struct")).x-gen-struct' $SPEC_PATH)
 
   local rest_structs=()
@@ -2575,28 +2602,6 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || mark_failed_tool_build
 
-  local clashes=() services_prefix_clashes=() db_prefix_clashes=()
-  for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
-    if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
-      line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
-      clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    fi
-    if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
-      services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    fi
-    if [[ $custom_schema =~ ^Models[A-Z].*$ ]]; then
-      db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    fi
-  done
-
-  if [[ ${#clashes[@]} -gt 0 ]]; then
-    err "The following non-generated schemas would have been overridden by internal/rest/models.spec.go structs. Please rename or delete:
-$(join_by $'\n' "${clashes[@]}")"
-  fi
-  if [[ ${#services_prefix_clashes[@]} -gt 0 ]]; then
-    err "Services prefix is restricted to generated structs. Please rename or delete:
-$(join_by $'\n' "${services_prefix_clashes[@]}")"
-  fi
   # TODO: need to add x-is-generated: true to all schemas in final temp spec from gen_schema
   #   if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
   #     err "Models prefix is restricted to generated structs. Please rename or delete:
