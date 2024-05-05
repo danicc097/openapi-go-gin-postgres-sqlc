@@ -110,41 +110,29 @@ func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 
 			return schemaName
 		}),
-		jsonschema.InterceptProperty(func(name string, field reflect.StructField, propertySchema *jsonschema.Schema) error {
-			if slices.Contains(dbIDs, field.Name) {
-				propertySchema.ExtraProperties = map[string]any{
-					"x-go-type": field.Name,
-				}
-			}
-
-			// intercept arrays of ids
-			if ii := propertySchema.Items; ii != nil && ii.SchemaOrBool != nil && ii.SchemaOrBool.TypeObject != nil {
-				obj := ii.SchemaOrBool.TypeObject
-				goName := obj.ReflectType.Name()
-				if slices.Contains(dbIDs, goName) {
-					obj.ExtraProperties = map[string]any{
-						"x-go-type": goName,
-					}
-				}
-			}
-
+		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			return nil
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-			if params.PropertySchema != nil {
-				if params.PropertySchema.ExtraProperties == nil {
-					params.PropertySchema.ExtraProperties = map[string]any{}
-				}
+			if params.PropertySchema == nil {
+				return nil
+			}
 
-				tags, err := structtag.Parse(string(params.Field.Tag))
-				if err != nil {
-					panic(fmt.Sprintf("structtag.Parse: %v", err))
-				}
+			if params.PropertySchema.ExtraProperties == nil {
+				params.PropertySchema.ExtraProperties = map[string]any{}
+			}
 
-				for _, t := range tags.Tags() {
-					if strings.HasPrefix(t.Key, "x-") {
-						params.PropertySchema.ExtraProperties[t.Key] = t.Value()
-					}
+			// intercept arrays of ids
+			interceptDbIDs(dbIDs, params)
+
+			tags, err := structtag.Parse(string(params.Field.Tag))
+			if err != nil {
+				panic(fmt.Sprintf("structtag.Parse: %v", err))
+			}
+
+			for _, t := range tags.Tags() {
+				if strings.HasPrefix(t.Key, "x-") {
+					params.PropertySchema.ExtraProperties[t.Key] = t.Value()
 				}
 			}
 
@@ -219,4 +207,22 @@ func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 	)
 
 	return &reflector
+}
+
+func interceptDbIDs(dbIDs []string, params jsonschema.InterceptPropParams) {
+	if slices.Contains(dbIDs, params.Field.Name) {
+		params.PropertySchema.ExtraProperties = map[string]any{
+			"x-go-type": params.Field.Name,
+		}
+	}
+
+	if ps := params.PropertySchema; ps.Items != nil && ps.Items.SchemaOrBool != nil && ps.Items.SchemaOrBool.TypeObject != nil {
+		obj := ps.Items.SchemaOrBool.TypeObject
+		goName := obj.ReflectType.Name()
+		if slices.Contains(dbIDs, goName) {
+			obj.ExtraProperties = map[string]any{
+				"x-go-type": goName,
+			}
+		}
+	}
 }
