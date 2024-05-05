@@ -116,6 +116,18 @@ func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 					"x-go-type": field.Name,
 				}
 			}
+
+			// intercept arrays of ids
+			if ii := propertySchema.Items; ii != nil && ii.SchemaOrBool != nil && ii.SchemaOrBool.TypeObject != nil {
+				obj := ii.SchemaOrBool.TypeObject
+				goName := obj.ReflectType.Name()
+				if slices.Contains(dbIDs, goName) {
+					obj.ExtraProperties = map[string]any{
+						"x-go-type": goName,
+					}
+				}
+			}
+
 			return nil
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {

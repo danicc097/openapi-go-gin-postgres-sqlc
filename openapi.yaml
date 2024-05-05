@@ -1320,6 +1320,7 @@ components:
         tagIDs:
           items:
             type: integer
+            x-go-type: WorkItemTagID
           type: array
       required:
         - projectName
@@ -1345,6 +1346,7 @@ components:
         tagIDs:
           items:
             type: integer
+            x-go-type: WorkItemTagID
           type: array
       required:
         - projectName

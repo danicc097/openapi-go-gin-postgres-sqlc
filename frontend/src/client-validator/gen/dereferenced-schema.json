@@ -137,7 +137,8 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "WorkItemTagID"
           },
           "type": "array"
         }
@@ -283,7 +284,8 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "WorkItemTagID"
           },
           "type": "array"
         }
@@ -4055,7 +4057,8 @@
             },
             "tagIDs": {
               "items": {
-                "type": "integer"
+                "type": "integer",
+                "x-go-type": "WorkItemTagID"
               },
               "type": "array"
             }
@@ -4183,7 +4186,8 @@
             },
             "tagIDs": {
               "items": {
-                "type": "integer"
+                "type": "integer",
+                "x-go-type": "WorkItemTagID"
               },
               "type": "array"
             }
@@ -7877,7 +7881,8 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "WorkItemTagID"
           },
           "type": "array"
         }
@@ -8023,7 +8028,8 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "WorkItemTagID"
           },
           "type": "array"
         }
@@ -11795,7 +11801,8 @@
             },
             "tagIDs": {
               "items": {
-                "type": "integer"
+                "type": "integer",
+                "x-go-type": "WorkItemTagID"
               },
               "type": "array"
             }
@@ -11923,7 +11930,8 @@
             },
             "tagIDs": {
               "items": {
-                "type": "integer"
+                "type": "integer",
+                "x-go-type": "WorkItemTagID"
               },
               "type": "array"
             }

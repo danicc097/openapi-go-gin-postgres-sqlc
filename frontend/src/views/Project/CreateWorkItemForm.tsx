@@ -37,7 +37,7 @@ export default function CreateWorkItemForm() {
   // orval could generate types based on discriminator:
   //  {projectName: "demo"; ...} | {projectName: "demo_two"; ...}
 
-  const createDemoWorkItemForm = useForm<CreateWorkItemRequest>({
+  const createWorkItemForm = useForm<CreateWorkItemRequest>({
     resolver: ajvResolver(createWorkItemRequestSchema as any, {
       strict: false,
       formats: fullFormats,
@@ -56,7 +56,7 @@ export default function CreateWorkItemForm() {
       }),
     },
   })
-  const formName = 'createDemoWorkItemForm'
+  const formName = 'createWorkItemForm'
   const createDemoWorkItem = useCreateWorkitem()
   const authorization = OPERATION_AUTH.CreateWorkitem
 
@@ -77,11 +77,11 @@ export default function CreateWorkItemForm() {
       <h3>Authorization:</h3>
       <CodeHighlight code={JSON.stringify(authorization, null, '  ')} language="json" />
       <h3>Form:</h3>
-      <FormProvider {...createDemoWorkItemForm}>
+      <FormProvider {...createWorkItemForm}>
         <DynamicForm<CreateWorkItemRequest, 'base.metadata' | 'projectName'>
           onSubmit={(e) => {
             e.preventDefault()
-            createDemoWorkItemForm.handleSubmit(
+            createWorkItemForm.handleSubmit(
               (data) => {
                 console.log({ data })
                 createDemoWorkItem.mutate(
@@ -97,7 +97,7 @@ export default function CreateWorkItemForm() {
                         autoClose: 5000,
                         message: 'Item created successfully',
                       })
-                      createDemoWorkItemForm.reset()
+                      createWorkItemForm.reset()
                     },
                     onError(error, variables, context) {
                       if (!error.response) return
