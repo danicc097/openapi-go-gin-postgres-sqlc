@@ -47,6 +47,7 @@ readonly GEN_CACHE_BACKUP="$GEN_CACHE-backup"
 readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 readonly FRONTEND_GEN="frontend/src/gen"
 readonly MAX_FNAME_LOG_LEN=13
+readonly GEN_SCHEMA_PATH="db/schema.sql"
 
 readonly TMP="${TMPDIR:-"/tmp"}"
 
@@ -193,12 +194,16 @@ xsetup.drop-and-migrate-gen-db() {
   test -n "$xsetup_gen_migrated" && return
   xsetup_gen_migrated=1
 
-  (
+  { { {
+    cache_all "$GEN_CACHE/db.md5" db/ --exclude "db/schema.sql" && return 0
+
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     x.db.drop
     x.migrate up
-  )
+    export_gen_db_schema
+
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 ######################### x-functions #########################
@@ -698,7 +703,6 @@ x.gen.sqlc() {
   xsetup.drop-and-migrate-gen-db
   { { {
     echo "Running generation"
-    x.db.gen.export-schema
     rm -f "$PG_REPO_GEN"/models/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
@@ -2130,10 +2134,8 @@ x.db.drop() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-x.db.gen.export-schema() {
-  local schema_path="db/schema.sql"
-  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" | sed -e '/^--/d' >"$schema_path"
-  # pg_format --config .pg_format "$schema_path"
+export_gen_db_schema() {
+  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" | sed -e '/^--/d' >"$GEN_SCHEMA_PATH"
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
