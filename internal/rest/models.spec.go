@@ -47,12 +47,11 @@ type NotificationResponse struct {
 // UserResponse represents an OpenAPI schema response for a UserResponse.
 type UserResponse struct {
 	*models.User
-	// Role replaces db RoleRank
-	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
-
 	APIKey   *models.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]models.Team     `json:"teams"`
 	Projects *[]models.Project  `json:"projects"`
+	// Role replaces db RoleRank
+	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 }
 
 type GetCurrentUserQueryParameters struct {
@@ -113,14 +112,12 @@ type WorkItemBase struct {
 }
 
 type DemoWorkItemResponse struct {
-	WorkItemBase
-
 	DemoWorkItem models.DemoWorkItem `json:"demoWorkItem" required:"true"`
+	WorkItemBase
 }
 type DemoTwoWorkItemResponse struct {
-	WorkItemBase
-
 	DemoTwoWorkItem models.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
+	WorkItemBase
 }
 
 type ProjectBoard struct {

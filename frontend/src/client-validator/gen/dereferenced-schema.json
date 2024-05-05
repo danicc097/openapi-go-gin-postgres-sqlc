@@ -3418,6 +3418,7 @@
             }
           },
           "required": [
+            "demoWorkItem",
             "workItemID",
             "title",
             "description",
@@ -3428,8 +3429,7 @@
             "targetDate",
             "createdAt",
             "updatedAt",
-            "projectName",
-            "demoWorkItem"
+            "projectName"
           ],
           "type": "object",
           "x-gen-struct": "DemoWorkItemResponse",
@@ -3877,6 +3877,7 @@
             }
           },
           "required": [
+            "demoTwoWorkItem",
             "workItemID",
             "title",
             "description",
@@ -3887,8 +3888,7 @@
             "targetDate",
             "createdAt",
             "updatedAt",
-            "projectName",
-            "demoTwoWorkItem"
+            "projectName"
           ],
           "type": "object",
           "x-gen-struct": "DemoTwoWorkItemResponse",
@@ -5123,6 +5123,7 @@
         }
       },
       "required": [
+        "demoTwoWorkItem",
         "workItemID",
         "title",
         "description",
@@ -5133,8 +5134,7 @@
         "targetDate",
         "createdAt",
         "updatedAt",
-        "projectName",
-        "demoTwoWorkItem"
+        "projectName"
       ],
       "type": "object",
       "x-gen-struct": "DemoTwoWorkItemResponse",
@@ -5599,6 +5599,7 @@
         }
       },
       "required": [
+        "demoWorkItem",
         "workItemID",
         "title",
         "description",
@@ -5609,8 +5610,7 @@
         "targetDate",
         "createdAt",
         "updatedAt",
-        "projectName",
-        "demoWorkItem"
+        "projectName"
       ],
       "type": "object",
       "x-gen-struct": "DemoWorkItemResponse",
@@ -11162,6 +11162,7 @@
             }
           },
           "required": [
+            "demoWorkItem",
             "workItemID",
             "title",
             "description",
@@ -11172,8 +11173,7 @@
             "targetDate",
             "createdAt",
             "updatedAt",
-            "projectName",
-            "demoWorkItem"
+            "projectName"
           ],
           "type": "object",
           "x-gen-struct": "DemoWorkItemResponse",
@@ -11621,6 +11621,7 @@
             }
           },
           "required": [
+            "demoTwoWorkItem",
             "workItemID",
             "title",
             "description",
@@ -11631,8 +11632,7 @@
             "targetDate",
             "createdAt",
             "updatedAt",
-            "projectName",
-            "demoTwoWorkItem"
+            "projectName"
           ],
           "type": "object",
           "x-gen-struct": "DemoTwoWorkItemResponse",
@@ -12867,6 +12867,7 @@
         }
       },
       "required": [
+        "demoTwoWorkItem",
         "workItemID",
         "title",
         "description",
@@ -12877,8 +12878,7 @@
         "targetDate",
         "createdAt",
         "updatedAt",
-        "projectName",
-        "demoTwoWorkItem"
+        "projectName"
       ],
       "type": "object",
       "x-gen-struct": "DemoTwoWorkItemResponse",
@@ -13343,6 +13343,7 @@
         }
       },
       "required": [
+        "demoWorkItem",
         "workItemID",
         "title",
         "description",
@@ -13353,8 +13354,7 @@
         "targetDate",
         "createdAt",
         "updatedAt",
-        "projectName",
-        "demoWorkItem"
+        "projectName"
       ],
       "type": "object",
       "x-gen-struct": "DemoWorkItemResponse",

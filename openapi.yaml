@@ -2546,6 +2546,7 @@ components:
           type: integer
           x-go-type: WorkItemTypeID
       required:
+        - demoTwoWorkItem
         - workItemID
         - title
         - description
@@ -2557,7 +2558,6 @@ components:
         - createdAt
         - updatedAt
         - projectName
-        - demoTwoWorkItem
       type: object
       x-gen-struct: DemoTwoWorkItemResponse
       x-is-generated: true
@@ -2627,6 +2627,7 @@ components:
           type: integer
           x-go-type: WorkItemTypeID
       required:
+        - demoWorkItem
         - workItemID
         - title
         - description
@@ -2638,7 +2639,6 @@ components:
         - createdAt
         - updatedAt
         - projectName
-        - demoWorkItem
       type: object
       x-gen-struct: DemoWorkItemResponse
       x-is-generated: true
