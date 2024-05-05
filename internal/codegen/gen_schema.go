@@ -71,7 +71,11 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs, dbIDs []stri
 			fmt.Fprint(os.Stderr, string(s))
 			log.Fatalf("Could not generate %s", schemaName)
 		}
-		x.Schema.MapOfAnything = map[string]any{"x-gen-struct": schemaName, "x-is-generated": true}
+		if x.Schema.MapOfAnything == nil {
+			x.Schema.MapOfAnything = make(map[string]interface{})
+		}
+		x.Schema.MapOfAnything["x-gen-struct"] = schemaName
+		x.Schema.MapOfAnything["x-is-generated"] = true
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)
@@ -109,9 +113,6 @@ func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 			}
 
 			return schemaName
-		}),
-		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-			return nil
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
 			if params.PropertySchema == nil {

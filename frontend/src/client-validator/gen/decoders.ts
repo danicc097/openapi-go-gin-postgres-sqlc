@@ -29,7 +29,6 @@ import {
   ModelsUser,
   ModelsUserAPIKey,
   ModelsUserID,
-  ModelsUserWIAUWorkItem,
   ModelsWorkItem,
   ModelsWorkItemComment,
   ModelsWorkItemCreateParams,
@@ -48,7 +47,6 @@ import {
   UpdateWorkItemTagRequest,
   UpdateWorkItemTypeRequest,
   Direction,
-  ModelsActivity,
   ProjectConfig,
   ProjectConfigField,
   HTTPValidationError,
@@ -66,18 +64,11 @@ import {
   WorkItemResponse,
   Scopes,
   CreateWorkItemRequest,
-  ModelsActivityCreateParams,
   NotificationType,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
-  ModelsWorkItemID,
-  ModelsProjectID,
-  ModelsWorkItemTypeID,
-  ModelsNotificationID,
-  ModelsUserNotification,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
-  ModelsUserWIAWorkItem,
   ModelsWorkItemM2MAssigneeWIA,
   CreateTimeEntryRequest,
   UpdateTimeEntryRequest,
@@ -370,18 +361,6 @@ export const ModelsUserIDDecoder: Decoder<ModelsUserID> = {
     return validateJson(json, schema, ModelsUserIDDecoder.definitionName)
   },
 }
-export const ModelsUserWIAUWorkItemDecoder: Decoder<ModelsUserWIAUWorkItem> = {
-  definitionName: 'ModelsUserWIAUWorkItem',
-  schemaRef: '#/definitions/ModelsUserWIAUWorkItem',
-
-  decode(json: unknown): ModelsUserWIAUWorkItem {
-    const schema = ajv.getSchema(ModelsUserWIAUWorkItemDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsUserWIAUWorkItemDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsUserWIAUWorkItemDecoder.definitionName)
-  },
-}
 export const ModelsWorkItemDecoder: Decoder<ModelsWorkItem> = {
   definitionName: 'ModelsWorkItem',
   schemaRef: '#/definitions/ModelsWorkItem',
@@ -598,18 +577,6 @@ export const DirectionDecoder: Decoder<Direction> = {
     return validateJson(json, schema, DirectionDecoder.definitionName)
   },
 }
-export const ModelsActivityDecoder: Decoder<ModelsActivity> = {
-  definitionName: 'ModelsActivity',
-  schemaRef: '#/definitions/ModelsActivity',
-
-  decode(json: unknown): ModelsActivity {
-    const schema = ajv.getSchema(ModelsActivityDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsActivityDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsActivityDecoder.definitionName)
-  },
-}
 export const ProjectConfigDecoder: Decoder<ProjectConfig> = {
   definitionName: 'ProjectConfig',
   schemaRef: '#/definitions/ProjectConfig',
@@ -814,18 +781,6 @@ export const CreateWorkItemRequestDecoder: Decoder<CreateWorkItemRequest> = {
     return validateJson(json, schema, CreateWorkItemRequestDecoder.definitionName)
   },
 }
-export const ModelsActivityCreateParamsDecoder: Decoder<ModelsActivityCreateParams> = {
-  definitionName: 'ModelsActivityCreateParams',
-  schemaRef: '#/definitions/ModelsActivityCreateParams',
-
-  decode(json: unknown): ModelsActivityCreateParams {
-    const schema = ajv.getSchema(ModelsActivityCreateParamsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsActivityCreateParamsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsActivityCreateParamsDecoder.definitionName)
-  },
-}
 export const NotificationTypeDecoder: Decoder<NotificationType> = {
   definitionName: 'NotificationType',
   schemaRef: '#/definitions/NotificationType',
@@ -862,66 +817,6 @@ export const DemoWorkItemTypesDecoder: Decoder<DemoWorkItemTypes> = {
     return validateJson(json, schema, DemoWorkItemTypesDecoder.definitionName)
   },
 }
-export const ModelsWorkItemIDDecoder: Decoder<ModelsWorkItemID> = {
-  definitionName: 'ModelsWorkItemID',
-  schemaRef: '#/definitions/ModelsWorkItemID',
-
-  decode(json: unknown): ModelsWorkItemID {
-    const schema = ajv.getSchema(ModelsWorkItemIDDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsWorkItemIDDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsWorkItemIDDecoder.definitionName)
-  },
-}
-export const ModelsProjectIDDecoder: Decoder<ModelsProjectID> = {
-  definitionName: 'ModelsProjectID',
-  schemaRef: '#/definitions/ModelsProjectID',
-
-  decode(json: unknown): ModelsProjectID {
-    const schema = ajv.getSchema(ModelsProjectIDDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsProjectIDDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsProjectIDDecoder.definitionName)
-  },
-}
-export const ModelsWorkItemTypeIDDecoder: Decoder<ModelsWorkItemTypeID> = {
-  definitionName: 'ModelsWorkItemTypeID',
-  schemaRef: '#/definitions/ModelsWorkItemTypeID',
-
-  decode(json: unknown): ModelsWorkItemTypeID {
-    const schema = ajv.getSchema(ModelsWorkItemTypeIDDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsWorkItemTypeIDDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsWorkItemTypeIDDecoder.definitionName)
-  },
-}
-export const ModelsNotificationIDDecoder: Decoder<ModelsNotificationID> = {
-  definitionName: 'ModelsNotificationID',
-  schemaRef: '#/definitions/ModelsNotificationID',
-
-  decode(json: unknown): ModelsNotificationID {
-    const schema = ajv.getSchema(ModelsNotificationIDDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsNotificationIDDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsNotificationIDDecoder.definitionName)
-  },
-}
-export const ModelsUserNotificationDecoder: Decoder<ModelsUserNotification> = {
-  definitionName: 'ModelsUserNotification',
-  schemaRef: '#/definitions/ModelsUserNotification',
-
-  decode(json: unknown): ModelsUserNotification {
-    const schema = ajv.getSchema(ModelsUserNotificationDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsUserNotificationDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsUserNotificationDecoder.definitionName)
-  },
-}
 export const DemoKanbanStepsDecoder: Decoder<DemoKanbanSteps> = {
   definitionName: 'DemoKanbanSteps',
   schemaRef: '#/definitions/DemoKanbanSteps',
@@ -944,18 +839,6 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
-  },
-}
-export const ModelsUserWIAWorkItemDecoder: Decoder<ModelsUserWIAWorkItem> = {
-  definitionName: 'ModelsUserWIAWorkItem',
-  schemaRef: '#/definitions/ModelsUserWIAWorkItem',
-
-  decode(json: unknown): ModelsUserWIAWorkItem {
-    const schema = ajv.getSchema(ModelsUserWIAWorkItemDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ModelsUserWIAWorkItemDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ModelsUserWIAWorkItemDecoder.definitionName)
   },
 }
 export const ModelsWorkItemM2MAssigneeWIADecoder: Decoder<ModelsWorkItemM2MAssigneeWIA> = {

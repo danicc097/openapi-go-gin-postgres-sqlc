@@ -691,21 +691,6 @@
       },
       "x-is-generated": true
     },
-    "ModelsUserWIAUWorkItem": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/WorkItemRole"
-        },
-        "user": {
-          "$ref": "#/definitions/ModelsUser"
-        }
-      },
-      "required": [
-        "user",
-        "role"
-      ],
-      "type": "object"
-    },
     "ModelsWorkItem": {
       "properties": {
         "closedAt": {
@@ -1200,35 +1185,6 @@
         "desc"
       ]
     },
-    "ModelsActivity": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "activityID",
-        "projectID",
-        "name",
-        "description",
-        "isProductive"
-      ],
-      "type": "object"
-    },
     "ProjectConfig": {
       "properties": {
         "fields": {
@@ -1542,30 +1498,6 @@
         }
       ]
     },
-    "ModelsActivityCreateParams": {
-      "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "description",
-        "isProductive",
-        "name"
-      ],
-      "type": "object"
-    },
     "NotificationType": {
       "description": "is generated from database enum 'notification_type'.",
       "type": "string",
@@ -1594,33 +1526,6 @@
       "x-is-generated": true,
       "description": "is generated from work_item_types table."
     },
-    "ModelsWorkItemID": {},
-    "ModelsProjectID": {},
-    "ModelsWorkItemTypeID": {},
-    "ModelsNotificationID": {},
-    "ModelsUserNotification": {
-      "properties": {
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "$ref": "#/definitions/ModelsUserID"
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID"
-      ],
-      "type": "object"
-    },
     "DemoKanbanSteps": {
       "type": "string",
       "enum": [
@@ -1639,21 +1544,6 @@
       ],
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
-    },
-    "ModelsUserWIAWorkItem": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/WorkItemRole"
-        },
-        "user": {
-          "$ref": "#/definitions/ModelsUser"
-        }
-      },
-      "required": [
-        "user",
-        "role"
-      ],
-      "type": "object"
     },
     "ModelsWorkItemM2MAssigneeWIA": {
       "properties": {
@@ -3013,9 +2903,6 @@
     "ModelsUserID": {
       "$ref": "#/definitions/ModelsUserID"
     },
-    "ModelsUserWIAUWorkItem": {
-      "$ref": "#/definitions/ModelsUserWIAUWorkItem"
-    },
     "ModelsWorkItem": {
       "$ref": "#/definitions/ModelsWorkItem"
     },
@@ -3070,9 +2957,6 @@
     "Direction": {
       "$ref": "#/definitions/Direction"
     },
-    "ModelsActivity": {
-      "$ref": "#/definitions/ModelsActivity"
-    },
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
     },
@@ -3124,9 +3008,6 @@
     "CreateWorkItemRequest": {
       "$ref": "#/definitions/CreateWorkItemRequest"
     },
-    "ModelsActivityCreateParams": {
-      "$ref": "#/definitions/ModelsActivityCreateParams"
-    },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"
     },
@@ -3136,29 +3017,11 @@
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
     },
-    "ModelsWorkItemID": {
-      "$ref": "#/definitions/ModelsWorkItemID"
-    },
-    "ModelsProjectID": {
-      "$ref": "#/definitions/ModelsProjectID"
-    },
-    "ModelsWorkItemTypeID": {
-      "$ref": "#/definitions/ModelsWorkItemTypeID"
-    },
-    "ModelsNotificationID": {
-      "$ref": "#/definitions/ModelsNotificationID"
-    },
-    "ModelsUserNotification": {
-      "$ref": "#/definitions/ModelsUserNotification"
-    },
     "DemoKanbanSteps": {
       "$ref": "#/definitions/DemoKanbanSteps"
     },
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
-    },
-    "ModelsUserWIAWorkItem": {
-      "$ref": "#/definitions/ModelsUserWIAWorkItem"
     },
     "ModelsWorkItemM2MAssigneeWIA": {
       "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"

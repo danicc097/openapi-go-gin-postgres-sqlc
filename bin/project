@@ -461,11 +461,10 @@ $(join_by $'\n' "${clashes[@]}")"
     err "Services prefix is restricted to generated structs. Please rename or delete:
 $(join_by $'\n' "${services_prefix_clashes[@]}")"
   fi
-  # must intercept all gen_schema schemas so they include x-is-generated
-  # if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
-  #   err "Models prefix is restricted to generated structs. Please rename or delete:
-  # $(join_by $'\n' "${db_prefix_clashes[@]}")"
-  # fi
+  if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
+    err "Models prefix is restricted to generated structs. Please rename or delete:
+  $(join_by $'\n' "${db_prefix_clashes[@]}")"
+  fi
 }
 
 update_roles_and_scopes() {
@@ -2582,6 +2581,7 @@ update_spec_with_structs() {
   fi
   go-utils.find_structs existing_structs "$REST_MODELS"
 
+  # TODO: delete old db models as well
   for struct in "${structs_to_generate[@]}"; do
     if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
       echo "Schema with 'x-gen-struct: $struct' no longer exists. Deleting..."
@@ -2610,6 +2610,7 @@ update_spec_with_structs() {
   schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
 
   # see gen_schema.go for extensions to append
+  # TODO: accumulate yq ops instead
   for schema_key in $schema_keys; do
     if [[ $schema_key =~ ^Models[A-Z].*$ ]]; then
       go_type="${schema_key#Models}"

@@ -318,10 +318,6 @@ export interface components {
     };
     /** @example cdb15f83-1c5d-4727-98d1-8924ccd1fc01 */
     ModelsUserID: string;
-    ModelsUserWIAUWorkItem: {
-      role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["ModelsUser"];
-    };
     ModelsWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
@@ -439,13 +435,6 @@ export interface components {
     };
     /** @enum {string} */
     Direction: "asc" | "desc";
-    ModelsActivity: {
-      activityID: number;
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID: number;
-    };
     ProjectConfig: {
       fields?: components["schemas"]["ProjectConfigField"][];
       header?: string[];
@@ -568,12 +557,6 @@ export interface components {
     WorkItemResponse: components["schemas"]["DemoWorkItemResponse"] | components["schemas"]["DemoTwoWorkItemResponse"];
     Scopes: components["schemas"]["Scope"][];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
-    ModelsActivityCreateParams: {
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID?: number;
-    };
     /**
      * @description is generated from database enum 'notification_type'.
      * @enum {string}
@@ -589,16 +572,6 @@ export interface components {
      * @enum {string}
      */
     DemoWorkItemTypes: "Type 1";
-    ModelsWorkItemID: unknown;
-    ModelsProjectID: unknown;
-    ModelsWorkItemTypeID: unknown;
-    ModelsNotificationID: unknown;
-    ModelsUserNotification: {
-      notificationID: number;
-      read: boolean;
-      userID: components["schemas"]["ModelsUserID"];
-      userNotificationID: number;
-    };
     /**
      * @description is generated from kanban_steps table.
      * @enum {string}
@@ -609,10 +582,6 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
-    ModelsUserWIAWorkItem: {
-      role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["ModelsUser"];
-    };
     ModelsWorkItemM2MAssigneeWIA: {
       role: components["schemas"]["WorkItemRole"];
       user: components["schemas"]["ModelsUser"];

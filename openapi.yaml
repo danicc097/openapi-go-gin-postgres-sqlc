@@ -1746,16 +1746,6 @@ components:
         name: uuid
         path: github.com/google/uuid
       x-is-generated: true
-    ModelsUserWIAUWorkItem: # Generated schema. DO NOT EDIT.
-      properties:
-        role:
-          $ref: '#/components/schemas/WorkItemRole'
-        user:
-          $ref: '#/components/schemas/ModelsUser'
-      required:
-        - user
-        - role
-      type: object
     ModelsWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -2089,25 +2079,6 @@ components:
       enum:
         - asc
         - desc
-    ModelsActivity:
-      properties:
-        activityID:
-          type: integer
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - activityID
-        - projectID
-        - name
-        - description
-        - isProductive
-      type: object
     ProjectConfig:
       properties:
         fields:
@@ -2340,21 +2311,6 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    ModelsActivityCreateParams:
-      properties:
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - description
-        - isProductive
-        - name
-      type: object
     NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: is generated from database enum 'notification_type'.
       type: string
@@ -2371,26 +2327,6 @@ components:
       enum: ["Type 1"]
       x-is-generated: true
       description: is generated from work_item_types table.
-    ModelsWorkItemID: {}
-    ModelsProjectID: {}
-    ModelsWorkItemTypeID: {}
-    ModelsNotificationID: {}
-    ModelsUserNotification:
-      properties:
-        notificationID:
-          type: integer
-        read:
-          type: boolean
-        userID:
-          $ref: '#/components/schemas/ModelsUserID'
-        userNotificationID:
-          type: integer
-      required:
-        - userNotificationID
-        - notificationID
-        - read
-        - userID
-      type: object
     DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
@@ -2401,16 +2337,6 @@ components:
       enum: ["Received"]
       x-is-generated: true
       description: is generated from kanban_steps table.
-    ModelsUserWIAWorkItem: # Generated schema. DO NOT EDIT.
-      properties:
-        role:
-          $ref: '#/components/schemas/WorkItemRole'
-        user:
-          $ref: '#/components/schemas/ModelsUser'
-      required:
-        - user
-        - role
-      type: object
     ModelsWorkItemM2MAssigneeWIA: # Generated schema. DO NOT EDIT.
       properties:
         role:

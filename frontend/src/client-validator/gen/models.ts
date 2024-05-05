@@ -290,10 +290,6 @@ export interface ModelsUserAPIKey {
   expiresOn: string
   userID: ModelsUserID
 }
-export interface ModelsUserWIAUWorkItem {
-  role: WorkItemRole
-  user: ModelsUser
-}
 export interface ModelsWorkItem {
   closedAt?: string | null
   createdAt: string
@@ -406,13 +402,6 @@ export interface UpdateWorkItemTypeRequest {
   description?: string
   name?: string
 }
-export interface ModelsActivity {
-  activityID: number
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: number
-}
 export interface HTTPValidationError {
   detail?: Detail
   messages: Messages
@@ -504,26 +493,6 @@ export interface DemoTwoWorkItemResponse {
   workItemTags?: ModelsWorkItemTag[] | null
   workItemType?: ModelsWorkItemType
   workItemTypeID: number
-}
-export interface ModelsActivityCreateParams {
-  description: string
-  isProductive: boolean
-  name: string
-  projectID?: number
-}
-export interface ModelsWorkItemID {}
-export interface ModelsProjectID {}
-export interface ModelsWorkItemTypeID {}
-export interface ModelsNotificationID {}
-export interface ModelsUserNotification {
-  notificationID: number
-  read: boolean
-  userID: ModelsUserID
-  userNotificationID: number
-}
-export interface ModelsUserWIAWorkItem {
-  role: WorkItemRole
-  user: ModelsUser
 }
 export interface CreateTimeEntryRequest {
   activityID: number
