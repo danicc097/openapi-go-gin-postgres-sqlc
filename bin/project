@@ -461,6 +461,11 @@ $(join_by $'\n' "${clashes[@]}")"
     err "Services prefix is restricted to generated structs. Please rename or delete:
 $(join_by $'\n' "${services_prefix_clashes[@]}")"
   fi
+  # must intercept all gen_schema schemas so they include x-is-generated
+  # if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
+  #   err "Models prefix is restricted to generated structs. Please rename or delete:
+  # $(join_by $'\n' "${db_prefix_clashes[@]}")"
+  # fi
 }
 
 update_roles_and_scopes() {
@@ -2601,12 +2606,6 @@ update_spec_with_structs() {
   codegen gen-schema --struct-names $struct_names_arg --db-ids $db_ids_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || mark_failed_tool_build
-
-  # TODO: need to add x-is-generated: true to all schemas in final temp spec from gen_schema
-  #   if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
-  #     err "Models prefix is restricted to generated structs. Please rename or delete:
-  # $(join_by $'\n' "${db_prefix_clashes[@]}")"
-  #   fi
 
   schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
 
