@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -13,22 +12,22 @@ import (
 )
 
 type CreateNotificationParams struct {
-	Receiver     *db.UserID
+	Receiver     *models.UserID
 	ReceiverRole *models.Role
 }
 
 // CreatePersonalNotification creates a new notification with the given configuration.
-func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) *db.UserNotification {
+func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) *models.UserNotification {
 	admin := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
 
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
-		NotificationCreateParams: db.NotificationCreateParams{
+		NotificationCreateParams: models.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
 			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.UserID,
-			NotificationType: db.NotificationTypePersonal,
+			NotificationType: models.NotificationTypePersonal,
 			Receiver:         params.Receiver,
 		},
 	})
@@ -39,17 +38,17 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 
 // CreateGlobalNotification creates a new global notification with the given configuration.
 // Returns a single user notification from the fan out.
-func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) *db.UserNotification {
+func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) *models.UserNotification {
 	admin := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
 
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
-		NotificationCreateParams: db.NotificationCreateParams{
+		NotificationCreateParams: models.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
 			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.UserID,
-			NotificationType: db.NotificationTypeGlobal,
+			NotificationType: models.NotificationTypeGlobal,
 		},
 		ReceiverRole: params.ReceiverRole,
 	})

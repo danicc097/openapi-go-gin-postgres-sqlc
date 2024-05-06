@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,12 +15,12 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 
 	kanbanStepRepo := postgresql.NewKanbanStep()
 
-	uniqueTestCases := []filterTestCase[*db.KanbanStep]{
+	uniqueTestCases := []filterTestCase[*models.KanbanStep]{
 		{
 			name:       "id",
 			filter:     internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
 			repoMethod: reflect.ValueOf(kanbanStepRepo.ByID),
-			callback: func(t *testing.T, res *db.KanbanStep) {
+			callback: func(t *testing.T, res *models.KanbanStep) {
 				assert.Equal(t, res.KanbanStepID, internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived])
 			},
 		},
@@ -31,12 +30,12 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		runGenericFilterTests(t, tc)
 	}
 
-	nonUniqueTestCases := []filterTestCase[[]db.KanbanStep]{
+	nonUniqueTestCases := []filterTestCase[[]models.KanbanStep]{
 		{
 			name:       "id",
-			filter:     internal.ProjectIDByName[models.ProjectDemoTwo],
+			filter:     internal.ProjectIDByName[models.ProjectNameDemoTwo],
 			repoMethod: reflect.ValueOf(kanbanStepRepo.ByProject),
-			callback: func(t *testing.T, res []db.KanbanStep) {
+			callback: func(t *testing.T, res []models.KanbanStep) {
 				found := false
 				for _, ks := range res {
 					if ks.KanbanStepID == internal.DemoTwoKanbanStepsIDByName[models.DemoTwoKanbanStepsReceived] {

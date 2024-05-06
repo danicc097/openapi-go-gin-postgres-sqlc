@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewTeamWithPrometheus(base repos.Team, instanceName string) TeamWithPrometh
 }
 
 // ByID implements repos.Team
-func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d TeamWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.TeamID, 
 }
 
 // ByName implements repos.Team
-func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d TeamWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string,
 }
 
 // Create implements repos.Team
-func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d TeamWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.T
 }
 
 // Delete implements repos.Team
-func (_d TeamWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d TeamWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.TeamID
 }
 
 // Update implements repos.Team
-func (_d TeamWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

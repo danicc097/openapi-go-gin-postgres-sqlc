@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // UserWithTimeout implements repos.User interface instrumented with timeouts
@@ -55,7 +55,7 @@ func NewUserWithTimeout(base repos.User, config UserWithTimeoutConfig) UserWithT
 }
 
 // ByAPIKey implements repos.User
-func (_d UserWithTimeout) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByAPIKeyTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByAPIKeyTimeout)
@@ -65,7 +65,7 @@ func (_d UserWithTimeout) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string
 }
 
 // ByEmail implements repos.User
-func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByEmail(ctx context.Context, d models.DBTX, email string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByEmailTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByEmailTimeout)
@@ -75,7 +75,7 @@ func (_d UserWithTimeout) ByEmail(ctx context.Context, d db.DBTX, email string, 
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByExternalID(ctx context.Context, d models.DBTX, extID string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByExternalIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByExternalIDTimeout)
@@ -85,7 +85,7 @@ func (_d UserWithTimeout) ByExternalID(ctx context.Context, d db.DBTX, extID str
 }
 
 // ByID implements repos.User
-func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.UserID, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -95,7 +95,7 @@ func (_d UserWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.UserID, opt
 }
 
 // ByProject implements repos.User
-func (_d UserWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) (ua1 []db.User, err error) {
+func (_d UserWithTimeout) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID) (ua1 []models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectTimeout)
@@ -105,7 +105,7 @@ func (_d UserWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID db
 }
 
 // ByTeam implements repos.User
-func (_d UserWithTimeout) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) (ua1 []db.User, err error) {
+func (_d UserWithTimeout) ByTeam(ctx context.Context, d models.DBTX, teamID models.TeamID) (ua1 []models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByTeamTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByTeamTimeout)
@@ -115,7 +115,7 @@ func (_d UserWithTimeout) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamI
 }
 
 // ByUsername implements repos.User
-func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithTimeout) ByUsername(ctx context.Context, d models.DBTX, username string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.ByUsernameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByUsernameTimeout)
@@ -125,7 +125,7 @@ func (_d UserWithTimeout) ByUsername(ctx context.Context, d db.DBTX, username st
 }
 
 // Create implements repos.User
-func (_d UserWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.UserCreateParams) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -135,7 +135,7 @@ func (_d UserWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.User
 }
 
 // CreateAPIKey implements repos.User
-func (_d UserWithTimeout) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (up1 *db.UserAPIKey, err error) {
+func (_d UserWithTimeout) CreateAPIKey(ctx context.Context, d models.DBTX, user *models.User) (up1 *models.UserAPIKey, err error) {
 	var cancelFunc func()
 	if _d.config.CreateAPIKeyTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateAPIKeyTimeout)
@@ -145,7 +145,7 @@ func (_d UserWithTimeout) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.
 }
 
 // Delete implements repos.User
-func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up1 *db.User, err error) {
+func (_d UserWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.UserID) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -155,7 +155,7 @@ func (_d UserWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.UserID) (
 }
 
 // DeleteAPIKey implements repos.User
-func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.UserAPIKey, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteAPIKeyTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteAPIKeyTimeout)
@@ -165,7 +165,7 @@ func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey st
 }
 
 // Paginated implements repos.User
-func (_d UserWithTimeout) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginatedUsersParams) (ua1 []db.User, err error) {
+func (_d UserWithTimeout) Paginated(ctx context.Context, d models.DBTX, params repos.GetPaginatedUsersParams) (ua1 []models.User, err error) {
 	var cancelFunc func()
 	if _d.config.PaginatedTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedTimeout)
@@ -175,7 +175,7 @@ func (_d UserWithTimeout) Paginated(ctx context.Context, d db.DBTX, params repos
 }
 
 // Update implements repos.User
-func (_d UserWithTimeout) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithTimeout) Update(ctx context.Context, d models.DBTX, id models.UserID, params *models.UserUpdateParams) (up1 *models.User, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

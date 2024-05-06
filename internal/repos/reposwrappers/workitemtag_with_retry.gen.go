@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewWorkItemTagWithRetry(base repos.WorkItemTag, logger *zap.SugaredLogger, 
 }
 
 // ByID implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTagID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTagWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkIt
 }
 
 // ByName implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTagSelectConfigOption) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTagWithRetryByName")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 }
 
 // Create implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db.WorkItemTagCreateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) Create(ctx context.Context, d models.DBTX, params *models.WorkItemTagCreateParams) (wp1 *models.WorkItemTag, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTagWithRetryCreate")
 		if err != nil {
@@ -154,7 +154,7 @@ func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db
 }
 
 // Delete implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d models.DBTX, id models.WorkItemTagID) (wp1 *models.WorkItemTag, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTagWithRetryDelete")
 		if err != nil {
@@ -194,7 +194,7 @@ func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Work
 }
 
 // Update implements repos.WorkItemTag
-func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (wp1 *db.WorkItemTag, err error) {
+func (_d WorkItemTagWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemTagID, params *models.WorkItemTagUpdateParams) (wp1 *models.WorkItemTag, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTagWithRetryUpdate")
 		if err != nil {

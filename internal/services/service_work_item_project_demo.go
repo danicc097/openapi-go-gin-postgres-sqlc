@@ -6,9 +6,8 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +19,7 @@ type DemoWorkItem struct {
 
 type Member struct {
 	Role   models.WorkItemRole `json:"role"   ref:"#/components/schemas/WorkItemRole" required:"true"`
-	UserID db.UserID           `json:"userID" required:"true"`
+	UserID models.UserID       `json:"userID" required:"true"`
 }
 
 type DemoWorkItemCreateParams struct {
@@ -40,7 +39,7 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *DemoWorkIte
 }
 
 // ByID gets a work item by ID.
-func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
+func (w *DemoWorkItem) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID) (*models.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, id)
@@ -52,7 +51,7 @@ func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*
 }
 
 // Create creates a new work item.
-func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Create(ctx context.Context, d models.DBTX, caller CtxUser, params DemoWorkItemCreateParams) (*models.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := w.wiSvc.validateCreateParams(d, caller, &params.Base); err != nil {
@@ -78,7 +77,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, pa
 		return nil, err
 	}
 
-	opts := append(w.wiSvc.getSharedDBOpts(), db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	opts := append(w.wiSvc.getSharedDBOpts(), models.WithWorkItemJoin(models.WorkItemJoins{DemoWorkItem: true}))
 	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)
@@ -88,7 +87,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, pa
 }
 
 // Update updates an existing work item.
-func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Update(ctx context.Context, d models.DBTX, caller CtxUser, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (*models.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := w.wiSvc.validateUpdateParams(d, caller, params.Base); err != nil {
@@ -107,12 +106,12 @@ func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, caller CtxUser, id
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
 
-func (w *DemoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) ListDeleted(ctx context.Context, d models.DBTX, teamID models.TeamID) ([]models.WorkItem, error) {
 	// WorkItemsByTeamID with deleted opt, orderby createdAt
-	return []db.WorkItem{}, errors.New("not implemented")
+	return []models.WorkItem{}, errors.New("not implemented")
 }
 
-func (w *DemoWorkItem) List(ctx context.Context, d db.DBTX, teamID int) ([]db.WorkItem, error) {
+func (w *DemoWorkItem) List(ctx context.Context, d models.DBTX, teamID int) ([]models.WorkItem, error) {
 	// WorkItemsByTeamID with orderby createdAt
-	return []db.WorkItem{}, errors.New("not implemented")
+	return []models.WorkItem{}, errors.New("not implemented")
 }

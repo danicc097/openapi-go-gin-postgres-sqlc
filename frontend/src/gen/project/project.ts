@@ -23,11 +23,11 @@ import type {
 } from '@tanstack/react-query'
 import type {
   CreateProjectBoardRequest,
-  DbProject,
   GetProjectWorkitemsParams,
+  ModelsProject,
   ProjectBoard,
   ProjectConfig,
-  WorkItem
+  WorkItemResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -98,7 +98,7 @@ export const getProject = (
 ) => {
       
       
-      return customInstance<DbProject>(
+      return customInstance<ModelsProject>(
       {url: `/project/${projectName}/`, method: 'GET', signal
     },
       options);
@@ -455,7 +455,7 @@ export const getProjectWorkitems = (
 ) => {
       
       
-      return customInstance<WorkItem>(
+      return customInstance<WorkItemResponse>(
       {url: `/project/${projectName}/workitems`, method: 'GET',
         params, signal
     },

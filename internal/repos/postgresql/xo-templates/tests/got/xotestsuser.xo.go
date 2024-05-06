@@ -12,12 +12,10 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // XoTestsUser represents a row from 'xo_tests.users'.
@@ -104,7 +102,7 @@ func CreateXoTestsUser(ctx context.Context, db DB, params *XoTestsUserCreatePara
 
 type XoTestsUserSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsUserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -131,7 +129,7 @@ func WithDeletedXoTestsUserOnly() XoTestsUserSelectConfigOption {
 
 // WithXoTestsUserOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsUserOrderBy(rows map[string]*models.Direction) XoTestsUserSelectConfigOption {
+func WithXoTestsUserOrderBy(rows map[string]*Direction) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsUser]
 		for dbcol, dir := range rows {
@@ -527,12 +525,12 @@ func (xtu *XoTestsUser) Restore(ctx context.Context, db DB) (*XoTestsUser, error
 
 // XoTestsUserPaginated returns a cursor-paginated list of XoTestsUser.
 // At least one cursor is required.
-func XoTestsUserPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
+func XoTestsUserPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
 	c := &XoTestsUserSelectConfig{
 		deletedAt: " null ", joins: XoTestsUserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -548,7 +546,7 @@ func XoTestsUserPaginated(ctx context.Context, db DB, cursor models.PaginationCu
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}

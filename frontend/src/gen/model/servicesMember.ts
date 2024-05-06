@@ -7,7 +7,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 import type { WorkItemRole } from './workItemRole';
-import type { DbUserID } from './dbUserID';
+import type { ModelsUserID } from './modelsUserID';
 
 export interface ServicesMember {
   role: WorkItemRole;

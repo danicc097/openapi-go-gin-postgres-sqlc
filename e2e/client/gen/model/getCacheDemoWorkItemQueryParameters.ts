@@ -5,8 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbCacheDemoWorkItemJoins } from './dbCacheDemoWorkItemJoins'
+import type { ModelsCacheDemoWorkItemJoins } from './modelsCacheDemoWorkItemJoins'
 
 export interface GetCacheDemoWorkItemQueryParameters {
-  joins?: DbCacheDemoWorkItemJoins
+  joins?: ModelsCacheDemoWorkItemJoins
 }

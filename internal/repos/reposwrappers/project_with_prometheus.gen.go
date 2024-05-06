@@ -8,9 +8,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -40,7 +39,7 @@ func NewProjectWithPrometheus(base repos.Project, instanceName string) ProjectWi
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -54,7 +53,7 @@ func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.Proje
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -68,7 +67,7 @@ func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name mode
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithPrometheus) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithPrometheus) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

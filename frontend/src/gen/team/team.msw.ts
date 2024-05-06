@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  Team
+  TeamResponse
 } from '.././model'
 
-export const getCreateTeamResponseMock = (overrideResponse: any = {}): Team => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
+export const getCreateTeamResponseMock = (overrideResponse: any = {}): TeamResponse => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
 
-export const getGetTeamResponseMock = (overrideResponse: any = {}): Team => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
+export const getGetTeamResponseMock = (overrideResponse: any = {}): TeamResponse => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
 
-export const getUpdateTeamResponseMock = (overrideResponse: any = {}): Team => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
+export const getUpdateTeamResponseMock = (overrideResponse: any = {}): TeamResponse => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
 
 
-export const getCreateTeamMockHandler = (overrideResponse?: Team) => {
+export const getCreateTeamMockHandler = (overrideResponse?: TeamResponse) => {
   return http.post('*/project/:projectName/team/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateTeamResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateTeamMockHandler = (overrideResponse?: Team) => {
   })
 }
 
-export const getGetTeamMockHandler = (overrideResponse?: Team) => {
+export const getGetTeamMockHandler = (overrideResponse?: TeamResponse) => {
   return http.get('*/team/:teamID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetTeamResponseMock()),
@@ -53,7 +53,7 @@ export const getGetTeamMockHandler = (overrideResponse?: Team) => {
   })
 }
 
-export const getUpdateTeamMockHandler = (overrideResponse?: Team) => {
+export const getUpdateTeamMockHandler = (overrideResponse?: TeamResponse) => {
   return http.patch('*/team/:teamID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateTeamResponseMock()),

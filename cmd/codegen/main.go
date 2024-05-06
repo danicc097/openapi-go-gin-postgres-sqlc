@@ -14,8 +14,8 @@ import (
 
 // nolint: gochecknoglobals
 var (
-	env, spec, opIDAuthPath, structNamesList, existingStructsList string
-	stderr                                                        bytes.Buffer
+	env, spec, opIDAuthPath, structNamesList, existingStructsList, dbIDsList string
+	stderr                                                                   bytes.Buffer
 
 	implementServerCmd = flag.NewFlagSet("implement-server", flag.ExitOnError)
 	validateSpecCmd    = flag.NewFlagSet("validate-spec", flag.ExitOnError)
@@ -39,6 +39,7 @@ func main() {
 
 	genSchemaCmd.StringVar(&structNamesList, "struct-names", "", "comma-delimited struct names to generate an OpenAPI schema for")
 	genSchemaCmd.StringVar(&existingStructsList, "existing-structs", "", "comma-delimited actual Go struct names in db or rest packages")
+	genSchemaCmd.StringVar(&dbIDsList, "db-ids", "", "comma-delimited existing database ID types")
 
 	cmd, ok := subcommands[os.Args[1]]
 	if !ok {
@@ -59,11 +60,15 @@ func main() {
 		for i := range structNames {
 			structNames[i] = strings.TrimSpace(structNames[i])
 		}
-		existingStructs := strings.Split(structNamesList, ",")
+		existingStructs := strings.Split(existingStructsList, ",")
 		for i := range existingStructs {
 			existingStructs[i] = strings.TrimSpace(existingStructs[i])
 		}
-		codeGen.GenerateSpecSchemas(structNames, existingStructs)
+		dbIDs := strings.Split(dbIDsList, ",")
+		for i := range dbIDs {
+			dbIDs[i] = strings.TrimSpace(dbIDs[i])
+		}
+		codeGen.GenerateSpecSchemas(structNames, existingStructs, dbIDs)
 		os.Exit(0)
 	case "implement-server":
 		if err := codeGen.ImplementServer(); err != nil {

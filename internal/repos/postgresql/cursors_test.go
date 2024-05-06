@@ -3,8 +3,7 @@ package postgresql
 import (
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/pashagolub/pgxmock/v3"
 	"github.com/stretchr/testify/require"
@@ -17,7 +16,7 @@ func TestSetDefaultCursors(t *testing.T) {
 		queryResult     string
 		cursor          models.PaginationCursor
 		wantCursorValue interface{}
-		entity          db.TableEntity
+		entity          models.TableEntity
 		errorContains   string
 	}{
 		{
@@ -28,7 +27,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				Value:     nil,
 			},
 			wantCursorValue: "-Infinity",
-			entity:          db.TableEntityUser,
+			entity:          models.TableEntityUser,
 		},
 		{
 			name: "infinity",
@@ -38,7 +37,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				Value:     pointers.New[interface{}](nil),
 			},
 			wantCursorValue: "-Infinity",
-			entity:          db.TableEntityUser,
+			entity:          models.TableEntityUser,
 		},
 		{
 			name:            "cursor ignored if set",
@@ -48,7 +47,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				Direction: models.DirectionAsc,
 				Value:     pointers.New[interface{}]("something"),
 			},
-			entity: db.TableEntityUser,
+			entity: models.TableEntityUser,
 		},
 		{
 			name:            "find in query",
@@ -60,7 +59,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				Direction: models.DirectionAsc,
 				Value:     nil,
 			},
-			entity: db.TableEntityUser,
+			entity: models.TableEntityUser,
 		},
 		{
 			// should collate via CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
@@ -73,7 +72,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				Direction: models.DirectionDesc,
 				Value:     nil,
 			},
-			entity: db.TableEntityUser,
+			entity: models.TableEntityUser,
 		},
 	}
 

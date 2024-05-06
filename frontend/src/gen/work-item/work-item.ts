@@ -26,7 +26,7 @@ import type {
   GetPaginatedWorkItemParams,
   HTTPError,
   PaginatedDemoWorkItemsResponse,
-  WorkItem
+  WorkItemResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -43,7 +43,7 @@ export const createWorkitem = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItem>(
+      return customInstance<WorkItemResponse>(
       {url: `/work-item/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createWorkItemRequest
@@ -96,7 +96,7 @@ export const getWorkItem = (
 ) => {
       
       
-      return customInstance<WorkItem>(
+      return customInstance<WorkItemResponse>(
       {url: `/work-item/${workItemID}/`, method: 'GET', signal
     },
       options);
@@ -196,7 +196,7 @@ export const updateWorkitem = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItem>(
+      return customInstance<WorkItemResponse>(
       {url: `/work-item/${workItemID}/`, method: 'PATCH'
     },
       options);

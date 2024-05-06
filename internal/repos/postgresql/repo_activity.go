@@ -5,25 +5,25 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // Activity represents the repository used for interacting with Activity records.
 type Activity struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewActivity instantiates the Activity repository.
 func NewActivity() *Activity {
 	return &Activity{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.Activity = (*Activity)(nil)
 
-func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
-	activity, err := db.CreateActivity(ctx, d, params)
+func (a *Activity) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (*models.Activity, error) {
+	activity, err := models.CreateActivity(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create activity: %w", ParseDBErrorDetail(err))
 	}
@@ -31,7 +31,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCre
 	return activity, nil
 }
 
-func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (*db.Activity, error) {
+func (a *Activity) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (*models.Activity, error) {
 	activity, err := a.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity by id %w", ParseDBErrorDetail(err))
@@ -47,8 +47,8 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, para
 	return activity, err
 }
 
-func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (*db.Activity, error) {
-	activity, err := db.ActivityByNameProjectID(ctx, d, name, projectID, opts...)
+func (a *Activity) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (*models.Activity, error) {
+	activity, err := models.ActivityByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", ParseDBErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID
 	return activity, nil
 }
 
-func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) ([]db.Activity, error) {
-	activities, err := db.ActivitiesByProjectID(ctx, d, projectID, opts...)
+func (a *Activity) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) ([]models.Activity, error) {
+	activities, err := models.ActivitiesByProjectID(ctx, d, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", ParseDBErrorDetail(err))
 	}
@@ -65,8 +65,8 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.Proj
 	return activities, nil
 }
 
-func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts ...db.ActivitySelectConfigOption) (*db.Activity, error) {
-	activity, err := db.ActivityByActivityID(ctx, d, id, opts...)
+func (a *Activity) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (*models.Activity, error) {
+	activity, err := models.ActivityByActivityID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get activity: %w", ParseDBErrorDetail(err))
 	}
@@ -74,8 +74,8 @@ func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts .
 	return activity, nil
 }
 
-func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.Activity, error) {
-	activity := &db.Activity{
+func (a *Activity) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (*models.Activity, error) {
+	activity := &models.Activity{
 		ActivityID: id,
 	}
 
@@ -87,8 +87,8 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 	return activity, err
 }
 
-func (a *Activity) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) error {
-	activity := &db.Activity{
+func (a *Activity) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) error {
+	activity := &models.Activity{
 		ActivityID: id,
 	}
 

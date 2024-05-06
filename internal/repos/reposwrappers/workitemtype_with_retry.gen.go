@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewWorkItemTypeWithRetry(base repos.WorkItemType, logger *zap.SugaredLogger
 }
 
 // ByID implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTypeWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // ByName implements repos.WorkItemType
-func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTypeSelectConfigOption) (wp1 *db.WorkItemType, err error) {
+func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTypeWithRetryByName")
 		if err != nil {

@@ -8,7 +8,7 @@
 import type { CreateWorkItemRequest } from '../model/createWorkItemRequest'
 import type { GetPaginatedWorkItemParams } from '../model/getPaginatedWorkItemParams'
 import type { PaginatedDemoWorkItemsResponse } from '../model/paginatedDemoWorkItemsResponse'
-import type { WorkItem } from '../model/workItem'
+import type { WorkItemResponse } from '../model/workItemResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -21,7 +21,7 @@ export const createWorkitem = (
   createWorkItemRequest: CreateWorkItemRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItem>(
+  return customInstance<WorkItemResponse>(
     {
       url: `/work-item/`,
       method: 'POST',
@@ -35,13 +35,13 @@ export const createWorkitem = (
  * @summary get workitem
  */
 export const getWorkItem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItem>({ url: `/work-item/${workItemID}/`, method: 'GET' }, options)
+  return customInstance<WorkItemResponse>({ url: `/work-item/${workItemID}/`, method: 'GET' }, options)
 }
 /**
  * @summary update workitem
  */
 export const updateWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItem>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
+  return customInstance<WorkItemResponse>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
 }
 /**
  * @summary delete workitem

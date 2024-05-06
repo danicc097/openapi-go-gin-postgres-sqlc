@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Project } from './project'
+import type { ProjectName } from './projectName'
 import type { Topics } from './topics'
 
 export type EventsParams = {
-  projectName: Project
+  projectName: ProjectName
   topics: Topics
 }

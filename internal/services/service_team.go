@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +14,7 @@ type Team struct {
 	repos  *repos.Repos
 	// sharedDBOpts represents shared db select options for all team entities
 	// for returned values
-	getSharedDBOpts func() []db.TeamSelectConfigOption
+	getSharedDBOpts func() []models.TeamSelectConfigOption
 }
 
 // NewTeam returns a new Team service.
@@ -22,14 +22,14 @@ func NewTeam(logger *zap.SugaredLogger, repos *repos.Repos) *Team {
 	return &Team{
 		logger: logger,
 		repos:  repos,
-		getSharedDBOpts: func() []db.TeamSelectConfigOption {
-			return []db.TeamSelectConfigOption{db.WithTeamJoin(db.TeamJoins{Project: true})}
+		getSharedDBOpts: func() []models.TeamSelectConfigOption {
+			return []models.TeamSelectConfigOption{models.WithTeamJoin(models.TeamJoins{Project: true})}
 		},
 	}
 }
 
 // ByID gets a team by ID.
-func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
+func (t *Team) ByID(ctx context.Context, d models.DBTX, id models.TeamID) (*models.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.repos.Team.ByID(ctx, d, id, t.getSharedDBOpts()...)
@@ -41,7 +41,7 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, err
 }
 
 // ByName gets a team by name.
-func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.Team, error) {
+func (t *Team) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID) (*models.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.repos.Team.ByName(ctx, d, name, projectID, t.getSharedDBOpts()...)
@@ -53,7 +53,7 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.
 }
 
 // Create creates a new team.
-func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
+func (t *Team) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (*models.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.repos.Team.Create(ctx, d, params)
@@ -70,7 +70,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 }
 
 // Update updates an existing team.
-func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (*db.Team, error) {
+func (t *Team) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (*models.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.repos.Team.Update(ctx, d, id, params)
@@ -87,7 +87,7 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.T
 }
 
 // Delete deletes an existing team.
-func (t *Team) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
+func (t *Team) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (*models.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	team, err := t.repos.Team.Delete(ctx, d, id)

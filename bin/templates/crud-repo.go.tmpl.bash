@@ -11,25 +11,26 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+  "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+
 )
 
 // ${pascal_name} represents the repository used for interacting with ${sentence_name} records.
 type ${pascal_name} struct {
-	q db.Querier
+	q models.Querier
 }
 
 // New${pascal_name} instantiates the ${sentence_name} repository.
 func New${pascal_name}() *${pascal_name} {
 	return &${pascal_name}{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.${pascal_name} = (*${pascal_name})(nil)
 
-func (t *${pascal_name}) Create(ctx context.Context, d db.DBTX, params *db.${pascal_name}CreateParams) (*db.${pascal_name}, error) {
-	${camel_name}, err := db.Create${pascal_name}(ctx, d, params)
+func (t *${pascal_name}) Create(ctx context.Context, d models.DBTX, params *models.${pascal_name}CreateParams) (*models.${pascal_name}, error) {
+	${camel_name}, err := models.Create${pascal_name}(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create ${camel_name}: %w", ParseDBErrorDetail(err))
 	}
@@ -37,7 +38,7 @@ func (t *${pascal_name}) Create(ctx context.Context, d db.DBTX, params *db.${pas
 	return ${camel_name}, nil
 }
 
-func (t *${pascal_name}) Update(ctx context.Context, d db.DBTX, id db.${pascal_name}ID, params *db.${pascal_name}UpdateParams) (*db.${pascal_name}, error) {
+func (t *${pascal_name}) Update(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, params *models.${pascal_name}UpdateParams) (*models.${pascal_name}, error) {
 	${camel_name}, err := t.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get ${sentence_name} by id %w", ParseDBErrorDetail(err))
@@ -53,8 +54,8 @@ func (t *${pascal_name}) Update(ctx context.Context, d db.DBTX, id db.${pascal_n
 	return ${camel_name}, err
 }
 
-func (t *${pascal_name}) ByID(ctx context.Context, d db.DBTX, id db.${pascal_name}ID, opts ...db.${pascal_name}SelectConfigOption) (*db.${pascal_name}, error) {
-	${camel_name}, err := db.${pascal_name}By${pascal_name}ID(ctx, d, id, opts...)
+func (t *${pascal_name}) ByID(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, opts ...models.${pascal_name}SelectConfigOption) (*models.${pascal_name}, error) {
+	${camel_name}, err := models.${pascal_name}By${pascal_name}ID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get ${sentence_name}: %w", ParseDBErrorDetail(err))
 	}
@@ -62,8 +63,8 @@ func (t *${pascal_name}) ByID(ctx context.Context, d db.DBTX, id db.${pascal_nam
 	return ${camel_name}, nil
 }
 
-func (t *${pascal_name}) Delete(ctx context.Context, d db.DBTX, id db.${pascal_name}ID) (*db.${pascal_name}, error) {
-	${camel_name} := &db.${pascal_name}{
+func (t *${pascal_name}) Delete(ctx context.Context, d models.DBTX, id models.${pascal_name}ID) (*models.${pascal_name}, error) {
+	${camel_name} := &models.${pascal_name}{
 		${pascal_name}ID: id,
 	}
 

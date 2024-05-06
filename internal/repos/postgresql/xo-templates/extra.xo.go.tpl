@@ -19,7 +19,7 @@ const (
 type Cursor struct {
 	Column string
 	Value interface{}
-	Direction models.Direction
+	Direction Direction
 }
 
 // DbField shows db column information.

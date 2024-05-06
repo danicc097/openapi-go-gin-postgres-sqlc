@@ -5,9 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/require"
 )
@@ -51,8 +50,8 @@ func primitiveFilter(s string, mode models.PaginationFilterModes) *models.Pagina
 }
 
 func TestGenerateFilters(t *testing.T) {
-	const testEntity db.TableEntity = "testEntity"
-	db.EntityFields[testEntity] = map[string]db.DbField{
+	const testEntity models.TableEntity = "testEntity"
+	models.EntityFields[testEntity] = map[string]models.DbField{
 		"createdAt": {Type: "date-time", Db: "created_at", Nullable: false, Public: true},
 		"private":   {Type: "string", Db: "private", Nullable: false, Public: false},
 		"fullName":  {Type: "string", Db: "full_name", Nullable: true, Public: true},

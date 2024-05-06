@@ -6,8 +6,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserJoins } from './dbUserJoins';
+import type { ModelsUserJoins } from './modelsUserJoins';
 
 export interface GetCurrentUserQueryParameters {
-  joins?: DbUserJoins;
+  joins?: ModelsUserJoins;
 }

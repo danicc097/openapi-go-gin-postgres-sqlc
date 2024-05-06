@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // WorkItem represents the repository used for interacting with WorkItem records.
 type WorkItem struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewWorkItem instantiates the WorkItem repository.
@@ -20,24 +20,24 @@ type WorkItem struct {
 // and this simplifies everything a lot.
 func NewWorkItem() *WorkItem {
 	return &WorkItem{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.WorkItem = (*WorkItem)(nil)
 
-func (w *WorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
-	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
+func (w *WorkItem) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (*models.WorkItem, error) {
+	return models.WorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
-func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) error {
-	_, err := db.CreateWorkItemAssignee(ctx, d, params)
+func (w *WorkItem) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) error {
+	_, err := models.CreateWorkItemAssignee(ctx, d, params)
 
 	return err
 }
 
-func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) error {
-	lookup := &db.WorkItemAssignee{
+func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) error {
+	lookup := &models.WorkItemAssignee{
 		Assignee:   memberID,
 		WorkItemID: workItemID,
 	}
@@ -45,14 +45,14 @@ func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID d
 	return lookup.Delete(ctx, d)
 }
 
-func (w *WorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
-	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
+func (w *WorkItem) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) error {
+	_, err := models.CreateWorkItemWorkItemTag(ctx, d, params)
 
 	return err
 }
 
-func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
-	lookup := &db.WorkItemWorkItemTag{
+func (w *WorkItem) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) error {
+	lookup := &models.WorkItemWorkItemTag{
 		WorkItemTagID: tagID,
 		WorkItemID:    workItemID,
 	}
@@ -60,8 +60,8 @@ func (w *WorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTa
 	return lookup.Delete(ctx, d)
 }
 
-func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
-	workItem := &db.WorkItem{
+func (w *WorkItem) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (*models.WorkItem, error) {
+	workItem := &models.WorkItem{
 		WorkItemID: id,
 	}
 
@@ -73,9 +73,9 @@ func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db
 	return workItem, err
 }
 
-func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
+func (w *WorkItem) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (*models.WorkItem, error) {
 	var err error
-	workItem := &db.WorkItem{
+	workItem := &models.WorkItem{
 		WorkItemID: id,
 	}
 

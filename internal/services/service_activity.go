@@ -5,9 +5,8 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +24,7 @@ func NewActivity(logger *zap.SugaredLogger, repos *repos.Repos) *Activity {
 }
 
 // ByID gets an activity by ID.
-func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.Activity, error) {
+func (a *Activity) ByID(ctx context.Context, d models.DBTX, id models.ActivityID) (*models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	activity, err := a.repos.Activity.ByID(ctx, d, id)
@@ -37,7 +36,7 @@ func (a *Activity) ByID(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.A
 }
 
 // ByName gets an activity by name.
-func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.Activity, error) {
+func (a *Activity) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID) (*models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	activity, err := a.repos.Activity.ByName(ctx, d, name, projectID)
@@ -49,7 +48,7 @@ func (a *Activity) ByName(ctx context.Context, d db.DBTX, name string, projectID
 }
 
 // ByProjectID gets activities by project ID.
-func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.Activity, error) {
+func (a *Activity) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID) ([]models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	activity, err := a.repos.Activity.ByProjectID(ctx, d, projectID)
@@ -61,7 +60,7 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.Proj
 }
 
 // Create creates a new activity.
-func (a *Activity) Create(ctx context.Context, d db.DBTX, projectName models.Project, params *db.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d models.DBTX, projectName models.ProjectName, params *models.ActivityCreateParams) (*models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	params.ProjectID = internal.ProjectIDByName[projectName]
@@ -75,7 +74,7 @@ func (a *Activity) Create(ctx context.Context, d db.DBTX, projectName models.Pro
 }
 
 // Update updates an existing activity.
-func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (*db.Activity, error) {
+func (a *Activity) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (*models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	activity, err := a.repos.Activity.Update(ctx, d, id, params)
@@ -87,7 +86,7 @@ func (a *Activity) Update(ctx context.Context, d db.DBTX, id db.ActivityID, para
 }
 
 // Delete deletes an activity by ID.
-func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db.Activity, error) {
+func (a *Activity) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (*models.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	activity, err := a.repos.Activity.Delete(ctx, d, id)
@@ -98,7 +97,7 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 	return activity, nil
 }
 
-func (a *Activity) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) error {
+func (a *Activity) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) error {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := a.repos.Activity.Restore(ctx, d, id); err != nil {

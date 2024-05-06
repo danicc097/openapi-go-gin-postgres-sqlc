@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewActivityWithPrometheus(base repos.Activity, instanceName string) Activit
 }
 
 // ByID implements repos.Activity
-func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.ActivityID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d ActivityWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.Acti
 }
 
 // ByName implements repos.Activity
-func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d ActivityWithPrometheus) ByName(ctx context.Context, d db.DBTX, name str
 }
 
 // ByProjectID implements repos.Activity
-func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.ActivitySelectConfigOption) (aa1 []db.Activity, err error) {
+func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (aa1 []models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d db.DBTX, pro
 }
 
 // Create implements repos.Activity
-func (_d ActivityWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d ActivityWithPrometheus) Create(ctx context.Context, d db.DBTX, params *
 }
 
 // Delete implements repos.Activity
-func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -109,7 +109,7 @@ func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.Ac
 }
 
 // Restore implements repos.Activity
-func (_d ActivityWithPrometheus) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) (err error) {
+func (_d ActivityWithPrometheus) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -123,7 +123,7 @@ func (_d ActivityWithPrometheus) Restore(ctx context.Context, d db.DBTX, id db.A
 }
 
 // Update implements repos.Activity
-func (_d ActivityWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
+func (_d ActivityWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

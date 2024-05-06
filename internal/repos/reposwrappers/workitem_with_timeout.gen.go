@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // WorkItemWithTimeout implements repos.WorkItem interface instrumented with timeouts
@@ -43,7 +43,7 @@ func NewWorkItemWithTimeout(base repos.WorkItem, config WorkItemWithTimeoutConfi
 }
 
 // AssignTag implements repos.WorkItem
-func (_d WorkItemWithTimeout) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+func (_d WorkItemWithTimeout) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) (err error) {
 	var cancelFunc func()
 	if _d.config.AssignTagTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignTagTimeout)
@@ -53,7 +53,7 @@ func (_d WorkItemWithTimeout) AssignTag(ctx context.Context, d db.DBTX, params *
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
+func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) (err error) {
 	var cancelFunc func()
 	if _d.config.AssignUserTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignUserTimeout)
@@ -63,7 +63,7 @@ func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params 
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -73,7 +73,7 @@ func (_d WorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkIte
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -83,7 +83,7 @@ func (_d WorkItemWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveAssignedUserTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveAssignedUserTimeout)
@@ -93,7 +93,7 @@ func (_d WorkItemWithTimeout) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) (err error) {
 	var cancelFunc func()
 	if _d.config.RemoveTagTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RemoveTagTimeout)
@@ -103,7 +103,7 @@ func (_d WorkItemWithTimeout) RemoveTag(ctx context.Context, d db.DBTX, tagID db
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithTimeout) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTimeout) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.RestoreTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)

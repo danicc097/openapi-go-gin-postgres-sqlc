@@ -6,9 +6,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +20,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
@@ -32,15 +31,15 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 		t.Fatalf("activityRepo.Create unexpected error = %v", err)
 	}
 
-	uniqueTestCases := []filterTestCase[*db.Activity]{
+	uniqueTestCases := []filterTestCase[*models.Activity]{
 		{
 			name: "name",
 			filter: []any{
 				activity.Name,
-				internal.ProjectIDByName[models.ProjectDemo],
+				internal.ProjectIDByName[models.ProjectNameDemo],
 			},
 			repoMethod: reflect.ValueOf(activityRepo.ByName),
-			callback: func(t *testing.T, res *db.Activity) {
+			callback: func(t *testing.T, res *models.Activity) {
 				assert.Equal(t, res.Name, activity.Name)
 			},
 		},
@@ -48,7 +47,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 			name:       "id",
 			filter:     activity.ActivityID,
 			repoMethod: reflect.ValueOf(activityRepo.ByID),
-			callback: func(t *testing.T, res *db.Activity) {
+			callback: func(t *testing.T, res *models.Activity) {
 				assert.Equal(t, res.ActivityID, activity.ActivityID)
 			},
 		},
@@ -58,13 +57,13 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 		runGenericFilterTests(t, tc)
 	}
 
-	nonUniqueTestCases := []filterTestCase[[]db.Activity]{
+	nonUniqueTestCases := []filterTestCase[[]models.Activity]{
 		{
 			name:       "project_id",
-			filter:     internal.ProjectIDByName[models.ProjectDemo],
+			filter:     internal.ProjectIDByName[models.ProjectNameDemo],
 			repoMethod: reflect.ValueOf(activityRepo.ByProjectID),
-			callback: func(t *testing.T, res []db.Activity) {
-				assert.Equal(t, res[0].ProjectID, internal.ProjectIDByName[models.ProjectDemo])
+			callback: func(t *testing.T, res []models.Activity) {
+				assert.Equal(t, res[0].ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},
 	}

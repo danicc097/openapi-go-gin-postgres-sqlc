@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // TeamWithTimeout implements repos.Team interface instrumented with timeouts
@@ -39,7 +39,7 @@ func NewTeamWithTimeout(base repos.Team, config TeamWithTimeoutConfig) TeamWithT
 }
 
 // ByID implements repos.Team
-func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -49,7 +49,7 @@ func (_d TeamWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opt
 }
 
 // ByName implements repos.Team
-func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
@@ -59,7 +59,7 @@ func (_d TeamWithTimeout) ByName(ctx context.Context, d db.DBTX, name string, pr
 }
 
 // Create implements repos.Team
-func (_d TeamWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -69,7 +69,7 @@ func (_d TeamWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.Team
 }
 
 // Delete implements repos.Team
-func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -79,7 +79,7 @@ func (_d TeamWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (
 }
 
 // Update implements repos.Team
-func (_d TeamWithTimeout) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithTimeout) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

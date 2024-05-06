@@ -5,16 +5,16 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA'
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbWorkItemComment } from './dbWorkItemComment'
-import type { DbWorkItemTag } from './dbWorkItemTag'
-import type { DbWorkItemType } from './dbWorkItemType'
+import type { ModelsWorkItemM2MAssigneeWIA } from './modelsWorkItemM2MAssigneeWIA'
+import type { ModelsTimeEntry } from './modelsTimeEntry'
+import type { ModelsWorkItemComment } from './modelsWorkItemComment'
+import type { ModelsWorkItemTag } from './modelsWorkItemTag'
+import type { ModelsWorkItemType } from './modelsWorkItemType'
 
 export interface SharedWorkItemJoins {
-  members?: DbWorkItemM2MAssigneeWIA[] | null
-  timeEntries?: DbTimeEntry[] | null
-  workItemComments?: DbWorkItemComment[] | null
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
+  members?: ModelsWorkItemM2MAssigneeWIA[] | null
+  timeEntries?: ModelsTimeEntry[] | null
+  workItemComments?: ModelsWorkItemComment[] | null
+  workItemTags?: ModelsWorkItemTag[] | null
+  workItemType?: ModelsWorkItemType
 }

@@ -1,6 +1,6 @@
 {{range .Types}}
 {{ if and ((should_exclude_type .TypeName)) (exclude_rest_types) -}}
-/* Ignoring existing struct (rest/models.go) {{.TypeName}} */
+/* Ignoring existing struct (rest/models.spec.go) {{.TypeName}} */
 {{ else if and (is_rest_server_gen) (is_db_struct .TypeName) -}}
 /* Skipping definition of db struct {{.TypeName}} */
 {{ else -}}

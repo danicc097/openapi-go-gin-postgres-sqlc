@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewTeamWithRetry(base repos.Team, logger *zap.SugaredLogger, retryCount int
 }
 
 // ByID implements repos.Team
-func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts 
 }
 
 // ByName implements repos.Team
-func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryByName")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, proj
 }
 
 // Create implements repos.Team
-func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryCreate")
 		if err != nil {
@@ -154,7 +154,7 @@ func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TeamCr
 }
 
 // Delete implements repos.Team
-func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryDelete")
 		if err != nil {
@@ -194,7 +194,7 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp
 }
 
 // Update implements repos.Team
-func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (tp1 *db.Team, err error) {
+func (_d TeamWithRetry) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryUpdate")
 		if err != nil {

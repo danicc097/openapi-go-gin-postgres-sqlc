@@ -5,10 +5,9 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -21,7 +20,7 @@ type User struct {
 	authzsvc *Authorization
 	// sharedDBOpts represents shared db select options for all work item entities
 	// for returned values
-	getSharedDBOpts func() []db.UserSelectConfigOption
+	getSharedDBOpts func() []models.UserSelectConfigOption
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
@@ -45,15 +44,15 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 		logger:   logger,
 		repos:    repos,
 		authzsvc: authzsvc,
-		getSharedDBOpts: func() []db.UserSelectConfigOption {
-			return []db.UserSelectConfigOption{db.WithUserJoin(db.UserJoins{MemberProjects: true, MemberTeams: true})}
+		getSharedDBOpts: func() []models.UserSelectConfigOption {
+			return []models.UserSelectConfigOption{models.WithUserJoin(models.UserJoins{MemberProjects: true, MemberTeams: true})}
 		},
 	}
 }
 
 // Register registers a user.
 // IMPORTANT: for internal use only.
-func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
+func (u *User) Register(ctx context.Context, d models.DBTX, params UserRegisterParams) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if params.Role == "" {
@@ -64,7 +63,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	// append default scopes for role upon registration regardless of provided params
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 
-	repoParams := db.UserCreateParams{
+	repoParams := models.UserCreateParams{
 		FirstName:                params.FirstName,
 		LastName:                 params.LastName,
 		Username:                 params.Username,
@@ -93,7 +92,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	return user, nil
 }
 
-func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+func (u *User) ByID(ctx context.Context, d models.DBTX, id models.UserID, dbOpts ...models.UserSelectConfigOption) (*models.User, error) {
 	opts := append(u.getSharedDBOpts(), dbOpts...)
 	user, err := u.repos.User.ByID(ctx, d, id, opts...)
 	if err != nil {
@@ -106,7 +105,7 @@ func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, dbOpts ...db.U
 // Update updates a user. In this case request params are defined in the spec
 // and converted to db params for demo purposes.
 // The same can be achieved excluding fields from db update params via SQL column comments.
-func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserRequest) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d models.DBTX, id models.UserID, caller CtxUser, params *models.UpdateUserRequest) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if params == nil {
@@ -125,7 +124,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUs
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot change another user's information")
 	}
 
-	up := db.UserUpdateParams{}
+	up := models.UserUpdateParams{}
 	if params.FirstName != nil {
 		up.FirstName = pointers.New(params.FirstName)
 	}
@@ -143,7 +142,7 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUs
 	return user, nil
 }
 
-func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserAuthRequest) (*db.User, error) {
+func (u *User) UpdateUserAuthorization(ctx context.Context, d models.DBTX, id models.UserID, caller CtxUser, params *models.UpdateUserAuthRequest) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if params == nil {
@@ -196,7 +195,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 		params.Scopes = pointers.New(u.authzsvc.DefaultScopes(*params.Role))
 	}
 
-	user, err = u.repos.User.Update(ctx, d, id, &db.UserUpdateParams{
+	user, err = u.repos.User.Update(ctx, d, id, &models.UserUpdateParams{
 		Scopes:   params.Scopes,
 		RoleRank: rank,
 	})
@@ -209,7 +208,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 	return user, nil
 }
 
-func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
+func (u *User) CreateAPIKey(ctx context.Context, d models.DBTX, user *models.User) (*models.UserAPIKey, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	uak, err := u.repos.User.CreateAPIKey(ctx, d, user)
@@ -223,7 +222,7 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 }
 
 // ByExternalID gets a user by ExternalID.
-func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+func (u *User) ByExternalID(ctx context.Context, d models.DBTX, id string, dbOpts ...models.UserSelectConfigOption) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	opts := append(u.getSharedDBOpts(), dbOpts...)
@@ -235,7 +234,7 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string, dbOpts ..
 	return user, nil
 }
 
-func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
+func (u *User) Paginated(ctx context.Context, d models.DBTX, params models.GetPaginatedUsersParams) ([]models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	var roleRank *int
@@ -267,7 +266,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 }
 
 // ByEmail gets a user by email.
-func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+func (u *User) ByEmail(ctx context.Context, d models.DBTX, email string, dbOpts ...models.UserSelectConfigOption) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	opts := append(u.getSharedDBOpts(), dbOpts...)
@@ -280,7 +279,7 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, dbOpts ...d
 }
 
 // ByUsername gets a user by username.
-func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+func (u *User) ByUsername(ctx context.Context, d models.DBTX, username string, dbOpts ...models.UserSelectConfigOption) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	opts := append(u.getSharedDBOpts(), dbOpts...)
@@ -293,7 +292,7 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, dbOpt
 }
 
 // ByAPIKey gets a user by apiKey.
-func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
+func (u *User) ByAPIKey(ctx context.Context, d models.DBTX, apiKey string) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.repos.User.ByAPIKey(ctx, d, apiKey)
@@ -301,7 +300,7 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	}
 
-	opts := append(u.getSharedDBOpts(), db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
+	opts := append(u.getSharedDBOpts(), models.WithUserJoin(models.UserJoins{UserAPIKey: true}))
 	user, err = u.repos.User.ByID(ctx, d, user.UserID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByID: %w", err)
@@ -311,7 +310,7 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 }
 
 // Delete marks a user as deleted.
-func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error) {
+func (u *User) Delete(ctx context.Context, d models.DBTX, id models.UserID) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	user, err := u.repos.User.Delete(ctx, d, id)
@@ -325,9 +324,9 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, e
 }
 
 // TODO.
-func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userID db.UserID) ([]db.UserNotification, error) {
+func (u *User) LatestPersonalNotifications(ctx context.Context, d models.DBTX, userID models.UserID) ([]models.UserNotification, error) {
 	// this will also set user.has_new_personal_notifications to false in the same tx
-	return []db.UserNotification{}, nil
+	return []models.UserNotification{}, nil
 
 	// defer newOTelSpan().Build(ctx).End()
 
@@ -345,15 +344,15 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 }
 
 // TODO.
-func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID db.UserID) ([]db.GetUserNotificationsRow, error) {
+func (u *User) LatestGlobalNotifications(ctx context.Context, d models.DBTX, userID models.UserID) ([]models.GetUserNotificationsRow, error) {
 	// this will also set user.has_new_global_notifications to false in the same tx
-	return []db.GetUserNotificationsRow{}, nil
+	return []models.GetUserNotificationsRow{}, nil
 }
 
-func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) (*db.User, error) {
+func (u *User) AssignTeam(ctx context.Context, d models.DBTX, userID models.UserID, teamID models.TeamID) (*models.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
+	_, err := models.CreateUserTeam(ctx, d, &models.UserTeamCreateParams{
 		TeamID: teamID,
 		Member: userID,
 	})

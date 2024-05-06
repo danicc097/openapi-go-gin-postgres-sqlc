@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams'
-import type { DbTeamCreateParams } from './dbTeamCreateParams'
+import type { ModelsWorkItemTagCreateParams } from './modelsWorkItemTagCreateParams'
+import type { ModelsTeamCreateParams } from './modelsTeamCreateParams'
 
 export interface CreateProjectBoardRequest {
-  tags?: DbWorkItemTagCreateParams[] | null
-  teams?: DbTeamCreateParams[] | null
+  tags?: ModelsWorkItemTagCreateParams[] | null
+  teams?: ModelsTeamCreateParams[] | null
 }

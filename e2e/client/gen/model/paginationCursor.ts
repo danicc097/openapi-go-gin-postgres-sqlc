@@ -9,7 +9,7 @@ import type { Direction } from './direction'
 import type { PaginationCursorValue } from './paginationCursorValue'
 
 export interface PaginationCursor {
-  /** represents the JSON name of the db column */
+  /** represents the JSON name of the models column */
   column: string
   direction: Direction
   /** represents a cursor value */

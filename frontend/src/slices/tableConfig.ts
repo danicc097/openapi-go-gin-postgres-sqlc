@@ -2,7 +2,6 @@ import Cookies from 'js-cookie'
 import { devtools, persist } from 'zustand/middleware'
 import { create } from 'zustand'
 import { CONFIG } from 'src/config'
-import { Project } from 'src/gen/model'
 
 export type FilterModes = Record<string, string>
 

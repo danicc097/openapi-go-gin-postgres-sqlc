@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"
@@ -92,7 +92,10 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 			resp.Status = http.StatusUnauthorized
 		case models.ErrorCodePrivate:
 			if os.Getenv("TESTING") != "" {
-				resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
+				resp = models.HTTPError{
+					Title:  "internal error",
+					Detail: "internal error",
+				}
 			}
 
 			fallthrough

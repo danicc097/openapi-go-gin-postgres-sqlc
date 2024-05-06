@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  WorkItemTag
+  WorkItemTagResponse
 } from '.././model'
 
-export const getCreateWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTag => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
+export const getCreateWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTagResponse => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
 
-export const getGetWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTag => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
+export const getGetWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTagResponse => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
 
-export const getUpdateWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTag => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
+export const getUpdateWorkItemTagResponseMock = (overrideResponse: any = {}): WorkItemTagResponse => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID, ...overrideResponse})
 
 
-export const getCreateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
+export const getCreateWorkItemTagMockHandler = (overrideResponse?: WorkItemTagResponse) => {
   return http.post('*/project/:projectName/work-item-tag/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemTagResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) 
   })
 }
 
-export const getGetWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
+export const getGetWorkItemTagMockHandler = (overrideResponse?: WorkItemTagResponse) => {
   return http.get('*/work-item-tag/:workItemTagID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemTagResponseMock()),
@@ -53,7 +53,7 @@ export const getGetWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => 
   })
 }
 
-export const getUpdateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
+export const getUpdateWorkItemTagMockHandler = (overrideResponse?: WorkItemTagResponse) => {
   return http.patch('*/work-item-tag/:workItemTagID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemTagResponseMock()),

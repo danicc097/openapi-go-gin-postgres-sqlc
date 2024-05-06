@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -33,7 +32,7 @@ func ParseDBErrorDetail(err error) error {
 	 *
 	 */
 
-	var xoErr *db.XoError
+	var xoErr *models.XoError
 
 	if errors.As(err, &xoErr) {
 		if errors.Is(err, pgx.ErrNoRows) {

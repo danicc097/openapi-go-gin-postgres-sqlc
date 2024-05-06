@@ -11,8 +11,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -28,7 +27,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
@@ -42,15 +41,15 @@ func Test${pascal_name}_Update(t *testing.T) {
 	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.UserID, team.TeamID)
 	require.NoError(t, err)
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 
 	${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 	${lower_name}, err := svc.${pascal_name}.Create(context.Background(), testPool, ${camel_name}CreateParams)
 	require.NoError(t, err)
 
 	type args struct {
-		params            *db.${pascal_name}UpdateParams
-		id                db.${pascal_name}ID
+		params            *models.${pascal_name}UpdateParams
+		id                models.${pascal_name}ID
 		withUserInProject bool
 	}
 
@@ -59,13 +58,13 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 	tests := []struct {
 		name          string
 		args          args
-		want          db.${pascal_name}UpdateParams
+		want          models.${pascal_name}UpdateParams
 		errorContains []string
 	}{
 		{
 			name: "updated correctly",
 			args: args{
-				params: &db.${pascal_name}UpdateParams{
+				params: &models.${pascal_name}UpdateParams{
 					$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"
 done)
@@ -73,7 +72,7 @@ done)
 				withUserInProject: false, //
 				id:                ${lower_name}.${pascal_name}ID,
 			},
-			want: db.${pascal_name}UpdateParams{
+			want: models.${pascal_name}UpdateParams{
 				// generating fields based on randomized CreateParams since it's a superset of updateparams.
 				$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { CreateTimeEntryRequest } from '../model/createTimeEntryRequest'
-import type { TimeEntry } from '../model/timeEntry'
+import type { TimeEntryResponse } from '../model/timeEntryResponse'
 import type { UpdateTimeEntryRequest } from '../model/updateTimeEntryRequest'
 import { customInstance } from '../../api/mutator'
 
@@ -20,7 +20,7 @@ export const createTimeEntry = (
   createTimeEntryRequest: CreateTimeEntryRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<TimeEntry>(
+  return customInstance<TimeEntryResponse>(
     {
       url: `/time-entry/`,
       method: 'POST',
@@ -34,7 +34,7 @@ export const createTimeEntry = (
  * @summary get time-entry.
  */
 export const getTimeEntry = (timeEntryID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<TimeEntry>({ url: `/time-entry/${timeEntryID}`, method: 'GET' }, options)
+  return customInstance<TimeEntryResponse>({ url: `/time-entry/${timeEntryID}`, method: 'GET' }, options)
 }
 /**
  * @summary update time-entry.
@@ -44,7 +44,7 @@ export const updateTimeEntry = (
   updateTimeEntryRequest: UpdateTimeEntryRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<TimeEntry>(
+  return customInstance<TimeEntryResponse>(
     {
       url: `/time-entry/${timeEntryID}`,
       method: 'PATCH',

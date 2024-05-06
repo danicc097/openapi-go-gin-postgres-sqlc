@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/zitadel/oidc/v2/pkg/client/rp"

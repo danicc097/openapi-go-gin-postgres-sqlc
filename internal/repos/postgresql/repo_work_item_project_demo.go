@@ -5,49 +5,48 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
 // DemoWorkItem represents the repository used for interacting with DemoWorkItem records.
 type DemoWorkItem struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewDemoWorkItem instantiates the DemoWorkItem repository.
 func NewDemoWorkItem() *DemoWorkItem {
 	return &DemoWorkItem{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.DemoWorkItem = (*DemoWorkItem)(nil)
 
-func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
-	extraOpts := []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true})}
+func (u *DemoWorkItem) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (*models.WorkItem, error) {
+	extraOpts := []models.WorkItemSelectConfigOption{models.WithWorkItemJoin(models.WorkItemJoins{DemoWorkItem: true})}
 
-	return db.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)
+	return models.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)
 }
 
-func (u *DemoWorkItem) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) ([]db.CacheDemoWorkItem, error) {
-	extraOpts := []db.CacheDemoWorkItemSelectConfigOption{db.WithCacheDemoWorkItemJoin(db.CacheDemoWorkItemJoins{})}
+func (u *DemoWorkItem) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) ([]models.CacheDemoWorkItem, error) {
+	extraOpts := []models.CacheDemoWorkItemSelectConfigOption{models.WithCacheDemoWorkItemJoin(models.CacheDemoWorkItemJoins{})}
 
 	// TODO: params models.GetPaginatedCacheDemoWorkItemParams instead of cursor
 	c := models.PaginationCursor{Column: "workItemID", Value: pointers.New[interface{}](cursor), Direction: models.DirectionDesc}
 
-	return db.CacheDemoWorkItemPaginated(ctx, d, c, (append(extraOpts, opts...))...)
+	return models.CacheDemoWorkItemPaginated(ctx, d, c, (append(extraOpts, opts...))...)
 }
 
-func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {
-	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
+func (u *DemoWorkItem) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (*models.WorkItem, error) {
+	workItem, err := models.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(ParseDBErrorDetail(err), "", []string{"base"}, "could not create workItem")
 	}
 
 	params.DemoProject.WorkItemID = workItem.WorkItemID
-	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, &params.DemoProject)
+	demoWorkItem, err := models.CreateDemoWorkItem(ctx, d, &params.DemoProject)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(ParseDBErrorDetail(err), "", []string{"demoWorkItem"}, "could not create demoWorkItem")
 	}
@@ -57,7 +56,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 	return workItem, nil
 }
 
-func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (u *DemoWorkItem) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (*models.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get workItem by id: %w", ParseDBErrorDetail(err))

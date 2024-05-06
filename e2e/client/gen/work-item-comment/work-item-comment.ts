@@ -7,7 +7,7 @@
  */
 import type { CreateWorkItemCommentRequest } from '../model/createWorkItemCommentRequest'
 import type { UpdateWorkItemCommentRequest } from '../model/updateWorkItemCommentRequest'
-import type { WorkItemComment } from '../model/workItemComment'
+import type { WorkItemCommentResponse } from '../model/workItemCommentResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -21,7 +21,7 @@ export const createWorkItemComment = (
   createWorkItemCommentRequest: CreateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemComment>(
+  return customInstance<WorkItemCommentResponse>(
     {
       url: `/work-item/${workItemID}/comment/`,
       method: 'POST',
@@ -39,7 +39,7 @@ export const getWorkItemComment = (
   workItemCommentID: number,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemComment>(
+  return customInstance<WorkItemCommentResponse>(
     { url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'GET' },
     options,
   )
@@ -53,7 +53,7 @@ export const updateWorkItemComment = (
   updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemComment>(
+  return customInstance<WorkItemCommentResponse>(
     {
       url: `/work-item/${workItemID}/comment/${workItemCommentID}`,
       method: 'PATCH',

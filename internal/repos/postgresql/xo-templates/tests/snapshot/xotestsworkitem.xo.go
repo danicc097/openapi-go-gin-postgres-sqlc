@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -102,7 +101,7 @@ func CreateXoTestsWorkItem(ctx context.Context, db DB, params *XoTestsWorkItemCr
 
 type XoTestsWorkItemSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -120,7 +119,7 @@ func WithXoTestsWorkItemLimit(limit int) XoTestsWorkItemSelectConfigOption {
 
 // WithXoTestsWorkItemOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsWorkItemOrderBy(rows map[string]*models.Direction) XoTestsWorkItemSelectConfigOption {
+func WithXoTestsWorkItemOrderBy(rows map[string]*Direction) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItem]
 		for dbcol, dir := range rows {
@@ -380,12 +379,12 @@ func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemPaginated returns a cursor-paginated list of XoTestsWorkItem.
 // At least one cursor is required.
-func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
+func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
 	c := &XoTestsWorkItemSelectConfig{
 		joins:   XoTestsWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -401,7 +400,7 @@ func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursor models.Paginati
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}

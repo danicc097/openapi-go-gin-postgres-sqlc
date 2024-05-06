@@ -10,8 +10,8 @@ sql:
     gen:
       go:
         sql_package: "pgx/v5"
-        package: "db"
-        out: "gen/db"
+        package: "models"
+        out: "gen/models"
         emit_json_tags: true
         emit_db_tags: true
         emit_interface: true # Querier

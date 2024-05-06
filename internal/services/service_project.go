@@ -7,9 +7,8 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -26,7 +25,7 @@ func NewProject(logger *zap.SugaredLogger, repos *repos.Repos) *Project {
 	}
 }
 
-func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (*db.Project, error) {
+func (p *Project) ByID(ctx context.Context, d models.DBTX, projectID models.ProjectID) (*models.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	project, err := p.repos.Project.ByID(ctx, d, projectID)
@@ -37,7 +36,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (
 	return project, nil
 }
 
-func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
+func (p *Project) ByName(ctx context.Context, d models.DBTX, name models.ProjectName) (*models.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	project, err := p.repos.Project.ByName(ctx, d, name)
@@ -58,7 +57,7 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // when _any_ field changes. we generate a new config the way it must be and merge with whatever was in db's board_config there at app startup.
 // the endpoint to update it will be validated by openapi libs as usual.
 // Deprecated: will use frontend config per user + admin config is stored raw in db.
-// func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
+// func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.ProjectName, update map[string]any) (*models.ProjectConfig, error) {
 // 	project, err := p.repos.Project.ByName(ctx, d, projectName)
 // 	if err != nil {
 // 		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
@@ -71,11 +70,11 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // 	var workItem any
 // 	// explicitly initialize what we want to allow an admin to edit in project config ui
 // 	switch projectName {
-// 	case models.ProjectDemo:
+// 	case models.ProjectNameDemo:
 // 		// workItem = &models.DemoWorkItems{DemoWorkItem: models.DbDemoWorkItem{}, ClosedAt: pointers.New(time.Now())}
 // 		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
 // 		// fmt.Printf("workItem: %+v\n", workItem)
-// 	case models.ProjectDemoTwo:
+// 	case models.ProjectNameDemoTwo:
 // 		fallthrough
 // 	default:
 // 		return nil, errors.New("not implemented")

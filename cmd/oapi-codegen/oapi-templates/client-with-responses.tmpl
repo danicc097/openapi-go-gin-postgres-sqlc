@@ -38,7 +38,7 @@ type ClientWithResponsesInterface interface {
 {{range .Bodies}}
     {{if .IsSupportedByClient -}}
         {{ $st := (printf "%v%v" $opid "Request") }}
-        {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error)
+        {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{ rest_type $st}}{{end}}, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error)
     {{end -}}
 {{end}}{{/* range .Bodies */}}
 {{end}}{{/* range . $opid := .OperationId */}}
@@ -89,7 +89,8 @@ func (c *ClientWithResponses) {{$opid}}{{if .HasBody}}WithBody{{end}}WithRespons
 {{$bodyRequired := .BodyRequired -}}
 {{range .Bodies}}
 {{if .IsSupportedByClient -}}
-func (c *ClientWithResponses) {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{$opid}}{{.NameTag}}RequestBody, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error) {
+{{ $st := (printf "%v%v" $opid "Request") }}
+func (c *ClientWithResponses) {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{ rest_type $st}}{{end}}, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error) {
     rsp, err := c.{{$opid}}{{.Suffix}}(ctx{{genParamNames $pathParams}}{{if $hasParams}}, params{{end}}, body, reqEditors...)
     if err != nil {
         return nil, err

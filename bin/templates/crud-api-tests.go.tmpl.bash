@@ -13,8 +13,7 @@ import (
 	"testing"
 
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -30,7 +29,7 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	srv, err := runTestServer(t, context.Background(), testPool)
@@ -92,7 +91,7 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	t.Run("authenticated_user", func(t *testing.T) {
@@ -134,7 +133,7 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
@@ -166,7 +165,7 @@ $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.${pascal_name}{${pascal_name}: *${camel_name}f.${pascal_name}})
+		want, err := json.Marshal(&rest.${pascal_name}Response{${pascal_name}: *${camel_name}f.${pascal_name}})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "") // ignore private JSON fields
@@ -178,7 +177,7 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	srv, err := runTestServer(t, context.Background(), testPool)
@@ -201,7 +200,7 @@ $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
 				return rest.Update${pascal_name}Request{
-					${pascal_name}UpdateParams: db.${pascal_name}UpdateParams{
+					${pascal_name}UpdateParams: models.${pascal_name}UpdateParams{
 $(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: pointers.New(random${pascal_name}CreateParams.$f),"
 done)

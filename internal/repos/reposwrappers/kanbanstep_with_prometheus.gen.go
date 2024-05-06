@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewKanbanStepWithPrometheus(base repos.KanbanStep, instanceName string) Kan
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.Ka
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

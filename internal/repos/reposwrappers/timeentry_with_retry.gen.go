@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewTimeEntryWithRetry(base repos.TimeEntry, logger *zap.SugaredLogger, retr
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntr
 }
 
 // Create implements repos.TimeEntry
-func (_d TimeEntryWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryCreate")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d TimeEntryWithRetry) Create(ctx context.Context, d db.DBTX, params *db.T
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryDelete")
 		if err != nil {
@@ -154,7 +154,7 @@ func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TimeEn
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithRetry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithRetry) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryUpdate")
 		if err != nil {

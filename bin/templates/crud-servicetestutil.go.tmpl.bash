@@ -10,20 +10,20 @@ import (
 	"context"
 
 $(test -n "$has_deleted_at" && echo "	\"time\"")
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
   "github.com/stretchr/testify/require"
 )
 
 type Create${pascal_name}Params struct {
-$(test -n "$with_project" && echo "	ProjectID  db.ProjectID")
+$(test -n "$with_project" && echo "	ProjectID  models.ProjectID")
 $(test -n "$has_deleted_at" && echo "	// DeletedAt allows returning a soft deleted ${sentence_name} when a deleted_at column exists.
 	// Note that the service Delete call should make use of the SoftDelete method.
 	DeletedAt  *time.Time")
 }
 
 type Create${pascal_name}Fixture struct {
-	${pascal_name}   *db.${pascal_name}
+	${pascal_name}   *models.${pascal_name}
 }
 
 // Create${pascal_name} creates a new random ${sentence_name} with the given configuration.

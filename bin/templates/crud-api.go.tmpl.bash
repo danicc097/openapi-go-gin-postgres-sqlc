@@ -22,7 +22,7 @@ $(test -n "$with_project" && echo "	params.ProjectID = internal.ProjectIDByName[
 		return nil, nil
 	}
 
-	res := ${pascal_name}{
+	res := ${pascal_name}Response{
 		${pascal_name}: *${camel_name},
 		// joins, if any
 	}
@@ -40,7 +40,7 @@ func (h *StrictHandlers) Get${pascal_name}(c *gin.Context, request Get${pascal_n
 		return nil, nil
 	}
 
-	res := ${pascal_name}{
+	res := ${pascal_name}Response{
 		${pascal_name}: *${camel_name},
 		// joins, if any
 	}
@@ -60,7 +60,7 @@ func (h *StrictHandlers) Update${pascal_name}(c *gin.Context, request Update${pa
 		return nil, nil
 	}
 
-	res := ${pascal_name}{
+	res := ${pascal_name}Response{
 		${pascal_name}: *${camel_name},
 		// joins, if any
 	}

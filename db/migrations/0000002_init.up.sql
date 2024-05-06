@@ -245,9 +245,9 @@ comment on table projects is 'Internal use. Update whenever a project is added (
 
 comment on column projects.work_items_table_name is '"properties":private';
 
-comment on column projects.board_config is '"type":models.ProjectConfig';
+comment on column projects.board_config is '"type":ProjectConfig';
 
-comment on column projects.name is '"type":models.Project';
+comment on column projects.name is '"type":ProjectName';
 
 create table teams (
   team_id serial primary key
@@ -310,7 +310,7 @@ comment on column users.api_key_id is '"properties":private';
 
 comment on column users.role_rank is '"properties":private';
 
-comment on column users.scopes is '"type":models.Scopes';
+comment on column users.scopes is '"type":Scopes';
 
 alter table user_api_keys
   add column user_id uuid not null unique;
@@ -444,7 +444,7 @@ create table entity_notifications (
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
 );
 
-comment on column entity_notifications.topic is '"type":models.Topics';
+comment on column entity_notifications.topic is '"type":Topics';
 
 create table user_team (
   team_id int not null
@@ -618,7 +618,7 @@ create table work_item_assignee (
 
 create index on work_item_assignee (assignee , work_item_id);
 
-comment on column work_item_assignee.role is '"type":models.WorkItemRole';
+comment on column work_item_assignee.role is '"type":WorkItemRole';
 
 comment on column work_item_assignee.work_item_id is '"cardinality":M2M';
 

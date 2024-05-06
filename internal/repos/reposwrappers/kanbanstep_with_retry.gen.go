@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewKanbanStepWithRetry(base repos.KanbanStep, logger *zap.SugaredLogger, re
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithRetry) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT KanbanStepWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id db.KanbanS
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT KanbanStepWithRetryByProject")
 		if err != nil {

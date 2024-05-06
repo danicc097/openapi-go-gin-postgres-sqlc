@@ -15,9 +15,8 @@ import (
 	"path"
 	"strings"
 
-	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/openapi"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/google/uuid"
@@ -25,950 +24,17 @@ import (
 	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 )
 
-const (
-	Api_keyScopes     = "api_key.Scopes"
-	Bearer_authScopes = "bearer_auth.Scopes"
-)
-
-// DemoKanbanSteps is generated from kanban_steps table.
-const (
-	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
-	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
-	DemoKanbanStepsUnderReview    DemoKanbanSteps = "Under review"
-	DemoKanbanStepsWorkInProgress DemoKanbanSteps = "Work in progress"
-)
-
-// AllDemoKanbanStepsValues returns all possible values for DemoKanbanSteps.
-func AllDemoKanbanStepsValues() []DemoKanbanSteps {
-	return []DemoKanbanSteps{
-		DemoKanbanStepsDisabled,
-		DemoKanbanStepsReceived,
-		DemoKanbanStepsUnderReview,
-		DemoKanbanStepsWorkInProgress,
-	}
-}
-
-// DemoTwoKanbanSteps is generated from kanban_steps table.
-const (
-	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
-)
-
-// AllDemoTwoKanbanStepsValues returns all possible values for DemoTwoKanbanSteps.
-func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
-	return []DemoTwoKanbanSteps{
-		DemoTwoKanbanStepsReceived,
-	}
-}
-
-// DemoTwoWorkItemTypes is generated from work_item_types table.
-const (
-	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
-	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
-	DemoTwoWorkItemTypesType2       DemoTwoWorkItemTypes = "Type 2"
-)
-
-// AllDemoTwoWorkItemTypesValues returns all possible values for DemoTwoWorkItemTypes.
-func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
-	return []DemoTwoWorkItemTypes{
-		DemoTwoWorkItemTypesAnotherType,
-		DemoTwoWorkItemTypesType1,
-		DemoTwoWorkItemTypesType2,
-	}
-}
-
-// DemoWorkItemTypes is generated from work_item_types table.
-const (
-	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
-)
-
-// AllDemoWorkItemTypesValues returns all possible values for DemoWorkItemTypes.
-func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
-	return []DemoWorkItemTypes{
-		DemoWorkItemTypesType1,
-	}
-}
-
-// Defines values for Direction.
-const (
-	DirectionAsc  Direction = "asc"
-	DirectionDesc Direction = "desc"
-)
-
-// AllDirectionValues returns all possible values for Direction.
-func AllDirectionValues() []Direction {
-	return []Direction{
-		DirectionAsc,
-		DirectionDesc,
-	}
-}
-
-// ErrorCode Represents standardized HTTP error types.
-// Notes:
-// - 'Private' marks an error to be hidden in response.
-const (
-	ErrorCodeAlreadyExists      ErrorCode = "AlreadyExists"
-	ErrorCodeInvalidArgument    ErrorCode = "InvalidArgument"
-	ErrorCodeInvalidRole        ErrorCode = "InvalidRole"
-	ErrorCodeInvalidScope       ErrorCode = "InvalidScope"
-	ErrorCodeInvalidUUID        ErrorCode = "InvalidUUID"
-	ErrorCodeNotFound           ErrorCode = "NotFound"
-	ErrorCodeOIDC               ErrorCode = "OIDC"
-	ErrorCodePrivate            ErrorCode = "Private"
-	ErrorCodeRequestValidation  ErrorCode = "RequestValidation"
-	ErrorCodeResponseValidation ErrorCode = "ResponseValidation"
-	ErrorCodeUnauthenticated    ErrorCode = "Unauthenticated"
-	ErrorCodeUnauthorized       ErrorCode = "Unauthorized"
-	ErrorCodeUnknown            ErrorCode = "Unknown"
-)
-
-// AllErrorCodeValues returns all possible values for ErrorCode.
-func AllErrorCodeValues() []ErrorCode {
-	return []ErrorCode{
-		ErrorCodeAlreadyExists,
-		ErrorCodeInvalidArgument,
-		ErrorCodeInvalidRole,
-		ErrorCodeInvalidScope,
-		ErrorCodeInvalidUUID,
-		ErrorCodeNotFound,
-		ErrorCodeOIDC,
-		ErrorCodePrivate,
-		ErrorCodeRequestValidation,
-		ErrorCodeResponseValidation,
-		ErrorCodeUnauthenticated,
-		ErrorCodeUnauthorized,
-		ErrorCodeUnknown,
-	}
-}
-
-// NotificationType is generated from database enum 'notification_type'.
-const (
-	NotificationTypeGlobal   NotificationType = "global"
-	NotificationTypePersonal NotificationType = "personal"
-)
-
-// AllNotificationTypeValues returns all possible values for NotificationType.
-func AllNotificationTypeValues() []NotificationType {
-	return []NotificationType{
-		NotificationTypeGlobal,
-		NotificationTypePersonal,
-	}
-}
-
-// Defines values for PaginationFilterModes.
-const (
-	PaginationFilterModesBetween              PaginationFilterModes = "between"
-	PaginationFilterModesBetweenInclusive     PaginationFilterModes = "betweenInclusive"
-	PaginationFilterModesContains             PaginationFilterModes = "contains"
-	PaginationFilterModesEmpty                PaginationFilterModes = "empty"
-	PaginationFilterModesEndsWith             PaginationFilterModes = "endsWith"
-	PaginationFilterModesEquals               PaginationFilterModes = "equals"
-	PaginationFilterModesFuzzy                PaginationFilterModes = "fuzzy"
-	PaginationFilterModesGreaterThan          PaginationFilterModes = "greaterThan"
-	PaginationFilterModesGreaterThanOrEqualTo PaginationFilterModes = "greaterThanOrEqualTo"
-	PaginationFilterModesLessThan             PaginationFilterModes = "lessThan"
-	PaginationFilterModesLessThanOrEqualTo    PaginationFilterModes = "lessThanOrEqualTo"
-	PaginationFilterModesNotEmpty             PaginationFilterModes = "notEmpty"
-	PaginationFilterModesNotEquals            PaginationFilterModes = "notEquals"
-	PaginationFilterModesStartsWith           PaginationFilterModes = "startsWith"
-)
-
-// AllPaginationFilterModesValues returns all possible values for PaginationFilterModes.
-func AllPaginationFilterModesValues() []PaginationFilterModes {
-	return []PaginationFilterModes{
-		PaginationFilterModesBetween,
-		PaginationFilterModesBetweenInclusive,
-		PaginationFilterModesContains,
-		PaginationFilterModesEmpty,
-		PaginationFilterModesEndsWith,
-		PaginationFilterModesEquals,
-		PaginationFilterModesFuzzy,
-		PaginationFilterModesGreaterThan,
-		PaginationFilterModesGreaterThanOrEqualTo,
-		PaginationFilterModesLessThan,
-		PaginationFilterModesLessThanOrEqualTo,
-		PaginationFilterModesNotEmpty,
-		PaginationFilterModesNotEquals,
-		PaginationFilterModesStartsWith,
-	}
-}
-
-// Project is generated from projects table.
-const (
-	ProjectDemo    Project = "demo"
-	ProjectDemoTwo Project = "demo_two"
-)
-
-// AllProjectValues returns all possible values for Project.
-func AllProjectValues() []Project {
-	return []Project{
-		ProjectDemo,
-		ProjectDemoTwo,
-	}
-}
-
-// Role is generated from roles.json keys.
-const (
-	RoleAdmin        Role = "admin"
-	RoleAdvancedUser Role = "advancedUser"
-	RoleGuest        Role = "guest"
-	RoleManager      Role = "manager"
-	RoleSuperAdmin   Role = "superAdmin"
-	RoleUser         Role = "user"
-)
-
-// AllRoleValues returns all possible values for Role.
-func AllRoleValues() []Role {
-	return []Role{
-		RoleAdmin,
-		RoleAdvancedUser,
-		RoleGuest,
-		RoleManager,
-		RoleSuperAdmin,
-		RoleUser,
-	}
-}
-
-// Scope is generated from scopes.json keys.
-const (
-	ScopeActivityCreate        Scope = "activity:create"
-	ScopeActivityDelete        Scope = "activity:delete"
-	ScopeActivityEdit          Scope = "activity:edit"
-	ScopeProjectMember         Scope = "project-member"
-	ScopeProjectSettingsWrite  Scope = "project-settings:write"
-	ScopeScopesWrite           Scope = "scopes:write"
-	ScopeTeamSettingsWrite     Scope = "team-settings:write"
-	ScopeUsersDelete           Scope = "users:delete"
-	ScopeUsersRead             Scope = "users:read"
-	ScopeUsersWrite            Scope = "users:write"
-	ScopeWorkItemCommentCreate Scope = "work-item-comment:create"
-	ScopeWorkItemCommentDelete Scope = "work-item-comment:delete"
-	ScopeWorkItemCommentEdit   Scope = "work-item-comment:edit"
-	ScopeWorkItemReview        Scope = "work-item:review"
-	ScopeWorkItemTagCreate     Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete     Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit       Scope = "work-item-tag:edit"
-)
-
-// AllScopeValues returns all possible values for Scope.
-func AllScopeValues() []Scope {
-	return []Scope{
-		ScopeActivityCreate,
-		ScopeActivityDelete,
-		ScopeActivityEdit,
-		ScopeProjectMember,
-		ScopeProjectSettingsWrite,
-		ScopeScopesWrite,
-		ScopeTeamSettingsWrite,
-		ScopeUsersDelete,
-		ScopeUsersRead,
-		ScopeUsersWrite,
-		ScopeWorkItemCommentCreate,
-		ScopeWorkItemCommentDelete,
-		ScopeWorkItemCommentEdit,
-		ScopeWorkItemReview,
-		ScopeWorkItemTagCreate,
-		ScopeWorkItemTagDelete,
-		ScopeWorkItemTagEdit,
-	}
-}
-
-// Topic string identifiers for SSE event listeners.
-const (
-	TopicAppDebug        Topic = "AppDebug"
-	TopicGlobalAlerts    Topic = "GlobalAlerts"
-	TopicTeamCreated     Topic = "TeamCreated"
-	TopicWorkItemUpdated Topic = "WorkItemUpdated"
-)
-
-// AllTopicValues returns all possible values for Topic.
-func AllTopicValues() []Topic {
-	return []Topic{
-		TopicAppDebug,
-		TopicGlobalAlerts,
-		TopicTeamCreated,
-		TopicWorkItemUpdated,
-	}
-}
-
-// WorkItemRole is generated from database enum 'work_item_role'.
-const (
-	WorkItemRolePreparer WorkItemRole = "preparer"
-	WorkItemRoleReviewer WorkItemRole = "reviewer"
-)
-
-// AllWorkItemRoleValues returns all possible values for WorkItemRole.
-func AllWorkItemRoleValues() []WorkItemRole {
-	return []WorkItemRole{
-		WorkItemRolePreparer,
-		WorkItemRoleReviewer,
-	}
-}
-
-/* Ignoring existing struct (rest/models.go) Activity */
-
-// AnyValue represents any value, including `null`
-type AnyValue = interface{}
-
-/* Ignoring existing struct (rest/models.go) CacheDemoWorkItem */
-
-/* Ignoring existing struct (rest/models.go) CreateActivityRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateDemoTwoWorkItemRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateDemoWorkItemRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateProjectBoardRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateTeamRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateTimeEntryRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateWorkItemCommentRequest */
-
-// CreateWorkItemRequest defines the model for CreateWorkItemRequest.
-type CreateWorkItemRequest struct {
-	union           json.RawMessage
-	FromQueryParams bool
-}
-
-/* Ignoring existing struct (rest/models.go) CreateWorkItemTagRequest */
-
-/* Ignoring existing struct (rest/models.go) CreateWorkItemTypeRequest */
-
-/* Skipping definition of db struct db.Activity */
-
-/* Skipping definition of db struct db.ActivityCreateParams */
-
-/* Skipping definition of db struct db.CacheDemoWorkItemJoins */
-
-/* Skipping definition of db struct db.DemoTwoWorkItem */
-
-/* Skipping definition of db struct db.DemoTwoWorkItemCreateParams */
-
-/* Skipping definition of db struct db.DemoWorkItem */
-
-/* Skipping definition of db struct db.DemoWorkItemCreateParams */
-
-/* Skipping definition of db struct db.KanbanStep */
-
-/* Skipping definition of db struct db.Notification */
-
-/* Skipping definition of db struct db.NotificationID */
-
-/* Skipping definition of db struct db.Project */
-
-/* Skipping definition of db struct db.ProjectID */
-
-/* Skipping definition of db struct db.Team */
-
-/* Skipping definition of db struct db.TeamCreateParams */
-
-/* Skipping definition of db struct db.TimeEntry */
-
-/* Skipping definition of db struct db.User */
-
-/* Skipping definition of db struct db.UserAPIKey */
-
-/* Skipping definition of db struct db.UserID */
-
-/* Skipping definition of db struct db.UserJoins */
-
-/* Skipping definition of db struct db.UserNotification */
-
-/* Skipping definition of db struct db.UserWIAUWorkItem */
-
-/* Skipping definition of db struct db.UserWIAWorkItem */
-
-/* Skipping definition of db struct db.WorkItem */
-
-/* Skipping definition of db struct db.WorkItemComment */
-
-/* Skipping definition of db struct db.WorkItemCreateParams */
-
-/* Skipping definition of db struct db.WorkItemID */
-
-/* Skipping definition of db struct db.WorkItemM2MAssigneeWIA */
-
-/* Skipping definition of db struct db.WorkItemRole */
-
-/* Skipping definition of db struct db.WorkItemTag */
-
-/* Skipping definition of db struct db.WorkItemTagCreateParams */
-
-/* Skipping definition of db struct db.WorkItemType */
-
-/* Skipping definition of db struct db.WorkItemTypeID */
-
-// DemoKanbanSteps is generated from kanban_steps table.
-type DemoKanbanSteps string
-
-// DemoTwoKanbanSteps is generated from kanban_steps table.
-type DemoTwoKanbanSteps string
-
-/* Ignoring existing struct (rest/models.go) DemoTwoWorkItem */
-
-// DemoTwoWorkItemTypes is generated from work_item_types table.
-type DemoTwoWorkItemTypes string
-
-/* Ignoring existing struct (rest/models.go) DemoWorkItem */
-
-// DemoWorkItemTypes is generated from work_item_types table.
-type DemoWorkItemTypes string
-
-// Direction defines the model for Direction.
-type Direction string
-
-// ErrorCode Represents standardized HTTP error types.
-// Notes:
-// - 'Private' marks an error to be hidden in response.
-type ErrorCode string
-
-/* Ignoring existing struct (rest/models.go) GetCacheDemoWorkItemQueryParameters */
-
-/* Ignoring existing struct (rest/models.go) GetCurrentUserQueryParameters */
-
-// GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
-type GetPaginatedUsersQueryParameters struct {
-	// Items represents pagination data indexed by column id
-	Items *externalRef0.PaginationItems `json:"items,omitempty"`
-
-	// Role is generated from roles.json keys.
-	Role *externalRef0.Role `json:"role,omitempty"`
-}
-
-// HTTPError represents an error message response.
-type HTTPError struct {
-	Detail string `json:"detail"`
-	Error  string `json:"error"`
-
-	// Loc location in body path, if any
-	Loc    *[]string `json:"loc,omitempty"`
-	Status int       `json:"status"`
-	Title  string    `json:"title"`
-
-	// Type Represents standardized HTTP error types.
-	// Notes:
-	// - 'Private' marks an error to be hidden in response.
-	Type            externalRef0.ErrorCode            `json:"type"`
-	ValidationError *externalRef0.HTTPValidationError `json:"validationError,omitempty"`
-}
-
-// HTTPValidationError defines the model for HTTPValidationError.
-type HTTPValidationError struct {
-	// Detail Additional details for validation errors
-	Detail *[]externalRef0.ValidationError `json:"detail,omitempty"`
-
-	// Messages Descriptive error messages to show in a callout
-	Messages []string `json:"messages"`
-}
-
-/* Ignoring existing struct (rest/models.go) Notification */
-
-// NotificationType is generated from database enum 'notification_type'.
-type NotificationType string
-
-/* Ignoring existing struct (rest/models.go) PaginatedDemoWorkItemsResponse */
-
-/* Ignoring existing struct (rest/models.go) PaginatedNotificationsResponse */
-
-/* Ignoring existing struct (rest/models.go) PaginatedUsersResponse */
-
-// Pagination defines the model for Pagination.
-type Pagination struct {
-	Filter *externalRef0.PaginationFilter `json:"filter,omitempty"`
-	Sort   *externalRef0.Direction        `json:"sort,omitempty"`
-}
-
-// PaginationCursor defines the model for PaginationCursor.
-type PaginationCursor struct {
-	// Column represents the JSON name of the db column
-	Column    string                 `json:"column"`
-	Direction externalRef0.Direction `json:"direction"`
-
-	// Value represents a cursor value
-	Value *interface{} `json:"value"`
-}
-
-// PaginationFilter defines the model for PaginationFilter.
-type PaginationFilter struct {
-	union           json.RawMessage
-	FromQueryParams bool
-}
-
-// PaginationFilterArray defines the model for PaginationFilterArray.
-type PaginationFilterArray struct {
-	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
-	Value      *[]string                          `json:"value"`
-}
-
-// PaginationFilterModes defines the model for PaginationFilterModes.
-type PaginationFilterModes string
-
-// PaginationFilterPrimitive defines the model for PaginationFilterPrimitive.
-type PaginationFilterPrimitive struct {
-	CaseSensitive *bool                              `json:"caseSensitive"`
-	FilterMode    externalRef0.PaginationFilterModes `json:"filterMode"`
-	Value         *string                            `json:"value"`
-}
-
-// PaginationItems represents pagination data indexed by column id
-type PaginationItems map[string]externalRef0.Pagination
-
-/* Ignoring existing struct (rest/models.go) PaginationPage */
-
-// Project is generated from projects table.
-type Project string
-
-/* Ignoring existing struct (rest/models.go) ProjectBoard */
-
-// ProjectConfig defines the model for ProjectConfig.
-type ProjectConfig struct {
-	Fields        *[]externalRef0.ProjectConfigField `json:"fields,omitempty"`
-	Header        *[]string                          `json:"header,omitempty"`
-	Visualization *map[string]interface{}            `json:"visualization,omitempty"`
-}
-
-// ProjectConfigField defines the model for ProjectConfigField.
-type ProjectConfigField struct {
-	IsEditable    bool   `json:"isEditable"`
-	IsVisible     bool   `json:"isVisible"`
-	Name          string `json:"name"`
-	Path          string `json:"path"`
-	ShowCollapsed bool   `json:"showCollapsed"`
-}
-
-// Role is generated from roles.json keys.
-type Role string
-
-// Scope is generated from scopes.json keys.
-type Scope string
-
-// Scopes defines the model for Scopes.
-type Scopes = []externalRef0.Scope
-
-// ServicesMember defines the model for ServicesMember.
-type ServicesMember struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role   externalRef0.WorkItemRole `json:"role"`
-	UserID db.UserID                 `json:"userID"`
-}
-
-/* Ignoring existing struct (rest/models.go) SharedWorkItemJoins */
-
-/* Ignoring existing struct (rest/models.go) Team */
-
-/* Ignoring existing struct (rest/models.go) TimeEntry */
-
-// Topic string identifiers for SSE event listeners.
-type Topic string
-
-// Topics defines the model for Topics.
-type Topics = []externalRef0.Topic
-
-/* Ignoring existing struct (rest/models.go) UpdateActivityRequest */
-
-/* Ignoring existing struct (rest/models.go) UpdateTeamRequest */
-
-/* Ignoring existing struct (rest/models.go) UpdateTimeEntryRequest */
-
-// UpdateUserAuthRequest represents User authorization data to update
-type UpdateUserAuthRequest struct {
-	// Role is generated from roles.json keys.
-	Role   *externalRef0.Role   `json:"role,omitempty"`
-	Scopes *externalRef0.Scopes `json:"scopes,omitempty"`
-}
-
-// UpdateUserRequest represents User data to update
-type UpdateUserRequest struct {
-	// FirstName originally from auth server but updatable
-	FirstName *string `json:"firstName,omitempty"`
-
-	// LastName originally from auth server but updatable
-	LastName *string `json:"lastName,omitempty"`
-}
-
-/* Ignoring existing struct (rest/models.go) UpdateWorkItemCommentRequest */
-
-/* Ignoring existing struct (rest/models.go) UpdateWorkItemTagRequest */
-
-/* Ignoring existing struct (rest/models.go) UpdateWorkItemTypeRequest */
-
-/* Ignoring existing struct (rest/models.go) User */
-
-// UuidUUID defines the model for UuidUUID.
-type UuidUUID = uuid.UUID
-
-// ValidationError defines the model for ValidationError.
-type ValidationError struct {
-	Ctx *map[string]interface{} `json:"ctx,omitempty"`
-
-	// Detail verbose details of the error
-	Detail struct {
-		Schema map[string]interface{} `json:"schema"`
-		Value  string                 `json:"value"`
-	} `json:"detail"`
-
-	// Loc location in body path, if any
-	Loc []string `json:"loc"`
-
-	// Msg should always be shown to the user
-	Msg string `json:"msg"`
-}
-
-// WorkItem defines the model for WorkItem.
-type WorkItem struct {
-	union           json.RawMessage
-	FromQueryParams bool
-}
-
-/* Ignoring existing struct (rest/models.go) WorkItemBase */
-
-/* Ignoring existing struct (rest/models.go) WorkItemComment */
-
-// WorkItemRole is generated from database enum 'work_item_role'.
-type WorkItemRole string
-
-/* Ignoring existing struct (rest/models.go) WorkItemTag */
-
-/* Ignoring existing struct (rest/models.go) WorkItemType */
-
-// ProjectName is generated from projects table.
-type ProjectName = externalRef0.Project
-
-// UUID defines the model for UUID.
-type UUID = uuid.UUID
-
-// MyProviderLoginParams defines parameters for MyProviderLogin.
-type MyProviderLoginParams struct {
-	AuthRedirectUri string `form:"auth-redirect-uri" json:"auth-redirect-uri"`
-}
-
-// EventsParams defines parameters for Events.
-type EventsParams struct {
-	ProjectName externalRef0.Project `form:"projectName" json:"projectName"`
-	Topics      externalRef0.Topics  `form:"topics" json:"topics"`
-}
-
-// GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
-type GetPaginatedNotificationsParams struct {
-	Limit     int                    `form:"limit" json:"limit"`
-	Direction externalRef0.Direction `form:"direction" json:"direction"`
-	Cursor    *string                `form:"cursor,omitempty" json:"cursor,omitempty"`
-}
-
-// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
-type GetProjectWorkitemsParams struct {
-	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
-	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
-}
-
-// GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
-type GetPaginatedUsersParams struct {
-	Limit       int                                            `form:"limit" json:"limit"`
-	Direction   externalRef0.Direction                         `form:"direction" json:"direction"`
-	Cursor      *string                                        `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Column      string                                         `form:"column" json:"column"`
-	SearchQuery *externalRef0.GetPaginatedUsersQueryParameters `json:"searchQuery,omitempty"`
-}
-
-// GetPaginatedWorkItemParams defines parameters for GetPaginatedWorkItem.
-type GetPaginatedWorkItemParams struct {
-	Limit       int                                               `form:"limit" json:"limit"`
-	Direction   externalRef0.Direction                            `form:"direction" json:"direction"`
-	Cursor      *string                                           `form:"cursor,omitempty" json:"cursor,omitempty"`
-	SearchQuery *externalRef0.GetCacheDemoWorkItemQueryParameters `json:"searchQuery,omitempty"`
-}
-
-// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
-type UpdateActivityJSONRequestBody = UpdateActivityRequest
-
-// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
-type CreateActivityJSONRequestBody = CreateActivityRequest
-
-// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
-type UpdateProjectConfigJSONRequestBody = ProjectConfig
-
-// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
-type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
-
-// CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
-type CreateTeamJSONRequestBody = CreateTeamRequest
-
-// CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
-type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
-
-// CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
-type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
-
-// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-type UpdateTeamJSONRequestBody = UpdateTeamRequest
-
-// CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
-type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
-
-// UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
-type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
-
-// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-type UpdateUserJSONRequestBody = UpdateUserRequest
-
-// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
-type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
-
-// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
-
-// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
-
-// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
-
-// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
-type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
-
-// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
-type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
-
-// AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
-func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
-	var body CreateDemoWorkItemRequest
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, err
-	}
-
-	s := "CreateWorkItemRequest"
-	discriminatorSchema := "CreateDemoWorkItemRequest"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
-func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
-	var body CreateDemoTwoWorkItemRequest
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, err
-	}
-
-	s := "CreateWorkItemRequest"
-	discriminatorSchema := "CreateDemoTwoWorkItemRequest"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
-func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
-	var body PaginationFilterPrimitive
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return PaginationFilterPrimitive{}, err
-	}
-
-	s := "PaginationFilter"
-	discriminatorSchema := "PaginationFilterPrimitive"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return PaginationFilterPrimitive{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return PaginationFilterPrimitive{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return PaginationFilterPrimitive{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
-func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
-	var body PaginationFilterArray
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return PaginationFilterArray{}, err
-	}
-
-	s := "PaginationFilter"
-	discriminatorSchema := "PaginationFilterArray"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return PaginationFilterArray{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return PaginationFilterArray{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return PaginationFilterArray{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t PaginationFilter) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
-func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
-	var body DemoWorkItem
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return DemoWorkItem{}, err
-	}
-
-	s := "WorkItem"
-	discriminatorSchema := "DemoWorkItem"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return DemoWorkItem{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return DemoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return DemoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
-func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
-	var body DemoTwoWorkItem
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return DemoTwoWorkItem{}, err
-	}
-
-	s := "WorkItem"
-	discriminatorSchema := "DemoTwoWorkItem"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return DemoTwoWorkItem{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return DemoTwoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return DemoTwoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t WorkItem) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *WorkItem) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// delete activity.
 	// (DELETE /activity/{activityID})
-	DeleteActivity(c *gin.Context, activityID db.ActivityID)
+	DeleteActivity(c *gin.Context, activityID models.ActivityID)
 	// get activity.
 	// (GET /activity/{activityID})
-	GetActivity(c *gin.Context, activityID db.ActivityID)
+	GetActivity(c *gin.Context, activityID models.ActivityID)
 	// update activity.
 	// (PATCH /activity/{activityID})
-	UpdateActivity(c *gin.Context, activityID db.ActivityID)
+	UpdateActivity(c *gin.Context, activityID models.ActivityID)
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
@@ -1022,25 +88,25 @@ type ServerInterface interface {
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
 	// delete team.
 	// (DELETE /team/{teamID})
-	DeleteTeam(c *gin.Context, teamID db.TeamID)
+	DeleteTeam(c *gin.Context, teamID models.TeamID)
 	// get team.
 	// (GET /team/{teamID})
-	GetTeam(c *gin.Context, teamID db.TeamID)
+	GetTeam(c *gin.Context, teamID models.TeamID)
 	// update team.
 	// (PATCH /team/{teamID})
-	UpdateTeam(c *gin.Context, teamID db.TeamID)
+	UpdateTeam(c *gin.Context, teamID models.TeamID)
 	// create time entry.
 	// (POST /time-entry/)
 	CreateTimeEntry(c *gin.Context)
 	// delete time-entry.
 	// (DELETE /time-entry/{timeEntryID})
-	DeleteTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
+	DeleteTimeEntry(c *gin.Context, timeEntryID models.TimeEntryID)
 	// get time-entry.
 	// (GET /time-entry/{timeEntryID})
-	GetTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
+	GetTimeEntry(c *gin.Context, timeEntryID models.TimeEntryID)
 	// update time-entry.
 	// (PATCH /time-entry/{timeEntryID})
-	UpdateTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
+	UpdateTimeEntry(c *gin.Context, timeEntryID models.TimeEntryID)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1058,22 +124,22 @@ type ServerInterface interface {
 	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
 	// delete workitemtag.
 	// (DELETE /work-item-tag/{workItemTagID})
-	DeleteWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
+	DeleteWorkItemTag(c *gin.Context, workItemTagID models.WorkItemTagID)
 	// get workitemtag.
 	// (GET /work-item-tag/{workItemTagID})
-	GetWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
+	GetWorkItemTag(c *gin.Context, workItemTagID models.WorkItemTagID)
 	// update workitemtag.
 	// (PATCH /work-item-tag/{workItemTagID})
-	UpdateWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
+	UpdateWorkItemTag(c *gin.Context, workItemTagID models.WorkItemTagID)
 	// delete workitemtype.
 	// (DELETE /work-item-type/{workItemTypeID})
-	DeleteWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
+	DeleteWorkItemType(c *gin.Context, workItemTypeID models.WorkItemTypeID)
 	// get workitemtype.
 	// (GET /work-item-type/{workItemTypeID})
-	GetWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
+	GetWorkItemType(c *gin.Context, workItemTypeID models.WorkItemTypeID)
 	// update workitemtype.
 	// (PATCH /work-item-type/{workItemTypeID})
-	UpdateWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
+	UpdateWorkItemType(c *gin.Context, workItemTypeID models.WorkItemTypeID)
 	// create workitem
 	// (POST /work-item/)
 	CreateWorkitem(c *gin.Context)
@@ -1082,25 +148,25 @@ type ServerInterface interface {
 	GetPaginatedWorkItem(c *gin.Context, params externalRef0.GetPaginatedWorkItemParams)
 	// delete workitem
 	// (DELETE /work-item/{workItemID}/)
-	DeleteWorkitem(c *gin.Context, workItemID db.WorkItemID)
+	DeleteWorkitem(c *gin.Context, workItemID models.WorkItemID)
 	// get workitem
 	// (GET /work-item/{workItemID}/)
-	GetWorkItem(c *gin.Context, workItemID db.WorkItemID)
+	GetWorkItem(c *gin.Context, workItemID models.WorkItemID)
 	// update workitem
 	// (PATCH /work-item/{workItemID}/)
-	UpdateWorkitem(c *gin.Context, workItemID db.WorkItemID)
+	UpdateWorkitem(c *gin.Context, workItemID models.WorkItemID)
 	// create work item comment.
 	// (POST /work-item/{workItemID}/comment/)
 	CreateWorkItemComment(c *gin.Context, workItemID int)
 	// delete .
 	// (DELETE /work-item/{workItemID}/comment/{workItemCommentID})
-	DeleteWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
+	DeleteWorkItemComment(c *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID)
 	// get work item comment.
 	// (GET /work-item/{workItemID}/comment/{workItemCommentID})
-	GetWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
+	GetWorkItemComment(c *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID)
 	// update work item comment.
 	// (PATCH /work-item/{workItemID}/comment/{workItemCommentID})
-	UpdateWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
+	UpdateWorkItemComment(c *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -1118,7 +184,7 @@ func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID db.ActivityID // db.ActivityID
+	var activityID models.ActivityID // models.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1138,7 +204,7 @@ func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID db.ActivityID // db.ActivityID
+	var activityID models.ActivityID // models.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1158,7 +224,7 @@ func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID db.ActivityID // db.ActivityID
+	var activityID models.ActivityID // models.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1533,7 +599,7 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID db.TeamID // db.TeamID
+	var teamID models.TeamID // models.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1553,7 +619,7 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID db.TeamID // db.TeamID
+	var teamID models.TeamID // models.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1573,7 +639,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID db.TeamID // db.TeamID
+	var teamID models.TeamID // models.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1602,7 +668,7 @@ func (siw *ServerInterfaceWrapper) DeleteTimeEntry(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "timeEntryID" -------------
-	var timeEntryID db.TimeEntryID // db.TimeEntryID
+	var timeEntryID models.TimeEntryID // models.TimeEntryID
 
 	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
 	if err != nil {
@@ -1622,7 +688,7 @@ func (siw *ServerInterfaceWrapper) GetTimeEntry(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "timeEntryID" -------------
-	var timeEntryID db.TimeEntryID // db.TimeEntryID
+	var timeEntryID models.TimeEntryID // models.TimeEntryID
 
 	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
 	if err != nil {
@@ -1642,7 +708,7 @@ func (siw *ServerInterfaceWrapper) UpdateTimeEntry(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "timeEntryID" -------------
-	var timeEntryID db.TimeEntryID // db.TimeEntryID
+	var timeEntryID models.TimeEntryID // models.TimeEntryID
 
 	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
 	if err != nil {
@@ -1803,7 +869,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
+	var workItemTagID models.WorkItemTagID // models.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1823,7 +889,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
+	var workItemTagID models.WorkItemTagID // models.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1843,7 +909,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
+	var workItemTagID models.WorkItemTagID // models.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1863,7 +929,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
+	var workItemTypeID models.WorkItemTypeID // models.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1883,7 +949,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
+	var workItemTypeID models.WorkItemTypeID // models.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1903,7 +969,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
+	var workItemTypeID models.WorkItemTypeID // models.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1990,7 +1056,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2010,7 +1076,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2030,7 +1096,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2070,7 +1136,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2079,7 +1145,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
+	var workItemCommentID models.WorkItemCommentID // models.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -2099,7 +1165,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2108,7 +1174,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
+	var workItemCommentID models.WorkItemCommentID // models.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -2128,7 +1194,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID db.WorkItemID // db.WorkItemID
+	var workItemID models.WorkItemID // models.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2137,7 +1203,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
+	var workItemCommentID models.WorkItemCommentID // models.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -2406,7 +1472,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 }
 
 type DeleteActivityRequestObject struct {
-	ActivityID db.ActivityID `json:"activityID"`
+	ActivityID models.ActivityID `json:"activityID"`
 }
 
 type DeleteActivityResponseObject interface {
@@ -2447,14 +1513,14 @@ func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http
 }
 
 type GetActivityRequestObject struct {
-	ActivityID db.ActivityID `json:"activityID"`
+	ActivityID models.ActivityID `json:"activityID"`
 }
 
 type GetActivityResponseObject interface {
 	VisitGetActivityResponse(w http.ResponseWriter) error
 }
 
-type GetActivity200JSONResponse Activity
+type GetActivity200JSONResponse ActivityResponse
 
 func (response GetActivity200JSONResponse) VisitGetActivityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2490,7 +1556,7 @@ func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.Respo
 }
 
 type UpdateActivityRequestObject struct {
-	ActivityID db.ActivityID `json:"activityID"`
+	ActivityID models.ActivityID `json:"activityID"`
 	Body       *UpdateActivityRequest
 }
 
@@ -2498,7 +1564,7 @@ type UpdateActivityResponseObject interface {
 	VisitUpdateActivityResponse(w http.ResponseWriter) error
 }
 
-type UpdateActivity200JSONResponse Activity
+type UpdateActivity200JSONResponse ActivityResponse
 
 func (response UpdateActivity200JSONResponse) VisitUpdateActivityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2762,7 +1828,7 @@ type GetProjectResponseObject interface {
 	VisitGetProjectResponse(w http.ResponseWriter) error
 }
 
-type GetProject200JSONResponse db.Project
+type GetProject200JSONResponse externalRef0.ModelsProject
 
 func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2780,7 +1846,7 @@ type CreateActivityResponseObject interface {
 	VisitCreateActivityResponse(w http.ResponseWriter) error
 }
 
-type CreateActivity201JSONResponse Activity
+type CreateActivity201JSONResponse ActivityResponse
 
 func (response CreateActivity201JSONResponse) VisitCreateActivityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2890,7 +1956,7 @@ type CreateTeamResponseObject interface {
 	VisitCreateTeamResponse(w http.ResponseWriter) error
 }
 
-type CreateTeam201JSONResponse Team
+type CreateTeam201JSONResponse TeamResponse
 
 func (response CreateTeam201JSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2934,7 +2000,7 @@ type CreateWorkItemTagResponseObject interface {
 	VisitCreateWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkItemTag201JSONResponse WorkItemTag
+type CreateWorkItemTag201JSONResponse WorkItemTagResponse
 
 func (response CreateWorkItemTag201JSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2978,7 +2044,7 @@ type CreateWorkItemTypeResponseObject interface {
 	VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkItemType201JSONResponse WorkItemType
+type CreateWorkItemType201JSONResponse WorkItemTypeResponse
 
 func (response CreateWorkItemType201JSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3022,7 +2088,7 @@ type GetProjectWorkitemsResponseObject interface {
 	VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error
 }
 
-type GetProjectWorkitems200JSONResponse WorkItem
+type GetProjectWorkitems200JSONResponse externalRef0.WorkItemResponse
 
 func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3032,7 +2098,7 @@ func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsRespo
 }
 
 type DeleteTeamRequestObject struct {
-	TeamID db.TeamID `json:"teamID"`
+	TeamID models.TeamID `json:"teamID"`
 }
 
 type DeleteTeamResponseObject interface {
@@ -3073,14 +2139,14 @@ func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.Respons
 }
 
 type GetTeamRequestObject struct {
-	TeamID db.TeamID `json:"teamID"`
+	TeamID models.TeamID `json:"teamID"`
 }
 
 type GetTeamResponseObject interface {
 	VisitGetTeamResponse(w http.ResponseWriter) error
 }
 
-type GetTeam200JSONResponse Team
+type GetTeam200JSONResponse TeamResponse
 
 func (response GetTeam200JSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3116,7 +2182,7 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 }
 
 type UpdateTeamRequestObject struct {
-	TeamID db.TeamID `json:"teamID"`
+	TeamID models.TeamID `json:"teamID"`
 	Body   *UpdateTeamRequest
 }
 
@@ -3124,7 +2190,7 @@ type UpdateTeamResponseObject interface {
 	VisitUpdateTeamResponse(w http.ResponseWriter) error
 }
 
-type UpdateTeam200JSONResponse Team
+type UpdateTeam200JSONResponse TeamResponse
 
 func (response UpdateTeam200JSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3167,7 +2233,7 @@ type CreateTimeEntryResponseObject interface {
 	VisitCreateTimeEntryResponse(w http.ResponseWriter) error
 }
 
-type CreateTimeEntry201JSONResponse TimeEntry
+type CreateTimeEntry201JSONResponse TimeEntryResponse
 
 func (response CreateTimeEntry201JSONResponse) VisitCreateTimeEntryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3203,7 +2269,7 @@ func (response CreateTimeEntry4XXJSONResponse) VisitCreateTimeEntryResponse(w ht
 }
 
 type DeleteTimeEntryRequestObject struct {
-	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+	TimeEntryID models.TimeEntryID `json:"timeEntryID"`
 }
 
 type DeleteTimeEntryResponseObject interface {
@@ -3244,14 +2310,14 @@ func (response DeleteTimeEntry4XXJSONResponse) VisitDeleteTimeEntryResponse(w ht
 }
 
 type GetTimeEntryRequestObject struct {
-	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+	TimeEntryID models.TimeEntryID `json:"timeEntryID"`
 }
 
 type GetTimeEntryResponseObject interface {
 	VisitGetTimeEntryResponse(w http.ResponseWriter) error
 }
 
-type GetTimeEntry200JSONResponse TimeEntry
+type GetTimeEntry200JSONResponse TimeEntryResponse
 
 func (response GetTimeEntry200JSONResponse) VisitGetTimeEntryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3287,7 +2353,7 @@ func (response GetTimeEntry4XXJSONResponse) VisitGetTimeEntryResponse(w http.Res
 }
 
 type UpdateTimeEntryRequestObject struct {
-	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+	TimeEntryID models.TimeEntryID `json:"timeEntryID"`
 	Body        *UpdateTimeEntryRequest
 }
 
@@ -3295,7 +2361,7 @@ type UpdateTimeEntryResponseObject interface {
 	VisitUpdateTimeEntryResponse(w http.ResponseWriter) error
 }
 
-type UpdateTimeEntry200JSONResponse TimeEntry
+type UpdateTimeEntry200JSONResponse TimeEntryResponse
 
 func (response UpdateTimeEntry200JSONResponse) VisitUpdateTimeEntryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3336,7 +2402,7 @@ type GetCurrentUserResponseObject interface {
 	VisitGetCurrentUserResponse(w http.ResponseWriter) error
 }
 
-type GetCurrentUser200JSONResponse User
+type GetCurrentUser200JSONResponse UserResponse
 
 func (response GetCurrentUser200JSONResponse) VisitGetCurrentUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3438,7 +2504,7 @@ type UpdateUserResponseObject interface {
 	VisitUpdateUserResponse(w http.ResponseWriter) error
 }
 
-type UpdateUser200JSONResponse User
+type UpdateUser200JSONResponse UserResponse
 
 func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3464,7 +2530,7 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 }
 
 type DeleteWorkItemTagRequestObject struct {
-	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
+	WorkItemTagID models.WorkItemTagID `json:"workItemTagID"`
 }
 
 type DeleteWorkItemTagResponseObject interface {
@@ -3505,14 +2571,14 @@ func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(
 }
 
 type GetWorkItemTagRequestObject struct {
-	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
+	WorkItemTagID models.WorkItemTagID `json:"workItemTagID"`
 }
 
 type GetWorkItemTagResponseObject interface {
 	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItemTag200JSONResponse WorkItemTag
+type GetWorkItemTag200JSONResponse WorkItemTagResponse
 
 func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3548,7 +2614,7 @@ func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http
 }
 
 type UpdateWorkItemTagRequestObject struct {
-	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
+	WorkItemTagID models.WorkItemTagID `json:"workItemTagID"`
 	Body          *UpdateWorkItemTagRequest
 }
 
@@ -3556,7 +2622,7 @@ type UpdateWorkItemTagResponseObject interface {
 	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkItemTag200JSONResponse WorkItemTag
+type UpdateWorkItemTag200JSONResponse WorkItemTagResponse
 
 func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3592,7 +2658,7 @@ func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(
 }
 
 type DeleteWorkItemTypeRequestObject struct {
-	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
+	WorkItemTypeID models.WorkItemTypeID `json:"workItemTypeID"`
 }
 
 type DeleteWorkItemTypeResponseObject interface {
@@ -3633,14 +2699,14 @@ func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeRespons
 }
 
 type GetWorkItemTypeRequestObject struct {
-	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
+	WorkItemTypeID models.WorkItemTypeID `json:"workItemTypeID"`
 }
 
 type GetWorkItemTypeResponseObject interface {
 	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItemType200JSONResponse WorkItemType
+type GetWorkItemType200JSONResponse WorkItemTypeResponse
 
 func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3676,7 +2742,7 @@ func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w ht
 }
 
 type UpdateWorkItemTypeRequestObject struct {
-	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
+	WorkItemTypeID models.WorkItemTypeID `json:"workItemTypeID"`
 	Body           *UpdateWorkItemTypeRequest
 }
 
@@ -3684,7 +2750,7 @@ type UpdateWorkItemTypeResponseObject interface {
 	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkItemType200JSONResponse WorkItemType
+type UpdateWorkItemType200JSONResponse WorkItemTypeResponse
 
 func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3727,7 +2793,7 @@ type CreateWorkitemResponseObject interface {
 	VisitCreateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkitem201JSONResponse WorkItem
+type CreateWorkitem201JSONResponse externalRef0.WorkItemResponse
 
 func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3780,7 +2846,7 @@ func (response GetPaginatedWorkItem4XXJSONResponse) VisitGetPaginatedWorkItemRes
 }
 
 type DeleteWorkitemRequestObject struct {
-	WorkItemID db.WorkItemID `json:"workItemID"`
+	WorkItemID models.WorkItemID `json:"workItemID"`
 }
 
 type DeleteWorkitemResponseObject interface {
@@ -3795,14 +2861,14 @@ func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.Res
 }
 
 type GetWorkItemRequestObject struct {
-	WorkItemID db.WorkItemID `json:"workItemID"`
+	WorkItemID models.WorkItemID `json:"workItemID"`
 }
 
 type GetWorkItemResponseObject interface {
 	VisitGetWorkItemResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItem200JSONResponse WorkItem
+type GetWorkItem200JSONResponse externalRef0.WorkItemResponse
 
 func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3812,14 +2878,14 @@ func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.Respo
 }
 
 type UpdateWorkitemRequestObject struct {
-	WorkItemID db.WorkItemID `json:"workItemID"`
+	WorkItemID models.WorkItemID `json:"workItemID"`
 }
 
 type UpdateWorkitemResponseObject interface {
 	VisitUpdateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkitem200JSONResponse WorkItem
+type UpdateWorkitem200JSONResponse externalRef0.WorkItemResponse
 
 func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3837,7 +2903,7 @@ type CreateWorkItemCommentResponseObject interface {
 	VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkItemComment201JSONResponse WorkItemComment
+type CreateWorkItemComment201JSONResponse WorkItemCommentResponse
 
 func (response CreateWorkItemComment201JSONResponse) VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3873,8 +2939,8 @@ func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentR
 }
 
 type DeleteWorkItemCommentRequestObject struct {
-	WorkItemID        db.WorkItemID        `json:"workItemID"`
-	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
+	WorkItemID        models.WorkItemID        `json:"workItemID"`
+	WorkItemCommentID models.WorkItemCommentID `json:"workItemCommentID"`
 }
 
 type DeleteWorkItemCommentResponseObject interface {
@@ -3915,15 +2981,15 @@ func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentR
 }
 
 type GetWorkItemCommentRequestObject struct {
-	WorkItemID        db.WorkItemID        `json:"workItemID"`
-	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
+	WorkItemID        models.WorkItemID        `json:"workItemID"`
+	WorkItemCommentID models.WorkItemCommentID `json:"workItemCommentID"`
 }
 
 type GetWorkItemCommentResponseObject interface {
 	VisitGetWorkItemCommentResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItemComment200JSONResponse WorkItemComment
+type GetWorkItemComment200JSONResponse WorkItemCommentResponse
 
 func (response GetWorkItemComment200JSONResponse) VisitGetWorkItemCommentResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3959,8 +3025,8 @@ func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentRespons
 }
 
 type UpdateWorkItemCommentRequestObject struct {
-	WorkItemID        db.WorkItemID        `json:"workItemID"`
-	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
+	WorkItemID        models.WorkItemID        `json:"workItemID"`
+	WorkItemCommentID models.WorkItemCommentID `json:"workItemCommentID"`
 	Body              *UpdateWorkItemCommentRequest
 }
 
@@ -3968,7 +3034,7 @@ type UpdateWorkItemCommentResponseObject interface {
 	VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkItemComment200JSONResponse WorkItemComment
+type UpdateWorkItemComment200JSONResponse WorkItemCommentResponse
 
 func (response UpdateWorkItemComment200JSONResponse) VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -4173,7 +3239,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 }
 
 // DeleteActivity operation middleware
-func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID db.ActivityID) {
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID models.ActivityID) {
 	var request DeleteActivityRequestObject
 
 	request.ActivityID = activityID
@@ -4200,7 +3266,7 @@ func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID db.Activit
 }
 
 // GetActivity operation middleware
-func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID db.ActivityID) {
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID models.ActivityID) {
 	var request GetActivityRequestObject
 
 	request.ActivityID = activityID
@@ -4227,7 +3293,7 @@ func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID db.ActivityID
 }
 
 // UpdateActivity operation middleware
-func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID db.ActivityID) {
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID models.ActivityID) {
 	var request UpdateActivityRequestObject
 
 	request.ActivityID = activityID
@@ -4769,7 +3835,7 @@ func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName exte
 }
 
 // DeleteTeam operation middleware
-func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID db.TeamID) {
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID models.TeamID) {
 	var request DeleteTeamRequestObject
 
 	request.TeamID = teamID
@@ -4796,7 +3862,7 @@ func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID db.TeamID) {
 }
 
 // GetTeam operation middleware
-func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID db.TeamID) {
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID models.TeamID) {
 	var request GetTeamRequestObject
 
 	request.TeamID = teamID
@@ -4823,7 +3889,7 @@ func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID db.TeamID) {
 }
 
 // UpdateTeam operation middleware
-func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID db.TeamID) {
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID models.TeamID) {
 	var request UpdateTeamRequestObject
 
 	request.TeamID = teamID
@@ -4893,7 +3959,7 @@ func (sh *strictHandlers) CreateTimeEntry(ctx *gin.Context) {
 }
 
 // DeleteTimeEntry operation middleware
-func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
 	var request DeleteTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -4920,7 +3986,7 @@ func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID db.TimeE
 }
 
 // GetTimeEntry operation middleware
-func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
 	var request GetTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -4947,7 +4013,7 @@ func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntr
 }
 
 // UpdateTimeEntry operation middleware
-func (sh *strictHandlers) UpdateTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+func (sh *strictHandlers) UpdateTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
 	var request UpdateTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -5134,7 +4200,7 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 }
 
 // DeleteWorkItemTag operation middleware
-func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
 	var request DeleteWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -5161,7 +4227,7 @@ func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID db.W
 }
 
 // GetWorkItemTag operation middleware
-func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
 	var request GetWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -5188,7 +4254,7 @@ func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID db.Work
 }
 
 // UpdateWorkItemTag operation middleware
-func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
 	var request UpdateWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -5224,7 +4290,7 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID db.W
 }
 
 // DeleteWorkItemType operation middleware
-func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
 	var request DeleteWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -5251,7 +4317,7 @@ func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID db
 }
 
 // GetWorkItemType operation middleware
-func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
 	var request GetWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -5278,7 +4344,7 @@ func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID db.Wo
 }
 
 // UpdateWorkItemType operation middleware
-func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
 	var request UpdateWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -5375,7 +4441,7 @@ func (sh *strictHandlers) GetPaginatedWorkItem(ctx *gin.Context, params external
 }
 
 // DeleteWorkitem operation middleware
-func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID db.WorkItemID) {
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID models.WorkItemID) {
 	var request DeleteWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -5402,7 +4468,7 @@ func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID db.WorkIte
 }
 
 // GetWorkItem operation middleware
-func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID db.WorkItemID) {
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID models.WorkItemID) {
 	var request GetWorkItemRequestObject
 
 	request.WorkItemID = workItemID
@@ -5429,7 +4495,7 @@ func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID db.WorkItemID
 }
 
 // UpdateWorkitem operation middleware
-func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID db.WorkItemID) {
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID models.WorkItemID) {
 	var request UpdateWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -5492,7 +4558,7 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // DeleteWorkItemComment operation middleware
-func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
 	var request DeleteWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5520,7 +4586,7 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID db.
 }
 
 // GetWorkItemComment operation middleware
-func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
 	var request GetWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5548,7 +4614,7 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID db.Wor
 }
 
 // UpdateWorkItemComment operation middleware
-func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
 	var request UpdateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5586,127 +4652,131 @@ func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID db.
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
-	"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",
-	"AP//Y/ixErI1AQA=",
+	"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",
+	"//95Vl4hPEIBAA==",
 }
 
 var spec, _ = GetSwagger()

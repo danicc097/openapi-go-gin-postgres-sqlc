@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -125,7 +125,7 @@ func (es *EventServer) listen(ctx context.Context) {
 func (es *EventServer) Subscribe(topics models.Topics) (client SSEClient, unsubscribe func()) {
 	client = SSEClient{
 		Chan:   make(chan ClientMessage, 1),
-		Topics: make(Topics, len(topics)),
+		Topics: make(models.Topics, len(topics)),
 	}
 	for i, topic := range topics {
 		client.Topics[i] = models.Topic(topic)
@@ -172,7 +172,7 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 
 type SSEClient struct {
 	Chan   chan ClientMessage
-	Topics Topics
+	Topics models.Topics
 }
 
 type ClientMessage struct {

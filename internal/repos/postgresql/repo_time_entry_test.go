@@ -5,9 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,17 +18,17 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	timeEntryRepo := postgresql.NewTimeEntry()
 
 	user := newRandomUser(t, testPool)
-	activity := newRandomActivity(t, testPool, models.ProjectDemo)
+	activity := newRandomActivity(t, testPool, models.ProjectNameDemo)
 
 	workItem := newRandomDemoWorkItem(t, testPool)
 	timeEntry := newRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
-	uniqueTestCases := []filterTestCase[*db.TimeEntry]{
+	uniqueTestCases := []filterTestCase[*models.TimeEntry]{
 		{
 			name:       "id",
 			filter:     timeEntry.TimeEntryID,
 			repoMethod: reflect.ValueOf(timeEntryRepo.ByID),
-			callback: func(t *testing.T, res *db.TimeEntry) {
+			callback: func(t *testing.T, res *models.TimeEntry) {
 				assert.Equal(t, res.TimeEntryID, timeEntry.TimeEntryID)
 			},
 		},

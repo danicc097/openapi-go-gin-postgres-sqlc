@@ -5,9 +5,8 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -30,7 +29,7 @@ func NewTimeEntry(logger *zap.SugaredLogger, repos *repos.Repos) *TimeEntry {
 }
 
 // ByID gets a time entry by ID.
-func (te *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
+func (te *TimeEntry) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID) (*models.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	teObj, err := te.repos.TimeEntry.ByID(ctx, d, id)
@@ -42,7 +41,7 @@ func (te *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*d
 }
 
 // Create creates a new time entry.
-func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+func (te *TimeEntry) Create(ctx context.Context, d models.DBTX, caller CtxUser, params *models.TimeEntryCreateParams) (*models.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := te.validateCreateParams(d, caller, params); err != nil {
@@ -59,7 +58,7 @@ func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, para
 	return teObj, nil
 }
 
-func (te *TimeEntry) validateCreateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) error {
+func (te *TimeEntry) validateCreateParams(d models.DBTX, caller CtxUser, params *models.TimeEntryCreateParams) error {
 	if err := te.validateBaseParams(validateModeCreate, d, caller, params); err != nil {
 		return err
 	}
@@ -69,7 +68,7 @@ func (te *TimeEntry) validateCreateParams(d db.DBTX, caller CtxUser, params *db.
 	return nil
 }
 
-func (te *TimeEntry) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryUpdateParams) error {
+func (te *TimeEntry) validateUpdateParams(d models.DBTX, caller CtxUser, params *models.TimeEntryUpdateParams) error {
 	if err := te.validateBaseParams(validateModeUpdate, d, caller, params); err != nil {
 		return err
 	}
@@ -86,7 +85,7 @@ func (te *TimeEntry) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.
  */
 // example: extra fields required in services for update (same applies for create)
 type TimeEntryUpdateParams struct {
-	db.TimeEntryUpdateParams
+	models.TimeEntryUpdateParams
 	// no need for getters for new field, validate in dedicated validateUpdateParams only.
 	// if it conflicts with base validation, just skip based on validatemode
 	NewField string `json:"newField"`
@@ -94,7 +93,7 @@ type TimeEntryUpdateParams struct {
 
 // if we need service update/create params later, embed db params in services.*{Create|Update}Params
 // and add new fields+accessors as required.
-func (te *TimeEntry) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, params db.TimeEntryParams) error {
+func (te *TimeEntry) validateBaseParams(mode validateMode, d models.DBTX, caller CtxUser, params models.TimeEntryParams) error {
 	if params.GetTeamID() != nil && params.GetWorkItemID() != nil {
 		// checked in db, but can verify here too
 		return internal.NewErrorf(models.ErrorCodeInvalidArgument, "cannot link activity to both team and work item")
@@ -107,7 +106,7 @@ func (te *TimeEntry) validateBaseParams(mode validateMode, d db.DBTX, caller Ctx
 	}
 
 	if params.GetTeamID() != nil {
-		teamIDs := make([]db.TeamID, len(caller.Teams))
+		teamIDs := make([]models.TeamID, len(caller.Teams))
 		for i, t := range caller.Teams {
 			teamIDs[i] = t.TeamID
 		}
@@ -117,12 +116,12 @@ func (te *TimeEntry) validateBaseParams(mode validateMode, d db.DBTX, caller Ctx
 	}
 
 	if params.GetWorkItemID() != nil {
-		wi, err := te.repos.WorkItem.ByID(context.Background(), d, *params.GetWorkItemID(), db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
+		wi, err := te.repos.WorkItem.ByID(context.Background(), d, *params.GetWorkItemID(), models.WithWorkItemJoin(models.WorkItemJoins{Assignees: true}))
 		if err != nil {
 			return fmt.Errorf("repos.WorkItem.ByID: %w", err)
 		}
 
-		memberIDs := make(map[db.UserID]bool)
+		memberIDs := make(map[models.UserID]bool)
 		for _, m := range *wi.AssigneesJoin {
 			memberIDs[m.User.UserID] = true
 		}
@@ -135,7 +134,7 @@ func (te *TimeEntry) validateBaseParams(mode validateMode, d db.DBTX, caller Ctx
 }
 
 // Update updates an existing time entry.
-func (te *TimeEntry) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (te *TimeEntry) Update(ctx context.Context, d models.DBTX, caller CtxUser, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (*models.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := te.validateUpdateParams(d, caller, params); err != nil {
@@ -151,7 +150,7 @@ func (te *TimeEntry) Update(ctx context.Context, d db.DBTX, caller CtxUser, id d
 }
 
 // Delete deletes a time entry by ID.
-func (te *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
+func (te *TimeEntry) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (*models.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	teObj, err := te.repos.TimeEntry.Delete(ctx, d, id)

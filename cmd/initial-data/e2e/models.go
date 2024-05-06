@@ -1,8 +1,7 @@
 package e2e
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 /*
@@ -24,7 +23,7 @@ type User struct {
 // TODO: should include ids for the rest of entities with serial ids,
 // given that e2e data will not be created concurrently.
 type Team struct {
-	TeamID      db.TeamID          `json:"teamID" tstype:"EntityIDs.TeamID"`
+	TeamID      models.TeamID      `json:"teamID" tstype:"EntityIDs.TeamID"`
 	Name        string             `json:"name"`
-	ProjectName models.ProjectName `json:"projectName" tstype:"models.Project"`
+	ProjectName models.ProjectName `json:"projectName" tstype:"models.ProjectName"`
 }

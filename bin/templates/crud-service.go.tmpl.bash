@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+  "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +27,7 @@ func New${pascal_name}(logger *zap.SugaredLogger, repos *repos.Repos) *${pascal_
 }
 
 // ByID gets a ${sentence_name} by ID.
-func (t *${pascal_name}) ByID(ctx context.Context, d db.DBTX, id db.${pascal_name}ID) (*db.${pascal_name}, error) {
+func (t *${pascal_name}) ByID(ctx context.Context, d models.DBTX, id models.${pascal_name}ID) (*models.${pascal_name}, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	${camel_name}, err := t.repos.${pascal_name}.ByID(ctx, d, id)
@@ -39,7 +39,7 @@ func (t *${pascal_name}) ByID(ctx context.Context, d db.DBTX, id db.${pascal_nam
 }
 
 // Create creates a new ${sentence_name}.
-func (t *${pascal_name}) Create(ctx context.Context, d db.DBTX, params *db.${pascal_name}CreateParams) (*db.${pascal_name}, error) {
+func (t *${pascal_name}) Create(ctx context.Context, d models.DBTX, params *models.${pascal_name}CreateParams) (*models.${pascal_name}, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	${camel_name}, err := t.repos.${pascal_name}.Create(ctx, d, params)
@@ -51,7 +51,7 @@ func (t *${pascal_name}) Create(ctx context.Context, d db.DBTX, params *db.${pas
 }
 
 // Update updates an existing ${sentence_name}.
-func (t *${pascal_name}) Update(ctx context.Context, d db.DBTX, id db.${pascal_name}ID, params *db.${pascal_name}UpdateParams) (*db.${pascal_name}, error) {
+func (t *${pascal_name}) Update(ctx context.Context, d models.DBTX, id models.${pascal_name}ID, params *models.${pascal_name}UpdateParams) (*models.${pascal_name}, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	${camel_name}, err := t.repos.${pascal_name}.Update(ctx, d, id, params)
@@ -63,7 +63,7 @@ func (t *${pascal_name}) Update(ctx context.Context, d db.DBTX, id db.${pascal_n
 }
 
 // Delete deletes an existing ${sentence_name}.
-func (t *${pascal_name}) Delete(ctx context.Context, d db.DBTX, id db.${pascal_name}ID) (*db.${pascal_name}, error) {
+func (t *${pascal_name}) Delete(ctx context.Context, d models.DBTX, id models.${pascal_name}ID) (*models.${pascal_name}, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	${camel_name}, err := t.repos.${pascal_name}.Delete(ctx, d, id)

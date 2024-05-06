@@ -34,7 +34,7 @@ fi)
           content:
             application/json:
               schema:
-                \$ref: '#/components/schemas/${pascal_name}'
+                \$ref: '#/components/schemas/${pascal_name}Response'
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}
@@ -58,7 +58,7 @@ fi)
           content:
             application/json:
               schema:
-                \$ref: '#/components/schemas/${pascal_name}'
+                \$ref: '#/components/schemas/${pascal_name}Response'
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}
@@ -85,7 +85,7 @@ fi)
           content:
             application/json:
               schema:
-                \$ref: '#/components/schemas/${pascal_name}'
+                \$ref: '#/components/schemas/${pascal_name}Response'
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}

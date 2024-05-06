@@ -33,8 +33,8 @@ func handleError(err error) {
 }
 
 // GenerateSpecSchemas creates OpenAPI schemas from code.
-func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
-	reflector := newSpecReflector()
+func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs, dbIDs []string) {
+	reflector := newSpecReflector(dbIDs)
 
 	sns := internalslices.Unique(structNames)
 	for idx, structName := range sns {
@@ -50,7 +50,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
 				continue
 			}
 
-			log.Fatalf("struct %s does not exist in rest or db packages but is referenced in x-gen-struct", structName)
+			log.Fatalf("struct %s does not exist in rest or models packages but is referenced in x-gen-struct", structName)
 		}
 		if !structs.HasJSONTag(st) {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", structName)
@@ -71,7 +71,11 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
 			fmt.Fprint(os.Stderr, string(s))
 			log.Fatalf("Could not generate %s", schemaName)
 		}
-		x.Schema.MapOfAnything = map[string]any{"x-gen-struct": schemaName, "x-is-generated": true}
+		if x.Schema.MapOfAnything == nil {
+			x.Schema.MapOfAnything = make(map[string]interface{})
+		}
+		x.Schema.MapOfAnything["x-gen-struct"] = schemaName
+		x.Schema.MapOfAnything["x-is-generated"] = true
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)
@@ -79,7 +83,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
 	fmt.Println(string(s))
 }
 
-func newSpecReflector() *openapi3.Reflector {
+func newSpecReflector(dbIDs []string) *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
 	reflectTypeNames := map[string]map[string]string{}
@@ -111,20 +115,25 @@ func newSpecReflector() *openapi3.Reflector {
 			return schemaName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-			if params.PropertySchema != nil {
-				if params.PropertySchema.ExtraProperties == nil {
-					params.PropertySchema.ExtraProperties = map[string]any{}
-				}
+			if params.PropertySchema == nil {
+				return nil
+			}
 
-				tags, err := structtag.Parse(string(params.Field.Tag))
-				if err != nil {
-					panic(fmt.Sprintf("structtag.Parse: %v", err))
-				}
+			if params.PropertySchema.ExtraProperties == nil {
+				params.PropertySchema.ExtraProperties = map[string]any{}
+			}
 
-				for _, t := range tags.Tags() {
-					if strings.HasPrefix(t.Key, "x-") {
-						params.PropertySchema.ExtraProperties[t.Key] = t.Value()
-					}
+			// intercept arrays of ids
+			interceptDbIDs(dbIDs, params)
+
+			tags, err := structtag.Parse(string(params.Field.Tag))
+			if err != nil {
+				panic(fmt.Sprintf("structtag.Parse: %v", err))
+			}
+
+			for _, t := range tags.Tags() {
+				if strings.HasPrefix(t.Key, "x-") {
+					params.PropertySchema.ExtraProperties[t.Key] = t.Value()
 				}
 			}
 
@@ -154,17 +163,23 @@ func newSpecReflector() *openapi3.Reflector {
 				t = t.Elem()
 			}
 
-			// duplicate from gen itself
-			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
-				if t.Kind() == reflect.Struct {
-					// will generate duplicate models otherwise
-					params.Schema.ExtraProperties = map[string]any{
-						"x-TO-BE-DELETED": true,
-					}
-
-					return true, nil
-				}
-			}
+			// PkgPath is empty for top level struct instance via struct{} (see docs)
+			// therefore we cannot append vendor extensions via gen_schema.
+			// for top level schemas we must check for Db[A-Z]* and append
+			// NOTE: now with models merged this is not needed
+			// isDbType := strings.HasSuffix(t.PkgPath(), "/models")
+			// if n := t.Name(); isDbType {
+			// 	params.Schema.ExtraProperties = map[string]any{
+			// 		"x-go-type": strings.TrimPrefix(n, "Db"),
+			// 		// in case this is needed later, import-mappings config affects this
+			// 		// "x-go-name": strings.TrimPrefix(n, "Db"),
+			// 		// "x-go-type-import": map[string]any{
+			// 		// 	"name": "db",
+			// 		// 	"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models",
+			// 		// },
+			// 		"x-is-generated": true,
+			// 	}
+			// }
 
 			var isCustomUUID bool
 			if t.Kind() == reflect.Struct && t.Field(0).Type == reflect.TypeOf(uuid.New()) {
@@ -193,4 +208,22 @@ func newSpecReflector() *openapi3.Reflector {
 	)
 
 	return &reflector
+}
+
+func interceptDbIDs(dbIDs []string, params jsonschema.InterceptPropParams) {
+	if slices.Contains(dbIDs, params.Field.Name) {
+		params.PropertySchema.ExtraProperties = map[string]any{
+			"x-go-type": params.Field.Name,
+		}
+	}
+
+	if ps := params.PropertySchema; ps.Items != nil && ps.Items.SchemaOrBool != nil && ps.Items.SchemaOrBool.TypeObject != nil {
+		obj := ps.Items.SchemaOrBool.TypeObject
+		goName := obj.ReflectType.Name()
+		if slices.Contains(dbIDs, goName) {
+			obj.ExtraProperties = map[string]any{
+				"x-go-type": goName,
+			}
+		}
+	}
 }

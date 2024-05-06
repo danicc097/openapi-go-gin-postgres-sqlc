@@ -22,7 +22,7 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
-  Activity,
+  ActivityResponse,
   CreateActivityRequest,
   HTTPError,
   UpdateActivityRequest
@@ -43,7 +43,7 @@ export const createActivity = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<Activity>(
+      return customInstance<ActivityResponse>(
       {url: `/project/${projectName}/activity/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createActivityRequest
@@ -96,7 +96,7 @@ export const getActivity = (
 ) => {
       
       
-      return customInstance<Activity>(
+      return customInstance<ActivityResponse>(
       {url: `/activity/${activityID}`, method: 'GET', signal
     },
       options);
@@ -197,7 +197,7 @@ export const updateActivity = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<Activity>(
+      return customInstance<ActivityResponse>(
       {url: `/activity/${activityID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateActivityRequest

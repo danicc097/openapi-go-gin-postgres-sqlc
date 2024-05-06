@@ -5,8 +5,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -25,7 +24,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
@@ -43,8 +42,8 @@ func TestWorkItemTag_Update(t *testing.T) {
 	require.NoError(t, err)
 
 	type args struct {
-		params            *db.WorkItemTagUpdateParams
-		id                db.WorkItemTagID
+		params            *models.WorkItemTagUpdateParams
+		id                models.WorkItemTagID
 		withUserInProject bool
 	}
 	type want struct {
@@ -60,7 +59,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 		{
 			name: "updated correctly",
 			args: args{
-				params: &db.WorkItemTagUpdateParams{
+				params: &models.WorkItemTagUpdateParams{
 					Name: pointers.New("changed"),
 				},
 				withUserInProject: true,
@@ -73,7 +72,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 		{
 			name: "user not in project",
 			args: args{
-				params:            &db.WorkItemTagUpdateParams{},
+				params:            &models.WorkItemTagUpdateParams{},
 				withUserInProject: false,
 				id:                wit.WorkItemTagID,
 			},
@@ -82,9 +81,9 @@ func TestWorkItemTag_Update(t *testing.T) {
 		{
 			name: "tag not found",
 			args: args{
-				params:            &db.WorkItemTagUpdateParams{},
+				params:            &models.WorkItemTagUpdateParams{},
 				withUserInProject: true,
-				id:                db.WorkItemTagID(-1),
+				id:                models.WorkItemTagID(-1),
 			},
 			errorContains: "Work item tag not found",
 		},

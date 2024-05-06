@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // WorkItemCommentWithTimeout implements repos.WorkItemComment interface instrumented with timeouts
@@ -37,7 +37,7 @@ func NewWorkItemCommentWithTimeout(base repos.WorkItemComment, config WorkItemCo
 }
 
 // ByID implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, opts ...models.WorkItemCommentSelectConfigOption) (wp1 *models.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -47,7 +47,7 @@ func (_d WorkItemCommentWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.
 }
 
 // Create implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.WorkItemCommentCreateParams) (wp1 *models.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -57,7 +57,7 @@ func (_d WorkItemCommentWithTimeout) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Delete implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.WorkItemCommentID) (wp1 *models.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.DeleteTimeout)
@@ -67,7 +67,7 @@ func (_d WorkItemCommentWithTimeout) Delete(ctx context.Context, d db.DBTX, id d
 }
 
 // Update implements repos.WorkItemComment
-func (_d WorkItemCommentWithTimeout) Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (wp1 *db.WorkItemComment, err error) {
+func (_d WorkItemCommentWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, params *models.WorkItemCommentUpdateParams) (wp1 *models.WorkItemComment, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

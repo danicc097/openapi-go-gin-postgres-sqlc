@@ -26,6 +26,7 @@ type configuration struct {
 
 	// OutputFile is the filename to output.
 	OutputFile       string `yaml:"output,omitempty"`
+	Mode             string `yaml:"mode,omitempty"`
 	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
 	// TestClient defines whether the generated code is a client for testing purposes.
 	TestClient             bool `yaml:"test-client,omitempty"`
@@ -38,11 +39,12 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg, typesStr, serverTypesStr string
+	var cfgPath, modelsPkg, typesStr, serverTypesStr, specRestTypesStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
 	flag.StringVar(&typesStr, "types", "", "list of type names to use in place of generated oapi-codegen ones")
 	flag.StringVar(&serverTypesStr, "server-types", "", "list of types to use in server generation instead of generated types package")
+	flag.StringVar(&specRestTypesStr, "spec-rest-types", "", "list of types that are meant for rest package but defined in spec only (requiring models import)")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -50,8 +52,13 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
-	types := strings.Split(typesStr, ",")
+	typesArr := strings.Split(typesStr, ",")
+	types := make(map[string]struct{}, len(typesArr))
+	for _, t := range typesArr {
+		types[t] = struct{}{}
+	}
 	serverTypes := strings.Split(serverTypesStr, ",")
+	specRestTypes := strings.Split(specRestTypesStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -78,7 +85,15 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg, templates, modelsPkg, types, serverTypes)
+	output, err := generate(
+		spec,
+		cfg,
+		templates,
+		modelsPkg,
+		types,
+		specRestTypes,
+		serverTypes,
+	)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -95,7 +110,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types, serverTypes []string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types map[string]struct{}, specRestTypes, serverTypes []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -140,31 +155,54 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"is_db_struct": func(t string) bool {
 			return strings.HasPrefix(t, "Db") && unicode.IsUpper([]rune(t)[2])
 		},
+		"is_spec_rest_type": func(t string) bool {
+			stName := strings.TrimPrefix(t, "externalRef0.")
+			if slices.Contains(specRestTypes, stName) {
+				return true
+			}
+
+			return false
+		},
 		"should_exclude_type": func(t string) bool {
 			stName := strings.TrimPrefix(t, "externalRef0.")
 			if slices.Contains(serverTypes, stName) {
 				return false
 			}
-			for _, typ := range types {
-				if stName == typ {
-					return true
-				}
+			if _, ok := types[stName]; ok {
+				return true
 			}
 
 			return false
 		},
-		"is_rest_type": func(t string) bool {
-			stName := strings.TrimPrefix(t, "externalRef0.")
-			for _, typ := range append(types, serverTypes...) {
-				if stName == typ {
-					return true
-				}
+		"is_rest_type": func(s string) bool {
+			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+
+			// NOTE: x-server-type marked schemas get generated with import-mapping successfully
+			if _, ok := types[stName]; ok {
+				return true
 			}
 
 			return false
+		},
+		"gen_mode": func() string {
+			return config.Mode
 		},
 		"rest_type": func(s string) string {
-			return strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+			stName := strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+
+			// rest type not defined in rest/models.spec.go -> use generated type
+			if !config.TestClient && slices.Contains(specRestTypes, stName) {
+				return "models." + stName
+			}
+
+			// to allow for easier tests where we dont have to populate field by field
+			if config.TestClient {
+				if _, ok := types[stName]; ok {
+					return "rest." + stName
+				}
+			}
+
+			return stName
 		},
 		"camel": strcase.ToCamel,
 	}

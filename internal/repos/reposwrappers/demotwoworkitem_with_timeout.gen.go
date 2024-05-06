@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // DemoTwoWorkItemWithTimeout implements repos.DemoTwoWorkItem interface instrumented with timeouts
@@ -35,7 +35,7 @@ func NewDemoTwoWorkItemWithTimeout(base repos.DemoTwoWorkItem, config DemoTwoWor
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -45,7 +45,7 @@ func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.
 }
 
 // Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -55,7 +55,7 @@ func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)
