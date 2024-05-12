@@ -3735,7 +3735,6 @@
           "x-is-generated": true
         }
       ],
-      "x-use-server-type": true,
       "x-spec-rest-type": true
     },
     "Scopes": {
@@ -5866,8 +5865,7 @@
             "filterMode"
           ]
         }
-      ],
-      "x-use-server-type": true
+      ]
     },
     "Pagination": {
       "type": "object",
@@ -5952,8 +5950,7 @@
                 "filterMode"
               ]
             }
-          ],
-          "x-use-server-type": true
+          ]
         },
         "sort": {
           "type": "string",
@@ -5962,8 +5959,7 @@
             "desc"
           ]
         }
-      },
-      "x-use-server-type": true
+      }
     },
     "PaginationItems": {
       "type": "object",
@@ -6051,8 +6047,7 @@
                   "filterMode"
                 ]
               }
-            ],
-            "x-use-server-type": true
+            ]
           },
           "sort": {
             "type": "string",
@@ -6061,8 +6056,7 @@
               "desc"
             ]
           }
-        },
-        "x-use-server-type": true
+        }
       }
     },
     "PaginationCursor": {
@@ -6190,8 +6184,7 @@
                       "filterMode"
                     ]
                   }
-                ],
-                "x-use-server-type": true
+                ]
               },
               "sort": {
                 "type": "string",
@@ -6200,8 +6193,7 @@
                   "desc"
                 ]
               }
-            },
-            "x-use-server-type": true
+            }
           }
         }
       },
@@ -11130,7 +11122,6 @@
           "x-is-generated": true
         }
       ],
-      "x-use-server-type": true,
       "x-spec-rest-type": true
     },
     "Scopes": {
@@ -13261,8 +13252,7 @@
             "filterMode"
           ]
         }
-      ],
-      "x-use-server-type": true
+      ]
     },
     "Pagination": {
       "type": "object",
@@ -13347,8 +13337,7 @@
                 "filterMode"
               ]
             }
-          ],
-          "x-use-server-type": true
+          ]
         },
         "sort": {
           "type": "string",
@@ -13357,8 +13346,7 @@
             "desc"
           ]
         }
-      },
-      "x-use-server-type": true
+      }
     },
     "PaginationItems": {
       "type": "object",
@@ -13446,8 +13434,7 @@
                   "filterMode"
                 ]
               }
-            ],
-            "x-use-server-type": true
+            ]
           },
           "sort": {
             "type": "string",
@@ -13456,8 +13443,7 @@
               "desc"
             ]
           }
-        },
-        "x-use-server-type": true
+        }
       }
     },
     "PaginationCursor": {
@@ -13585,8 +13571,7 @@
                       "filterMode"
                     ]
                   }
-                ],
-                "x-use-server-type": true
+                ]
               },
               "sort": {
                 "type": "string",
@@ -13595,8 +13580,7 @@
                   "desc"
                 ]
               }
-            },
-            "x-use-server-type": true
+            }
           }
         }
       },
