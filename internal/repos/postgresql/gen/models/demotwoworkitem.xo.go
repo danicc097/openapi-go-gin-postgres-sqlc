@@ -18,17 +18,6 @@ import (
 )
 
 // DemoTwoWorkItem represents a row from 'public.demo_two_work_items'.
-// Change properties via SQL column comments, joined with " && ":
-//   - "properties":<p1>,<p2>,...
-//     -- private: exclude a field from JSON.
-//     -- not-required: make a schema field not required.
-//     -- hidden: exclude field from OpenAPI generation.
-//     -- refs-ignore: generate a field whose constraints are ignored by the referenced table,
-//     i.e. no joins will be generated.
-//     -- share-ref-constraints: for a FK column, it will generate the same M2O and M2M join fields the ref column has.
-//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
-//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
-//   - "tags":<tags> to append literal struct tag strings.
 type DemoTwoWorkItem struct {
 	WorkItemID            WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
