@@ -1479,7 +1479,6 @@
           "$ref": "#/definitions/DemoTwoWorkItemResponse"
         }
       ],
-      "x-use-server-type": true,
       "x-spec-rest-type": true
     },
     "Scopes": {
@@ -2089,8 +2088,7 @@
         {
           "$ref": "#/definitions/PaginationFilterArray"
         }
-      ],
-      "x-use-server-type": true
+      ]
     },
     "Pagination": {
       "type": "object",
@@ -2101,8 +2099,7 @@
         "sort": {
           "$ref": "#/definitions/Direction"
         }
-      },
-      "x-use-server-type": true
+      }
     },
     "PaginationItems": {
       "type": "object",

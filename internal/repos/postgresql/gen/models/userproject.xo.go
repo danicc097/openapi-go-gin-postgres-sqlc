@@ -14,17 +14,6 @@ import (
 )
 
 // UserProject represents a row from 'public.user_project'.
-// Change properties via SQL column comments, joined with " && ":
-//   - "properties":<p1>,<p2>,...
-//     -- private: exclude a field from JSON.
-//     -- not-required: make a schema field not required.
-//     -- hidden: exclude field from OpenAPI generation.
-//     -- refs-ignore: generate a field whose constraints are ignored by the referenced table,
-//     i.e. no joins will be generated.
-//     -- share-ref-constraints: for a FK column, it will generate the same M2O and M2M join fields the ref column has.
-//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
-//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
-//   - "tags":<tags> to append literal struct tag strings.
 type UserProject struct {
 	ProjectID ProjectID `json:"projectID" db:"project_id" required:"true" nullable:"false"` // project_id
 	Member    UserID    `json:"member" db:"member" required:"true" nullable:"false"`        // member

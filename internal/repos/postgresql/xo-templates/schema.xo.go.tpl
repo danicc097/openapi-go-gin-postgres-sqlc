@@ -226,18 +226,6 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
 // {{$t.GoName}} represents a row from '{{ schema $t.SQLName }}'.
-// Change properties via SQL column comments, joined with " && ":
-//     - "properties":<p1>,<p2>,...
-//         -- private: exclude a field from JSON.
-//         -- not-required: make a schema field not required.
-//         -- hidden: exclude field from OpenAPI generation.
-//         -- refs-ignore: generate a field whose constraints are ignored by the referenced table,
-//            i.e. no joins will be generated.
-//         -- share-ref-constraints: for a FK column, it will generate the same M2O and M2M join fields the ref column has.
-//     - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
-//     - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
-//     - "tags":<tags> to append literal struct tag strings.
-
 {{- end }}
 type {{$t.GoName}} struct {
 {{ range $t.Fields -}}
