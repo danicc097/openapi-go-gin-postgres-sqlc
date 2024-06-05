@@ -290,7 +290,7 @@ x.install-tools() {
       "go install golang.org/x/tools/cmd/goimports@latest"
       "go install mvdan.cc/gofumpt@latest"
       "go install mvdan.cc/sh/v3/cmd/shfmt@latest"
-      "go install github.com/cosmtrek/air@latest"
+      "go install github.com/air-verse/air@latest"
       "go install github.com/danicc097/xo/v5@v5.6.0"
       "go install github.com/mikefarah/yq/v4@v4.34.2"
       "go install github.com/hexdigest/gowrap/cmd/gowrap@latest"
