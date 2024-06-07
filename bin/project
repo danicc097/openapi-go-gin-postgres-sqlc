@@ -372,19 +372,19 @@ x.gen.pregen() {
       echo "${YELLOW}Generating missing rest package \$ref's:"
       printf "${YELLOW}  - %s\n" "${missing_rest_models[@]}"
       echo "${OFF}"
-    fi
 
-    local new_schemas=""
-    for ref in "${missing_rest_models[@]}"; do
-      new_schemas+="\"$ref\": {
+      local new_schemas=""
+      for ref in "${missing_rest_models[@]}"; do
+        new_schemas+="\"$ref\": {
             \"x-gen-struct\": \"$ref\",
             \"x-is-generated\": true
           },"
-    done
+      done
 
-    yq eval-all ".components.schemas += {
-      ${new_schemas%,}
-    }" -i "$SPEC_PATH"
+      yq eval-all ".components.schemas += {
+        ${new_schemas%,}
+      }" -i "$SPEC_PATH"
+    fi
 
     codegen validate-spec -env=".env.$X_ENV"
     # useless after merging models and db
@@ -590,7 +590,6 @@ generate_repo_constructor() {
   go-utils.find_interfaces repo_interfaces $repos
 
   for iface in "${repo_interfaces[@]}"; do
-    local struct_init+=("${iface}: ${iface,}")
     local struct_fields+=("${iface} ${iface}")
   done
 
