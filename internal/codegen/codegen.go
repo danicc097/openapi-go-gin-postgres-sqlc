@@ -99,8 +99,7 @@ func New(stderr io.Writer, specPath, opIDAuthPath, handlersPath string) *CodeGen
 
 // validateSpec validates an OpenAPI 3.0 specification.
 func (o *CodeGen) validateSpec() error {
-	_, err := rest.ReadOpenAPI(o.specPath)
-	if err != nil {
+	if _, err := rest.ReadOpenAPI(o.specPath); err != nil {
 		return err
 	}
 
