@@ -3,7 +3,7 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import { HttpResponse, http } from 'msw'
 import { UserID } from 'src/gen/entity-ids'
-import { PaginatedUsersResponse, User } from 'src/gen/model'
+import { PaginatedUsersResponse, UserResponse } from 'src/gen/model'
 import { getGetPaginatedUsersMockHandler } from 'src/gen/user/user.msw'
 import { apiPath } from 'src/services/apiPaths'
 import { act, fireEvent, render, screen, waitFor } from 'src/test-utils'
@@ -11,7 +11,7 @@ import { setupMSW } from 'src/test-utils/msw'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 import { vitest } from 'vitest'
 
-function usersForPage(page: number): User[] {
+function usersForPage(page: number): UserResponse[] {
   return [...Array(15)].map((x, i) => ({
     userID: faker.string.uuid() as UserID,
     username: `user_page${page}_${i}`,

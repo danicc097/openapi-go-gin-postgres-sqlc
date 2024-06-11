@@ -42,7 +42,7 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *DemoWorkIte
 func (w *DemoWorkItem) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID) (*models.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	opts := append(w.wiSvc.getSharedDBOpts())
+	opts := w.wiSvc.getSharedDBOpts()
 	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)
