@@ -41,3 +41,32 @@ begin
 end;
 $BODY$
 language plpgsql;
+
+--
+--
+--
+--
+--
+--
+--
+-- FUNCTIONS
+--
+--
+--
+--
+--
+--
+--
+--
+create or replace function row_estimator (query text)
+  returns bigint
+  language plpgsql
+  as $$
+declare
+  plan jsonb;
+begin
+  execute 'EXPLAIN (FORMAT JSON) ' || query into plan;
+
+  return (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
+end;
+$$;

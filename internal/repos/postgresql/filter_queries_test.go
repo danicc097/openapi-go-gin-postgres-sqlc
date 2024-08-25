@@ -79,7 +79,7 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 
 			if result[0].Kind() == reflect.Slice {
 				require.Zero(t, result[0].Len())
-				// in case of e.g. user.ByTeam it will fail if team not found, instead of returning empty slice
+				// in case of e.g. user.ByTeam it will fail if team itself is not found, instead of returning empty slice
 				// require.NoError(t, err) // not necessarily
 				if err != nil {
 					require.ErrorContains(t, err, errNoRows)
