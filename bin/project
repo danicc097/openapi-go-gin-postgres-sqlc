@@ -419,15 +419,10 @@ x.gen.pregen() {
 
     update_roles_and_scopes
 
-    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" &
-    validate_spec &
-    {
-      update_spec_with_structs
-      remove_schemas_marked_for_deletion
-    } &
-
-    wait_without_error
-
+    validate_spec
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" # should not edit spec
+    update_spec_with_structs
+    remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
