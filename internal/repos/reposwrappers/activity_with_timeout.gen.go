@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// ActivityWithTimeout implements repos.Activity interface instrumented with timeouts
+// ActivityWithTimeout implements _sourceRepos.Activity interface instrumented with timeouts
 type ActivityWithTimeout struct {
-	repos.Activity
+	_sourceRepos.Activity
 	config ActivityWithTimeoutConfig
 }
 
@@ -35,14 +35,14 @@ type ActivityWithTimeoutConfig struct {
 }
 
 // NewActivityWithTimeout returns ActivityWithTimeout
-func NewActivityWithTimeout(base repos.Activity, config ActivityWithTimeoutConfig) ActivityWithTimeout {
+func NewActivityWithTimeout(base _sourceRepos.Activity, config ActivityWithTimeoutConfig) ActivityWithTimeout {
 	return ActivityWithTimeout{
 		Activity: base,
 		config:   config,
 	}
 }
 
-// ByID implements repos.Activity
+// ByID implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -52,7 +52,7 @@ func (_d ActivityWithTimeout) ByID(ctx context.Context, d models.DBTX, id models
 	return _d.Activity.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Activity
+// ByName implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
@@ -62,7 +62,7 @@ func (_d ActivityWithTimeout) ByName(ctx context.Context, d models.DBTX, name st
 	return _d.Activity.ByName(ctx, d, name, projectID, opts...)
 }
 
-// ByProjectID implements repos.Activity
+// ByProjectID implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (aa1 []models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectIDTimeout > 0 {
@@ -72,7 +72,7 @@ func (_d ActivityWithTimeout) ByProjectID(ctx context.Context, d models.DBTX, pr
 	return _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 }
 
-// Create implements repos.Activity
+// Create implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (ap1 *models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
@@ -82,7 +82,7 @@ func (_d ActivityWithTimeout) Create(ctx context.Context, d models.DBTX, params 
 	return _d.Activity.Create(ctx, d, params)
 }
 
-// Delete implements repos.Activity
+// Delete implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (ap1 *models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
@@ -92,7 +92,7 @@ func (_d ActivityWithTimeout) Delete(ctx context.Context, d models.DBTX, id mode
 	return _d.Activity.Delete(ctx, d, id)
 }
 
-// Restore implements repos.Activity
+// Restore implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) (err error) {
 	var cancelFunc func()
 	if _d.config.RestoreTimeout > 0 {
@@ -102,7 +102,7 @@ func (_d ActivityWithTimeout) Restore(ctx context.Context, d models.DBTX, id mod
 	return _d.Activity.Restore(ctx, d, id)
 }
 
-// Update implements repos.Activity
+// Update implements _sourceRepos.Activity
 func (_d ActivityWithTimeout) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (ap1 *models.Activity, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {

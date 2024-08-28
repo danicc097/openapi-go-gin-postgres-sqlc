@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// ProjectWithPrometheus implements repos.Project interface with all methods wrapped
+// ProjectWithPrometheus implements _sourceRepos.Project interface with all methods wrapped
 // with Prometheus metrics
 type ProjectWithPrometheus struct {
-	base         repos.Project
+	base         _sourceRepos.Project
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var projectDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewProjectWithPrometheus returns an instance of the repos.Project decorated with prometheus summary metric
-func NewProjectWithPrometheus(base repos.Project, instanceName string) ProjectWithPrometheus {
+// NewProjectWithPrometheus returns an instance of the _sourceRepos.Project decorated with prometheus summary metric
+func NewProjectWithPrometheus(base _sourceRepos.Project, instanceName string) ProjectWithPrometheus {
 	return ProjectWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.Project
+// ByID implements _sourceRepos.Project
 func (_d ProjectWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d ProjectWithPrometheus) ByID(ctx context.Context, d models.DBTX, id mode
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Project
+// ByName implements _sourceRepos.Project
 func (_d ProjectWithPrometheus) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d ProjectWithPrometheus) ByName(ctx context.Context, d models.DBTX, name 
 	return _d.base.ByName(ctx, d, name, opts...)
 }
 
-// IsTeamInProject implements repos.Project
+// IsTeamInProject implements _sourceRepos.Project
 func (_d ProjectWithPrometheus) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	_since := time.Now()
 	defer func() {

@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// KanbanStepWithTracing implements repos.KanbanStep interface instrumented with opentracing spans
+// KanbanStepWithTracing implements _sourceRepos.KanbanStep interface instrumented with opentracing spans
 type KanbanStepWithTracing struct {
-	repos.KanbanStep
+	_sourceRepos.KanbanStep
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewKanbanStepWithTracing returns KanbanStepWithTracing
-func NewKanbanStepWithTracing(base repos.KanbanStep, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) KanbanStepWithTracing {
+func NewKanbanStepWithTracing(base _sourceRepos.KanbanStep, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) KanbanStepWithTracing {
 	d := KanbanStepWithTracing{
 		KanbanStep: base,
 		_instance:  instance,
@@ -35,9 +35,9 @@ func NewKanbanStepWithTracing(base repos.KanbanStep, instance string, spanDecora
 	return d
 }
 
-// ByID implements repos.KanbanStep
+// ByID implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithTracing) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.KanbanStep.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d KanbanStepWithTracing) ByID(ctx context.Context, d models.DBTX, id mode
 	return _d.KanbanStep.ByID(ctx, d, id, opts...)
 }
 
-// ByProject implements repos.KanbanStep
+// ByProject implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithTracing) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByProject")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.KanbanStep.ByProject")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

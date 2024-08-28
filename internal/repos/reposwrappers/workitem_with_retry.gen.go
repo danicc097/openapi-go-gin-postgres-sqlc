@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// WorkItemWithRetry implements repos.WorkItem interface instrumented with retries
+// WorkItemWithRetry implements _sourceRepos.WorkItem interface instrumented with retries
 type WorkItemWithRetry struct {
-	repos.WorkItem
+	_sourceRepos.WorkItem
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewWorkItemWithRetry returns WorkItemWithRetry
-func NewWorkItemWithRetry(base repos.WorkItem, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemWithRetry {
+func NewWorkItemWithRetry(base _sourceRepos.WorkItem, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemWithRetry {
 	return WorkItemWithRetry{
 		WorkItem:       base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewWorkItemWithRetry(base repos.WorkItem, logger *zap.SugaredLogger, retryC
 	}
 }
 
-// AssignTag implements repos.WorkItem
+// AssignTag implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryAssignTag")
@@ -73,7 +73,7 @@ func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d models.DBTX, params
 	return
 }
 
-// AssignUser implements repos.WorkItem
+// AssignUser implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryAssignUser")
@@ -113,7 +113,7 @@ func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d models.DBTX, param
 	return
 }
 
-// ByID implements repos.WorkItem
+// ByID implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryByID")
@@ -153,7 +153,7 @@ func (_d WorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.W
 	return
 }
 
-// Delete implements repos.WorkItem
+// Delete implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryDelete")
@@ -193,7 +193,7 @@ func (_d WorkItemWithRetry) Delete(ctx context.Context, d models.DBTX, id models
 	return
 }
 
-// RemoveAssignedUser implements repos.WorkItem
+// RemoveAssignedUser implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRemoveAssignedUser")
@@ -233,7 +233,7 @@ func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d models.DBT
 	return
 }
 
-// RemoveTag implements repos.WorkItem
+// RemoveTag implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRemoveTag")
@@ -273,7 +273,7 @@ func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d models.DBTX, tagID 
 	return
 }
 
-// Restore implements repos.WorkItem
+// Restore implements _sourceRepos.WorkItem
 func (_d WorkItemWithRetry) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRestore")

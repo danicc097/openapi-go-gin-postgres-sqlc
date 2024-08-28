@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// WorkItemTypeWithRetry implements repos.WorkItemType interface instrumented with retries
+// WorkItemTypeWithRetry implements _sourceRepos.WorkItemType interface instrumented with retries
 type WorkItemTypeWithRetry struct {
-	repos.WorkItemType
+	_sourceRepos.WorkItemType
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewWorkItemTypeWithRetry returns WorkItemTypeWithRetry
-func NewWorkItemTypeWithRetry(base repos.WorkItemType, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemTypeWithRetry {
+func NewWorkItemTypeWithRetry(base _sourceRepos.WorkItemType, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemTypeWithRetry {
 	return WorkItemTypeWithRetry{
 		WorkItemType:   base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewWorkItemTypeWithRetry(base repos.WorkItemType, logger *zap.SugaredLogger
 	}
 }
 
-// ByID implements repos.WorkItemType
+// ByID implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTypeWithRetryByID")
@@ -73,7 +73,7 @@ func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d models.DBTX, id mode
 	return
 }
 
-// ByName implements repos.WorkItemType
+// ByName implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemTypeWithRetryByName")

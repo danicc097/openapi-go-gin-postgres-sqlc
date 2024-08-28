@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// TimeEntryWithPrometheus implements repos.TimeEntry interface with all methods wrapped
+// TimeEntryWithPrometheus implements _sourceRepos.TimeEntry interface with all methods wrapped
 // with Prometheus metrics
 type TimeEntryWithPrometheus struct {
-	base         repos.TimeEntry
+	base         _sourceRepos.TimeEntry
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var timeentryDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewTimeEntryWithPrometheus returns an instance of the repos.TimeEntry decorated with prometheus summary metric
-func NewTimeEntryWithPrometheus(base repos.TimeEntry, instanceName string) TimeEntryWithPrometheus {
+// NewTimeEntryWithPrometheus returns an instance of the _sourceRepos.TimeEntry decorated with prometheus summary metric
+func NewTimeEntryWithPrometheus(base _sourceRepos.TimeEntry, instanceName string) TimeEntryWithPrometheus {
 	return TimeEntryWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.TimeEntry
+// ByID implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d models.DBTX, id mo
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.TimeEntry
+// Create implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d models.DBTX, par
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.TimeEntry
+// Delete implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d models.DBTX, id 
 	return _d.base.Delete(ctx, d, id)
 }
 
-// Update implements repos.TimeEntry
+// Update implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {

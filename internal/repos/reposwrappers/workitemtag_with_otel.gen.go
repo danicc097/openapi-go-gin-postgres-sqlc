@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// WorkItemTagWithTracing implements repos.WorkItemTag interface instrumented with opentracing spans
+// WorkItemTagWithTracing implements _sourceRepos.WorkItemTag interface instrumented with opentracing spans
 type WorkItemTagWithTracing struct {
-	repos.WorkItemTag
+	_sourceRepos.WorkItemTag
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewWorkItemTagWithTracing returns WorkItemTagWithTracing
-func NewWorkItemTagWithTracing(base repos.WorkItemTag, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemTagWithTracing {
+func NewWorkItemTagWithTracing(base _sourceRepos.WorkItemTag, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemTagWithTracing {
 	d := WorkItemTagWithTracing{
 		WorkItemTag: base,
 		_instance:   instance,
@@ -35,9 +35,9 @@ func NewWorkItemTagWithTracing(base repos.WorkItemTag, instance string, spanDeco
 	return d
 }
 
-// ByID implements repos.WorkItemTag
+// ByID implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTagID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemTag.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d WorkItemTagWithTracing) ByID(ctx context.Context, d models.DBTX, id mod
 	return _d.WorkItemTag.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemTag
+// ByName implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.ByName")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemTag.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -86,9 +86,9 @@ func (_d WorkItemTagWithTracing) ByName(ctx context.Context, d models.DBTX, name
 	return _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 }
 
-// Create implements repos.WorkItemTag
+// Create implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTracing) Create(ctx context.Context, d models.DBTX, params *models.WorkItemTagCreateParams) (wp1 *models.WorkItemTag, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemTag.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -110,9 +110,9 @@ func (_d WorkItemTagWithTracing) Create(ctx context.Context, d models.DBTX, para
 	return _d.WorkItemTag.Create(ctx, d, params)
 }
 
-// Delete implements repos.WorkItemTag
+// Delete implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTracing) Delete(ctx context.Context, d models.DBTX, id models.WorkItemTagID) (wp1 *models.WorkItemTag, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemTag.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -134,9 +134,9 @@ func (_d WorkItemTagWithTracing) Delete(ctx context.Context, d models.DBTX, id m
 	return _d.WorkItemTag.Delete(ctx, d, id)
 }
 
-// Update implements repos.WorkItemTag
+// Update implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemTagID, params *models.WorkItemTagUpdateParams) (wp1 *models.WorkItemTag, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemTag.Update")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemTag.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

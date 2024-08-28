@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// WorkItemCommentWithTracing implements repos.WorkItemComment interface instrumented with opentracing spans
+// WorkItemCommentWithTracing implements _sourceRepos.WorkItemComment interface instrumented with opentracing spans
 type WorkItemCommentWithTracing struct {
-	repos.WorkItemComment
+	_sourceRepos.WorkItemComment
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewWorkItemCommentWithTracing returns WorkItemCommentWithTracing
-func NewWorkItemCommentWithTracing(base repos.WorkItemComment, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemCommentWithTracing {
+func NewWorkItemCommentWithTracing(base _sourceRepos.WorkItemComment, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemCommentWithTracing {
 	d := WorkItemCommentWithTracing{
 		WorkItemComment: base,
 		_instance:       instance,
@@ -35,9 +35,9 @@ func NewWorkItemCommentWithTracing(base repos.WorkItemComment, instance string, 
 	return d
 }
 
-// ByID implements repos.WorkItemComment
+// ByID implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, opts ...models.WorkItemCommentSelectConfigOption) (wp1 *models.WorkItemComment, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemComment.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d WorkItemCommentWithTracing) ByID(ctx context.Context, d models.DBTX, id
 	return _d.WorkItemComment.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.WorkItemComment
+// Create implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithTracing) Create(ctx context.Context, d models.DBTX, params *models.WorkItemCommentCreateParams) (wp1 *models.WorkItemComment, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemComment.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -84,9 +84,9 @@ func (_d WorkItemCommentWithTracing) Create(ctx context.Context, d models.DBTX, 
 	return _d.WorkItemComment.Create(ctx, d, params)
 }
 
-// Delete implements repos.WorkItemComment
+// Delete implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithTracing) Delete(ctx context.Context, d models.DBTX, id models.WorkItemCommentID) (wp1 *models.WorkItemComment, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemComment.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -108,9 +108,9 @@ func (_d WorkItemCommentWithTracing) Delete(ctx context.Context, d models.DBTX, 
 	return _d.WorkItemComment.Delete(ctx, d, id)
 }
 
-// Update implements repos.WorkItemComment
+// Update implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, params *models.WorkItemCommentUpdateParams) (wp1 *models.WorkItemComment, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemComment.Update")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemComment.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

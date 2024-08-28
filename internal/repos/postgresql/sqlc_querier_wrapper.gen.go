@@ -8,20 +8,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	_sourceModels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// QuerierWrapper implements models.Querier and wraps errors with the associated query name.
-type QuerierWrapper struct{ models.Querier }
+// QuerierWrapper implements _sourceModels.Querier and wraps errors with the associated query name.
+type QuerierWrapper struct{ _sourceModels.Querier }
 
 // NewQuerierWrapper returns QuerierWrapper with wrapped pgx errors.
-func NewQuerierWrapper(base models.Querier) QuerierWrapper {
+func NewQuerierWrapper(base _sourceModels.Querier) QuerierWrapper {
 	return QuerierWrapper{
 		Querier: base,
 	}
 }
 
-func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, d models.DBTX, arg models.GetExtraSchemaNotificationsParams) (ga1 []models.GetExtraSchemaNotificationsRow, err error) {
+func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, d _sourceModels.DBTX, arg _sourceModels.GetExtraSchemaNotificationsParams) (ga1 []_sourceModels.GetExtraSchemaNotificationsRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
 	ga1, err = w.Querier.GetExtraSchemaNotifications(ctx, d, arg)
@@ -31,7 +31,7 @@ func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, d model
 	return
 }
 
-func (w QuerierWrapper) GetUser(ctx context.Context, d models.DBTX, arg models.GetUserParams) (g1 models.GetUserRow, err error) {
+func (w QuerierWrapper) GetUser(ctx context.Context, d _sourceModels.DBTX, arg _sourceModels.GetUserParams) (g1 _sourceModels.GetUserRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
 	g1, err = w.Querier.GetUser(ctx, d, arg)
@@ -41,7 +41,7 @@ func (w QuerierWrapper) GetUser(ctx context.Context, d models.DBTX, arg models.G
 	return
 }
 
-func (w QuerierWrapper) GetUserNotifications(ctx context.Context, d models.DBTX, arg models.GetUserNotificationsParams) (ga1 []models.GetUserNotificationsRow, err error) {
+func (w QuerierWrapper) GetUserNotifications(ctx context.Context, d _sourceModels.DBTX, arg _sourceModels.GetUserNotificationsParams) (ga1 []_sourceModels.GetUserNotificationsRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
 	ga1, err = w.Querier.GetUserNotifications(ctx, d, arg)
@@ -51,7 +51,7 @@ func (w QuerierWrapper) GetUserNotifications(ctx context.Context, d models.DBTX,
 	return
 }
 
-func (w QuerierWrapper) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
+func (w QuerierWrapper) IsTeamInProject(ctx context.Context, d _sourceModels.DBTX, arg _sourceModels.IsTeamInProjectParams) (b1 bool, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
 	b1, err = w.Querier.IsTeamInProject(ctx, d, arg)

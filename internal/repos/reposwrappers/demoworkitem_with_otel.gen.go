@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// DemoWorkItemWithTracing implements repos.DemoWorkItem interface instrumented with opentracing spans
+// DemoWorkItemWithTracing implements _sourceRepos.DemoWorkItem interface instrumented with opentracing spans
 type DemoWorkItemWithTracing struct {
-	repos.DemoWorkItem
+	_sourceRepos.DemoWorkItem
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewDemoWorkItemWithTracing returns DemoWorkItemWithTracing
-func NewDemoWorkItemWithTracing(base repos.DemoWorkItem, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) DemoWorkItemWithTracing {
+func NewDemoWorkItemWithTracing(base _sourceRepos.DemoWorkItem, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) DemoWorkItemWithTracing {
 	d := DemoWorkItemWithTracing{
 		DemoWorkItem: base,
 		_instance:    instance,
@@ -35,9 +35,9 @@ func NewDemoWorkItemWithTracing(base repos.DemoWorkItem, instance string, spanDe
 	return d
 }
 
-// ByID implements repos.DemoWorkItem
+// ByID implements _sourceRepos.DemoWorkItem
 func (_d DemoWorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoWorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d DemoWorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id mo
 	return _d.DemoWorkItem.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Create")
+// Create implements _sourceRepos.DemoWorkItem
+func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoWorkItem.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -84,9 +84,9 @@ func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, par
 	return _d.DemoWorkItem.Create(ctx, d, params)
 }
 
-// Paginated implements repos.DemoWorkItem
+// Paginated implements _sourceRepos.DemoWorkItem
 func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Paginated")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoWorkItem.Paginated")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -109,9 +109,9 @@ func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d models.DBTX, 
 	return _d.DemoWorkItem.Paginated(ctx, d, cursor, opts...)
 }
 
-// Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Update")
+// Update implements _sourceRepos.DemoWorkItem
+func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoWorkItem.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

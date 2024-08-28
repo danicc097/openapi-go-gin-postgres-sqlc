@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// TeamWithTracing implements repos.Team interface instrumented with opentracing spans
+// TeamWithTracing implements _sourceRepos.Team interface instrumented with opentracing spans
 type TeamWithTracing struct {
-	repos.Team
+	_sourceRepos.Team
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewTeamWithTracing returns TeamWithTracing
-func NewTeamWithTracing(base repos.Team, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) TeamWithTracing {
+func NewTeamWithTracing(base _sourceRepos.Team, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) TeamWithTracing {
 	d := TeamWithTracing{
 		Team:      base,
 		_instance: instance,
@@ -35,9 +35,9 @@ func NewTeamWithTracing(base repos.Team, instance string, spanDecorator ...func(
 	return d
 }
 
-// ByID implements repos.Team
+// ByID implements _sourceRepos.Team
 func (_d TeamWithTracing) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Team.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d TeamWithTracing) ByID(ctx context.Context, d models.DBTX, id models.Tea
 	return _d.Team.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Team
+// ByName implements _sourceRepos.Team
 func (_d TeamWithTracing) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.ByName")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Team.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -86,9 +86,9 @@ func (_d TeamWithTracing) ByName(ctx context.Context, d models.DBTX, name string
 	return _d.Team.ByName(ctx, d, name, projectID, opts...)
 }
 
-// Create implements repos.Team
+// Create implements _sourceRepos.Team
 func (_d TeamWithTracing) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Team.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -110,9 +110,9 @@ func (_d TeamWithTracing) Create(ctx context.Context, d models.DBTX, params *mod
 	return _d.Team.Create(ctx, d, params)
 }
 
-// Delete implements repos.Team
+// Delete implements _sourceRepos.Team
 func (_d TeamWithTracing) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Team.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -134,9 +134,9 @@ func (_d TeamWithTracing) Delete(ctx context.Context, d models.DBTX, id models.T
 	return _d.Team.Delete(ctx, d, id)
 }
 
-// Update implements repos.Team
+// Update implements _sourceRepos.Team
 func (_d TeamWithTracing) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Team.Update")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Team.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// NotificationWithTracing implements repos.Notification interface instrumented with opentracing spans
+// NotificationWithTracing implements _sourceRepos.Notification interface instrumented with opentracing spans
 type NotificationWithTracing struct {
-	repos.Notification
+	_sourceRepos.Notification
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewNotificationWithTracing returns NotificationWithTracing
-func NewNotificationWithTracing(base repos.Notification, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) NotificationWithTracing {
+func NewNotificationWithTracing(base _sourceRepos.Notification, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) NotificationWithTracing {
 	d := NotificationWithTracing{
 		Notification: base,
 		_instance:    instance,
@@ -35,9 +35,9 @@ func NewNotificationWithTracing(base repos.Notification, instance string, spanDe
 	return d
 }
 
-// Create implements repos.Notification
+// Create implements _sourceRepos.Notification
 func (_d NotificationWithTracing) Create(ctx context.Context, d models.DBTX, params *models.NotificationCreateParams) (up1 *models.UserNotification, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Notification.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -59,9 +59,9 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d models.DBTX, par
 	return _d.Notification.Create(ctx, d, params)
 }
 
-// Delete implements repos.Notification
+// Delete implements _sourceRepos.Notification
 func (_d NotificationWithTracing) Delete(ctx context.Context, d models.DBTX, id models.NotificationID) (np1 *models.Notification, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Notification.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -83,9 +83,9 @@ func (_d NotificationWithTracing) Delete(ctx context.Context, d models.DBTX, id 
 	return _d.Notification.Delete(ctx, d, id)
 }
 
-// LatestNotifications implements repos.Notification
+// LatestNotifications implements _sourceRepos.Notification
 func (_d NotificationWithTracing) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) (ga1 []models.GetUserNotificationsRow, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.LatestNotifications")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Notification.LatestNotifications")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -107,9 +107,9 @@ func (_d NotificationWithTracing) LatestNotifications(ctx context.Context, d mod
 	return _d.Notification.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedUserNotifications implements repos.Notification
+// PaginatedUserNotifications implements _sourceRepos.Notification
 func (_d NotificationWithTracing) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) (ua1 []models.UserNotification, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.PaginatedUserNotifications")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Notification.PaginatedUserNotifications")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// TeamWithPrometheus implements repos.Team interface with all methods wrapped
+// TeamWithPrometheus implements _sourceRepos.Team interface with all methods wrapped
 // with Prometheus metrics
 type TeamWithPrometheus struct {
-	base         repos.Team
+	base         _sourceRepos.Team
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var teamDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewTeamWithPrometheus returns an instance of the repos.Team decorated with prometheus summary metric
-func NewTeamWithPrometheus(base repos.Team, instanceName string) TeamWithPrometheus {
+// NewTeamWithPrometheus returns an instance of the _sourceRepos.Team decorated with prometheus summary metric
+func NewTeamWithPrometheus(base _sourceRepos.Team, instanceName string) TeamWithPrometheus {
 	return TeamWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.Team
+// ByID implements _sourceRepos.Team
 func (_d TeamWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d TeamWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Team
+// ByName implements _sourceRepos.Team
 func (_d TeamWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d TeamWithPrometheus) ByName(ctx context.Context, d models.DBTX, name str
 	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }
 
-// Create implements repos.Team
+// Create implements _sourceRepos.Team
 func (_d TeamWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d TeamWithPrometheus) Create(ctx context.Context, d models.DBTX, params *
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.Team
+// Delete implements _sourceRepos.Team
 func (_d TeamWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {
@@ -94,7 +94,7 @@ func (_d TeamWithPrometheus) Delete(ctx context.Context, d models.DBTX, id model
 	return _d.base.Delete(ctx, d, id)
 }
 
-// Update implements repos.Team
+// Update implements _sourceRepos.Team
 func (_d TeamWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
 	_since := time.Now()
 	defer func() {

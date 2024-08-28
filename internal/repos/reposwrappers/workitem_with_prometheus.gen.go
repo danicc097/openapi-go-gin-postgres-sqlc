@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// WorkItemWithPrometheus implements repos.WorkItem interface with all methods wrapped
+// WorkItemWithPrometheus implements _sourceRepos.WorkItem interface with all methods wrapped
 // with Prometheus metrics
 type WorkItemWithPrometheus struct {
-	base         repos.WorkItem
+	base         _sourceRepos.WorkItem
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var workitemDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewWorkItemWithPrometheus returns an instance of the repos.WorkItem decorated with prometheus summary metric
-func NewWorkItemWithPrometheus(base repos.WorkItem, instanceName string) WorkItemWithPrometheus {
+// NewWorkItemWithPrometheus returns an instance of the _sourceRepos.WorkItem decorated with prometheus summary metric
+func NewWorkItemWithPrometheus(base _sourceRepos.WorkItem, instanceName string) WorkItemWithPrometheus {
 	return WorkItemWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// AssignTag implements repos.WorkItem
+// AssignTag implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) (err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d WorkItemWithPrometheus) AssignTag(ctx context.Context, d models.DBTX, p
 	return _d.base.AssignTag(ctx, d, params)
 }
 
-// AssignUser implements repos.WorkItem
+// AssignUser implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) (err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d models.DBTX, 
 	return _d.base.AssignUser(ctx, d, params)
 }
 
-// ByID implements repos.WorkItem
+// ByID implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d WorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id mod
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// Delete implements repos.WorkItem
+// Delete implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
@@ -94,7 +94,7 @@ func (_d WorkItemWithPrometheus) Delete(ctx context.Context, d models.DBTX, id m
 	return _d.base.Delete(ctx, d, id)
 }
 
-// RemoveAssignedUser implements repos.WorkItem
+// RemoveAssignedUser implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
@@ -108,7 +108,7 @@ func (_d WorkItemWithPrometheus) RemoveAssignedUser(ctx context.Context, d model
 	return _d.base.RemoveAssignedUser(ctx, d, memberID, workItemID)
 }
 
-// RemoveTag implements repos.WorkItem
+// RemoveTag implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) (err error) {
 	_since := time.Now()
 	defer func() {
@@ -122,7 +122,7 @@ func (_d WorkItemWithPrometheus) RemoveTag(ctx context.Context, d models.DBTX, t
 	return _d.base.RemoveTag(ctx, d, tagID, workItemID)
 }
 
-// Restore implements repos.WorkItem
+// Restore implements _sourceRepos.WorkItem
 func (_d WorkItemWithPrometheus) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
