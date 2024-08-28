@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// TeamWithRetry implements repos.Team interface instrumented with retries
+// TeamWithRetry implements _sourceRepos.Team interface instrumented with retries
 type TeamWithRetry struct {
-	repos.Team
+	_sourceRepos.Team
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewTeamWithRetry returns TeamWithRetry
-func NewTeamWithRetry(base repos.Team, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) TeamWithRetry {
+func NewTeamWithRetry(base _sourceRepos.Team, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) TeamWithRetry {
 	return TeamWithRetry{
 		Team:           base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewTeamWithRetry(base repos.Team, logger *zap.SugaredLogger, retryCount int
 	}
 }
 
-// ByID implements repos.Team
+// ByID implements _sourceRepos.Team
 func (_d TeamWithRetry) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryByID")
@@ -73,7 +73,7 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d models.DBTX, id models.TeamI
 	return
 }
 
-// ByName implements repos.Team
+// ByName implements _sourceRepos.Team
 func (_d TeamWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryByName")
@@ -113,7 +113,7 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d models.DBTX, name string, 
 	return
 }
 
-// Create implements repos.Team
+// Create implements _sourceRepos.Team
 func (_d TeamWithRetry) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryCreate")
@@ -153,7 +153,7 @@ func (_d TeamWithRetry) Create(ctx context.Context, d models.DBTX, params *model
 	return
 }
 
-// Delete implements repos.Team
+// Delete implements _sourceRepos.Team
 func (_d TeamWithRetry) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryDelete")
@@ -193,7 +193,7 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d models.DBTX, id models.Tea
 	return
 }
 
-// Update implements repos.Team
+// Update implements _sourceRepos.Team
 func (_d TeamWithRetry) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (tp1 *models.Team, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TeamWithRetryUpdate")

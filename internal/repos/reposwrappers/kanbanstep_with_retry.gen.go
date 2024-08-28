@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// KanbanStepWithRetry implements repos.KanbanStep interface instrumented with retries
+// KanbanStepWithRetry implements _sourceRepos.KanbanStep interface instrumented with retries
 type KanbanStepWithRetry struct {
-	repos.KanbanStep
+	_sourceRepos.KanbanStep
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewKanbanStepWithRetry returns KanbanStepWithRetry
-func NewKanbanStepWithRetry(base repos.KanbanStep, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) KanbanStepWithRetry {
+func NewKanbanStepWithRetry(base _sourceRepos.KanbanStep, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) KanbanStepWithRetry {
 	return KanbanStepWithRetry{
 		KanbanStep:     base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewKanbanStepWithRetry(base repos.KanbanStep, logger *zap.SugaredLogger, re
 	}
 }
 
-// ByID implements repos.KanbanStep
+// ByID implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithRetry) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT KanbanStepWithRetryByID")
@@ -73,7 +73,7 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d models.DBTX, id models
 	return
 }
 
-// ByProject implements repos.KanbanStep
+// ByProject implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT KanbanStepWithRetryByProject")

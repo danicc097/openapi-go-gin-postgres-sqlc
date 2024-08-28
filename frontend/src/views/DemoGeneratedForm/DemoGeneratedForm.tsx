@@ -1,6 +1,6 @@
 import { Title, Button, Text, Flex, Group, Container } from '@mantine/core'
 import DynamicForm from 'src/utils/formGeneration'
-import { Topic, type CreateWorkItemTagRequest, type DbWorkItemTag } from 'src/gen/model'
+import { Topic, type CreateWorkItemTagRequest, type ModelsWorkItemTag } from 'src/gen/model'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
@@ -147,7 +147,7 @@ const uuids = [
 ]
 
 const tags = [...Array(1000)].map((x, i) => {
-  const tag: DbWorkItemTag = {
+  const tag: ModelsWorkItemTag = {
     name: `tag #${i}`,
     color: _.sample(colorBlindPalette)!,
     workItemTagID: i as WorkItemTagID,

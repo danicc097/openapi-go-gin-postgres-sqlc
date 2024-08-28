@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// WorkItemTypeWithPrometheus implements repos.WorkItemType interface with all methods wrapped
+// WorkItemTypeWithPrometheus implements _sourceRepos.WorkItemType interface with all methods wrapped
 // with Prometheus metrics
 type WorkItemTypeWithPrometheus struct {
-	base         repos.WorkItemType
+	base         _sourceRepos.WorkItemType
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var workitemtypeDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewWorkItemTypeWithPrometheus returns an instance of the repos.WorkItemType decorated with prometheus summary metric
-func NewWorkItemTypeWithPrometheus(base repos.WorkItemType, instanceName string) WorkItemTypeWithPrometheus {
+// NewWorkItemTypeWithPrometheus returns an instance of the _sourceRepos.WorkItemType decorated with prometheus summary metric
+func NewWorkItemTypeWithPrometheus(base _sourceRepos.WorkItemType, instanceName string) WorkItemTypeWithPrometheus {
 	return WorkItemTypeWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.WorkItemType
+// ByID implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d WorkItemTypeWithPrometheus) ByID(ctx context.Context, d models.DBTX, id
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemType
+// ByName implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	_since := time.Now()
 	defer func() {

@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// TimeEntryWithTimeout implements repos.TimeEntry interface instrumented with timeouts
+// TimeEntryWithTimeout implements _sourceRepos.TimeEntry interface instrumented with timeouts
 type TimeEntryWithTimeout struct {
-	repos.TimeEntry
+	_sourceRepos.TimeEntry
 	config TimeEntryWithTimeoutConfig
 }
 
@@ -29,14 +29,14 @@ type TimeEntryWithTimeoutConfig struct {
 }
 
 // NewTimeEntryWithTimeout returns TimeEntryWithTimeout
-func NewTimeEntryWithTimeout(base repos.TimeEntry, config TimeEntryWithTimeoutConfig) TimeEntryWithTimeout {
+func NewTimeEntryWithTimeout(base _sourceRepos.TimeEntry, config TimeEntryWithTimeoutConfig) TimeEntryWithTimeout {
 	return TimeEntryWithTimeout{
 		TimeEntry: base,
 		config:    config,
 	}
 }
 
-// ByID implements repos.TimeEntry
+// ByID implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -46,7 +46,7 @@ func (_d TimeEntryWithTimeout) ByID(ctx context.Context, d models.DBTX, id model
 	return _d.TimeEntry.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.TimeEntry
+// Create implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
@@ -56,7 +56,7 @@ func (_d TimeEntryWithTimeout) Create(ctx context.Context, d models.DBTX, params
 	return _d.TimeEntry.Create(ctx, d, params)
 }
 
-// Delete implements repos.TimeEntry
+// Delete implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
@@ -66,7 +66,7 @@ func (_d TimeEntryWithTimeout) Delete(ctx context.Context, d models.DBTX, id mod
 	return _d.TimeEntry.Delete(ctx, d, id)
 }
 
-// Update implements repos.TimeEntry
+// Update implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTimeout) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {

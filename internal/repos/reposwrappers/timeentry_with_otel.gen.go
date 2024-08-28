@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// TimeEntryWithTracing implements repos.TimeEntry interface instrumented with opentracing spans
+// TimeEntryWithTracing implements _sourceRepos.TimeEntry interface instrumented with opentracing spans
 type TimeEntryWithTracing struct {
-	repos.TimeEntry
+	_sourceRepos.TimeEntry
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewTimeEntryWithTracing returns TimeEntryWithTracing
-func NewTimeEntryWithTracing(base repos.TimeEntry, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) TimeEntryWithTracing {
+func NewTimeEntryWithTracing(base _sourceRepos.TimeEntry, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) TimeEntryWithTracing {
 	d := TimeEntryWithTracing{
 		TimeEntry: base,
 		_instance: instance,
@@ -35,9 +35,9 @@ func NewTimeEntryWithTracing(base repos.TimeEntry, instance string, spanDecorato
 	return d
 }
 
-// ByID implements repos.TimeEntry
+// ByID implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTracing) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.TimeEntry.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d TimeEntryWithTracing) ByID(ctx context.Context, d models.DBTX, id model
 	return _d.TimeEntry.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.TimeEntry
+// Create implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTracing) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.TimeEntry.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -84,9 +84,9 @@ func (_d TimeEntryWithTracing) Create(ctx context.Context, d models.DBTX, params
 	return _d.TimeEntry.Create(ctx, d, params)
 }
 
-// Delete implements repos.TimeEntry
+// Delete implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTracing) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.TimeEntry.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -108,9 +108,9 @@ func (_d TimeEntryWithTracing) Delete(ctx context.Context, d models.DBTX, id mod
 	return _d.TimeEntry.Delete(ctx, d, id)
 }
 
-// Update implements repos.TimeEntry
+// Update implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithTracing) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Update")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.TimeEntry.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

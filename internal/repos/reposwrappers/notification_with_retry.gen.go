@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// NotificationWithRetry implements repos.Notification interface instrumented with retries
+// NotificationWithRetry implements _sourceRepos.Notification interface instrumented with retries
 type NotificationWithRetry struct {
-	repos.Notification
+	_sourceRepos.Notification
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewNotificationWithRetry returns NotificationWithRetry
-func NewNotificationWithRetry(base repos.Notification, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) NotificationWithRetry {
+func NewNotificationWithRetry(base _sourceRepos.Notification, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) NotificationWithRetry {
 	return NotificationWithRetry{
 		Notification:   base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewNotificationWithRetry(base repos.Notification, logger *zap.SugaredLogger
 	}
 }
 
-// Create implements repos.Notification
+// Create implements _sourceRepos.Notification
 func (_d NotificationWithRetry) Create(ctx context.Context, d models.DBTX, params *models.NotificationCreateParams) (up1 *models.UserNotification, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryCreate")
@@ -73,7 +73,7 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d models.DBTX, param
 	return
 }
 
-// Delete implements repos.Notification
+// Delete implements _sourceRepos.Notification
 func (_d NotificationWithRetry) Delete(ctx context.Context, d models.DBTX, id models.NotificationID) (np1 *models.Notification, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryDelete")
@@ -113,7 +113,7 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d models.DBTX, id mo
 	return
 }
 
-// LatestNotifications implements repos.Notification
+// LatestNotifications implements _sourceRepos.Notification
 func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) (ga1 []models.GetUserNotificationsRow, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryLatestNotifications")
@@ -153,7 +153,7 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d model
 	return
 }
 
-// PaginatedUserNotifications implements repos.Notification
+// PaginatedUserNotifications implements _sourceRepos.Notification
 func (_d NotificationWithRetry) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) (ua1 []models.UserNotification, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryPaginatedUserNotifications")

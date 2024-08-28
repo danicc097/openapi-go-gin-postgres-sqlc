@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// WorkItemTypeWithTracing implements repos.WorkItemType interface instrumented with opentracing spans
+// WorkItemTypeWithTracing implements _sourceRepos.WorkItemType interface instrumented with opentracing spans
 type WorkItemTypeWithTracing struct {
-	repos.WorkItemType
+	_sourceRepos.WorkItemType
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewWorkItemTypeWithTracing returns WorkItemTypeWithTracing
-func NewWorkItemTypeWithTracing(base repos.WorkItemType, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemTypeWithTracing {
+func NewWorkItemTypeWithTracing(base _sourceRepos.WorkItemType, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) WorkItemTypeWithTracing {
 	d := WorkItemTypeWithTracing{
 		WorkItemType: base,
 		_instance:    instance,
@@ -35,9 +35,9 @@ func NewWorkItemTypeWithTracing(base repos.WorkItemType, instance string, spanDe
 	return d
 }
 
-// ByID implements repos.WorkItemType
+// ByID implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemType.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d WorkItemTypeWithTracing) ByID(ctx context.Context, d models.DBTX, id mo
 	return _d.WorkItemType.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemType
+// ByName implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithTracing) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItemType.ByName")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.WorkItemType.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// DemoTwoWorkItemWithTimeout implements repos.DemoTwoWorkItem interface instrumented with timeouts
+// DemoTwoWorkItemWithTimeout implements _sourceRepos.DemoTwoWorkItem interface instrumented with timeouts
 type DemoTwoWorkItemWithTimeout struct {
-	repos.DemoTwoWorkItem
+	_sourceRepos.DemoTwoWorkItem
 	config DemoTwoWorkItemWithTimeoutConfig
 }
 
@@ -27,14 +27,14 @@ type DemoTwoWorkItemWithTimeoutConfig struct {
 }
 
 // NewDemoTwoWorkItemWithTimeout returns DemoTwoWorkItemWithTimeout
-func NewDemoTwoWorkItemWithTimeout(base repos.DemoTwoWorkItem, config DemoTwoWorkItemWithTimeoutConfig) DemoTwoWorkItemWithTimeout {
+func NewDemoTwoWorkItemWithTimeout(base _sourceRepos.DemoTwoWorkItem, config DemoTwoWorkItemWithTimeoutConfig) DemoTwoWorkItemWithTimeout {
 	return DemoTwoWorkItemWithTimeout{
 		DemoTwoWorkItem: base,
 		config:          config,
 	}
 }
 
-// ByID implements repos.DemoTwoWorkItem
+// ByID implements _sourceRepos.DemoTwoWorkItem
 func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -44,8 +44,8 @@ func (_d DemoTwoWorkItemWithTimeout) ByID(ctx context.Context, d models.DBTX, id
 	return _d.DemoTwoWorkItem.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+// Create implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -54,8 +54,8 @@ func (_d DemoTwoWorkItemWithTimeout) Create(ctx context.Context, d models.DBTX, 
 	return _d.DemoTwoWorkItem.Create(ctx, d, params)
 }
 
-// Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+// Update implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

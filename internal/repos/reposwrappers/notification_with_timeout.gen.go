@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// NotificationWithTimeout implements repos.Notification interface instrumented with timeouts
+// NotificationWithTimeout implements _sourceRepos.Notification interface instrumented with timeouts
 type NotificationWithTimeout struct {
-	repos.Notification
+	_sourceRepos.Notification
 	config NotificationWithTimeoutConfig
 }
 
@@ -29,14 +29,14 @@ type NotificationWithTimeoutConfig struct {
 }
 
 // NewNotificationWithTimeout returns NotificationWithTimeout
-func NewNotificationWithTimeout(base repos.Notification, config NotificationWithTimeoutConfig) NotificationWithTimeout {
+func NewNotificationWithTimeout(base _sourceRepos.Notification, config NotificationWithTimeoutConfig) NotificationWithTimeout {
 	return NotificationWithTimeout{
 		Notification: base,
 		config:       config,
 	}
 }
 
-// Create implements repos.Notification
+// Create implements _sourceRepos.Notification
 func (_d NotificationWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.NotificationCreateParams) (up1 *models.UserNotification, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
@@ -46,7 +46,7 @@ func (_d NotificationWithTimeout) Create(ctx context.Context, d models.DBTX, par
 	return _d.Notification.Create(ctx, d, params)
 }
 
-// Delete implements repos.Notification
+// Delete implements _sourceRepos.Notification
 func (_d NotificationWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.NotificationID) (np1 *models.Notification, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
@@ -56,7 +56,7 @@ func (_d NotificationWithTimeout) Delete(ctx context.Context, d models.DBTX, id 
 	return _d.Notification.Delete(ctx, d, id)
 }
 
-// LatestNotifications implements repos.Notification
+// LatestNotifications implements _sourceRepos.Notification
 func (_d NotificationWithTimeout) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) (ga1 []models.GetUserNotificationsRow, err error) {
 	var cancelFunc func()
 	if _d.config.LatestNotificationsTimeout > 0 {
@@ -66,7 +66,7 @@ func (_d NotificationWithTimeout) LatestNotifications(ctx context.Context, d mod
 	return _d.Notification.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedUserNotifications implements repos.Notification
+// PaginatedUserNotifications implements _sourceRepos.Notification
 func (_d NotificationWithTimeout) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) (ua1 []models.UserNotification, err error) {
 	var cancelFunc func()
 	if _d.config.PaginatedUserNotificationsTimeout > 0 {

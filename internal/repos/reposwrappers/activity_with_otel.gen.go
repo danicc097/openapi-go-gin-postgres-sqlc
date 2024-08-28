@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// ActivityWithTracing implements repos.Activity interface instrumented with opentracing spans
+// ActivityWithTracing implements _sourceRepos.Activity interface instrumented with opentracing spans
 type ActivityWithTracing struct {
-	repos.Activity
+	_sourceRepos.Activity
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewActivityWithTracing returns ActivityWithTracing
-func NewActivityWithTracing(base repos.Activity, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) ActivityWithTracing {
+func NewActivityWithTracing(base _sourceRepos.Activity, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) ActivityWithTracing {
 	d := ActivityWithTracing{
 		Activity:  base,
 		_instance: instance,
@@ -35,9 +35,9 @@ func NewActivityWithTracing(base repos.Activity, instance string, spanDecorator 
 	return d
 }
 
-// ByID implements repos.Activity
+// ByID implements _sourceRepos.Activity
 func (_d ActivityWithTracing) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d ActivityWithTracing) ByID(ctx context.Context, d models.DBTX, id models
 	return _d.Activity.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Activity
+// ByName implements _sourceRepos.Activity
 func (_d ActivityWithTracing) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByName")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -86,9 +86,9 @@ func (_d ActivityWithTracing) ByName(ctx context.Context, d models.DBTX, name st
 	return _d.Activity.ByName(ctx, d, name, projectID, opts...)
 }
 
-// ByProjectID implements repos.Activity
+// ByProjectID implements _sourceRepos.Activity
 func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (aa1 []models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.ByProjectID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.ByProjectID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -111,9 +111,9 @@ func (_d ActivityWithTracing) ByProjectID(ctx context.Context, d models.DBTX, pr
 	return _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 }
 
-// Create implements repos.Activity
+// Create implements _sourceRepos.Activity
 func (_d ActivityWithTracing) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (ap1 *models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Create")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -135,9 +135,9 @@ func (_d ActivityWithTracing) Create(ctx context.Context, d models.DBTX, params 
 	return _d.Activity.Create(ctx, d, params)
 }
 
-// Delete implements repos.Activity
+// Delete implements _sourceRepos.Activity
 func (_d ActivityWithTracing) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (ap1 *models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Delete")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -159,9 +159,9 @@ func (_d ActivityWithTracing) Delete(ctx context.Context, d models.DBTX, id mode
 	return _d.Activity.Delete(ctx, d, id)
 }
 
-// Restore implements repos.Activity
+// Restore implements _sourceRepos.Activity
 func (_d ActivityWithTracing) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) (err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Restore")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.Restore")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -182,9 +182,9 @@ func (_d ActivityWithTracing) Restore(ctx context.Context, d models.DBTX, id mod
 	return _d.Activity.Restore(ctx, d, id)
 }
 
-// Update implements repos.Activity
+// Update implements _sourceRepos.Activity
 func (_d ActivityWithTracing) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (ap1 *models.Activity, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Update")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Activity.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

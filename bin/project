@@ -293,7 +293,7 @@ x.install-tools() {
       "go install github.com/air-verse/air@latest"
       "go install github.com/danicc097/xo/v5@v5.6.0"
       "go install github.com/mikefarah/yq/v4@v4.34.2"
-      "go install github.com/hexdigest/gowrap/cmd/gowrap@latest"
+      "go install github.com/hexdigest/gowrap/cmd/gowrap@v1.4.0"
       "go install golang.org/x/tools/cmd/stringer@latest"
       "go install github.com/maxbrunsfeld/counterfeiter/v6@latest"
       "go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1"
@@ -372,19 +372,19 @@ x.gen.pregen() {
       echo "${YELLOW}Generating missing rest package \$ref's:"
       printf "${YELLOW}  - %s\n" "${missing_rest_models[@]}"
       echo "${OFF}"
-    fi
 
-    local new_schemas=""
-    for ref in "${missing_rest_models[@]}"; do
-      new_schemas+="\"$ref\": {
+      local new_schemas=""
+      for ref in "${missing_rest_models[@]}"; do
+        new_schemas+="\"$ref\": {
             \"x-gen-struct\": \"$ref\",
             \"x-is-generated\": true
           },"
-    done
+      done
 
-    yq eval-all ".components.schemas += {
-      ${new_schemas%,}
-    }" -i "$SPEC_PATH"
+      yq eval-all ".components.schemas += {
+        ${new_schemas%,}
+      }" -i "$SPEC_PATH"
+    fi
 
     codegen validate-spec -env=".env.$X_ENV"
     # useless after merging models and db
@@ -419,12 +419,9 @@ x.gen.pregen() {
 
     update_roles_and_scopes
 
-    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" &
-    validate_spec &
-    update_spec_with_structs &
-
-    wait_without_error
-
+    validate_spec
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" # should not edit spec
+    update_spec_with_structs
     remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
@@ -590,7 +587,6 @@ generate_repo_constructor() {
   go-utils.find_interfaces repo_interfaces $repos
 
   for iface in "${repo_interfaces[@]}"; do
-    local struct_init+=("${iface}: ${iface,}")
     local struct_fields+=("${iface} ${iface}")
   done
 

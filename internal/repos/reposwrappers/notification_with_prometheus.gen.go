@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// NotificationWithPrometheus implements repos.Notification interface with all methods wrapped
+// NotificationWithPrometheus implements _sourceRepos.Notification interface with all methods wrapped
 // with Prometheus metrics
 type NotificationWithPrometheus struct {
-	base         repos.Notification
+	base         _sourceRepos.Notification
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var notificationDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewNotificationWithPrometheus returns an instance of the repos.Notification decorated with prometheus summary metric
-func NewNotificationWithPrometheus(base repos.Notification, instanceName string) NotificationWithPrometheus {
+// NewNotificationWithPrometheus returns an instance of the _sourceRepos.Notification decorated with prometheus summary metric
+func NewNotificationWithPrometheus(base _sourceRepos.Notification, instanceName string) NotificationWithPrometheus {
 	return NotificationWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// Create implements repos.Notification
+// Create implements _sourceRepos.Notification
 func (_d NotificationWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.NotificationCreateParams) (up1 *models.UserNotification, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d NotificationWithPrometheus) Create(ctx context.Context, d models.DBTX, 
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.Notification
+// Delete implements _sourceRepos.Notification
 func (_d NotificationWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.NotificationID) (np1 *models.Notification, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d NotificationWithPrometheus) Delete(ctx context.Context, d models.DBTX, 
 	return _d.base.Delete(ctx, d, id)
 }
 
-// LatestNotifications implements repos.Notification
+// LatestNotifications implements _sourceRepos.Notification
 func (_d NotificationWithPrometheus) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) (ga1 []models.GetUserNotificationsRow, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d NotificationWithPrometheus) LatestNotifications(ctx context.Context, d 
 	return _d.base.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedUserNotifications implements repos.Notification
+// PaginatedUserNotifications implements _sourceRepos.Notification
 func (_d NotificationWithPrometheus) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) (ua1 []models.UserNotification, err error) {
 	_since := time.Now()
 	defer func() {

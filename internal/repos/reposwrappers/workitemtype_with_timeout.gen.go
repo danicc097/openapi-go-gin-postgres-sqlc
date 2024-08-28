@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// WorkItemTypeWithTimeout implements repos.WorkItemType interface instrumented with timeouts
+// WorkItemTypeWithTimeout implements _sourceRepos.WorkItemType interface instrumented with timeouts
 type WorkItemTypeWithTimeout struct {
-	repos.WorkItemType
+	_sourceRepos.WorkItemType
 	config WorkItemTypeWithTimeoutConfig
 }
 
@@ -25,14 +25,14 @@ type WorkItemTypeWithTimeoutConfig struct {
 }
 
 // NewWorkItemTypeWithTimeout returns WorkItemTypeWithTimeout
-func NewWorkItemTypeWithTimeout(base repos.WorkItemType, config WorkItemTypeWithTimeoutConfig) WorkItemTypeWithTimeout {
+func NewWorkItemTypeWithTimeout(base _sourceRepos.WorkItemType, config WorkItemTypeWithTimeoutConfig) WorkItemTypeWithTimeout {
 	return WorkItemTypeWithTimeout{
 		WorkItemType: base,
 		config:       config,
 	}
 }
 
-// ByID implements repos.WorkItemType
+// ByID implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -42,7 +42,7 @@ func (_d WorkItemTypeWithTimeout) ByID(ctx context.Context, d models.DBTX, id mo
 	return _d.WorkItemType.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemType
+// ByName implements _sourceRepos.WorkItemType
 func (_d WorkItemTypeWithTimeout) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTypeSelectConfigOption) (wp1 *models.WorkItemType, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {

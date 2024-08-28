@@ -11,6 +11,7 @@ import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
 import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
 import AxiosInterceptors from 'src/utils/axios'
+import HttpStatus from 'src/utils/httpStatus'
 import { ToastId } from 'src/utils/toasts'
 import { useIsFirstRender } from 'usehooks-ts'
 
@@ -32,8 +33,13 @@ export default function useAuthenticatedUser() {
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
-  const isAuthenticating = (currentUser.isFetching || currentUser.isRefetching) && ui.accessToken !== ''
+  const isAuthenticating =
+    (currentUser.isFetching || currentUser.isRefetching) &&
+    ui.accessToken !== '' &&
+    currentUser.error?.status !== HttpStatus.UNAUTHORIZED_401
   // console.log({ isFirstRender })
+
+  console.log({ isAuthenticating })
 
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
@@ -63,7 +69,7 @@ export default function useAuthenticatedUser() {
     return () => {
       AxiosInterceptors.teardownAxiosInstance(AXIOS_INSTANCE)
     }
-  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken, isAuthenticating, failedAuthentication])
+  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken, failedAuthentication, mountedRef])
 
   const user = currentUser.data
 

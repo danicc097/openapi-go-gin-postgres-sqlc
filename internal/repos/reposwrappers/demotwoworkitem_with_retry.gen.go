@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// DemoTwoWorkItemWithRetry implements repos.DemoTwoWorkItem interface instrumented with retries
+// DemoTwoWorkItemWithRetry implements _sourceRepos.DemoTwoWorkItem interface instrumented with retries
 type DemoTwoWorkItemWithRetry struct {
-	repos.DemoTwoWorkItem
+	_sourceRepos.DemoTwoWorkItem
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewDemoTwoWorkItemWithRetry returns DemoTwoWorkItemWithRetry
-func NewDemoTwoWorkItemWithRetry(base repos.DemoTwoWorkItem, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) DemoTwoWorkItemWithRetry {
+func NewDemoTwoWorkItemWithRetry(base _sourceRepos.DemoTwoWorkItem, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) DemoTwoWorkItemWithRetry {
 	return DemoTwoWorkItemWithRetry{
 		DemoTwoWorkItem: base,
 		_retryCount:     retryCount,
@@ -33,7 +33,7 @@ func NewDemoTwoWorkItemWithRetry(base repos.DemoTwoWorkItem, logger *zap.Sugared
 	}
 }
 
-// ByID implements repos.DemoTwoWorkItem
+// ByID implements _sourceRepos.DemoTwoWorkItem
 func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryByID")
@@ -73,8 +73,8 @@ func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id m
 	return
 }
 
-// Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+// Create implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryCreate")
 		if err != nil {
@@ -113,8 +113,8 @@ func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d models.DBTX, pa
 	return
 }
 
-// Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+// Update implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryUpdate")
 		if err != nil {

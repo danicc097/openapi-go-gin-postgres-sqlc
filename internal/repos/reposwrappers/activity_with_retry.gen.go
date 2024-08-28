@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// ActivityWithRetry implements repos.Activity interface instrumented with retries
+// ActivityWithRetry implements _sourceRepos.Activity interface instrumented with retries
 type ActivityWithRetry struct {
-	repos.Activity
+	_sourceRepos.Activity
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewActivityWithRetry returns ActivityWithRetry
-func NewActivityWithRetry(base repos.Activity, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) ActivityWithRetry {
+func NewActivityWithRetry(base _sourceRepos.Activity, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) ActivityWithRetry {
 	return ActivityWithRetry{
 		Activity:       base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewActivityWithRetry(base repos.Activity, logger *zap.SugaredLogger, retryC
 	}
 }
 
-// ByID implements repos.Activity
+// ByID implements _sourceRepos.Activity
 func (_d ActivityWithRetry) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryByID")
@@ -73,7 +73,7 @@ func (_d ActivityWithRetry) ByID(ctx context.Context, d models.DBTX, id models.A
 	return
 }
 
-// ByName implements repos.Activity
+// ByName implements _sourceRepos.Activity
 func (_d ActivityWithRetry) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryByName")
@@ -113,7 +113,7 @@ func (_d ActivityWithRetry) ByName(ctx context.Context, d models.DBTX, name stri
 	return
 }
 
-// ByProjectID implements repos.Activity
+// ByProjectID implements _sourceRepos.Activity
 func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (aa1 []models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryByProjectID")
@@ -153,7 +153,7 @@ func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d models.DBTX, proj
 	return
 }
 
-// Create implements repos.Activity
+// Create implements _sourceRepos.Activity
 func (_d ActivityWithRetry) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (ap1 *models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryCreate")
@@ -193,7 +193,7 @@ func (_d ActivityWithRetry) Create(ctx context.Context, d models.DBTX, params *m
 	return
 }
 
-// Delete implements repos.Activity
+// Delete implements _sourceRepos.Activity
 func (_d ActivityWithRetry) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (ap1 *models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryDelete")
@@ -233,7 +233,7 @@ func (_d ActivityWithRetry) Delete(ctx context.Context, d models.DBTX, id models
 	return
 }
 
-// Restore implements repos.Activity
+// Restore implements _sourceRepos.Activity
 func (_d ActivityWithRetry) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryRestore")
@@ -273,7 +273,7 @@ func (_d ActivityWithRetry) Restore(ctx context.Context, d models.DBTX, id model
 	return
 }
 
-// Update implements repos.Activity
+// Update implements _sourceRepos.Activity
 func (_d ActivityWithRetry) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (ap1 *models.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryUpdate")

@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// KanbanStepWithPrometheus implements repos.KanbanStep interface with all methods wrapped
+// KanbanStepWithPrometheus implements _sourceRepos.KanbanStep interface with all methods wrapped
 // with Prometheus metrics
 type KanbanStepWithPrometheus struct {
-	base         repos.KanbanStep
+	base         _sourceRepos.KanbanStep
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var kanbanstepDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewKanbanStepWithPrometheus returns an instance of the repos.KanbanStep decorated with prometheus summary metric
-func NewKanbanStepWithPrometheus(base repos.KanbanStep, instanceName string) KanbanStepWithPrometheus {
+// NewKanbanStepWithPrometheus returns an instance of the _sourceRepos.KanbanStep decorated with prometheus summary metric
+func NewKanbanStepWithPrometheus(base _sourceRepos.KanbanStep, instanceName string) KanbanStepWithPrometheus {
 	return KanbanStepWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.KanbanStep
+// ByID implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d KanbanStepWithPrometheus) ByID(ctx context.Context, d models.DBTX, id m
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByProject implements repos.KanbanStep
+// ByProject implements _sourceRepos.KanbanStep
 func (_d KanbanStepWithPrometheus) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	_since := time.Now()
 	defer func() {

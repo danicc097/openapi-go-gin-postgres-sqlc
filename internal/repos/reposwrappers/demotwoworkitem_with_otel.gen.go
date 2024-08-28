@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// DemoTwoWorkItemWithTracing implements repos.DemoTwoWorkItem interface instrumented with opentracing spans
+// DemoTwoWorkItemWithTracing implements _sourceRepos.DemoTwoWorkItem interface instrumented with opentracing spans
 type DemoTwoWorkItemWithTracing struct {
-	repos.DemoTwoWorkItem
+	_sourceRepos.DemoTwoWorkItem
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewDemoTwoWorkItemWithTracing returns DemoTwoWorkItemWithTracing
-func NewDemoTwoWorkItemWithTracing(base repos.DemoTwoWorkItem, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) DemoTwoWorkItemWithTracing {
+func NewDemoTwoWorkItemWithTracing(base _sourceRepos.DemoTwoWorkItem, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) DemoTwoWorkItemWithTracing {
 	d := DemoTwoWorkItemWithTracing{
 		DemoTwoWorkItem: base,
 		_instance:       instance,
@@ -35,9 +35,9 @@ func NewDemoTwoWorkItemWithTracing(base repos.DemoTwoWorkItem, instance string, 
 	return d
 }
 
-// ByID implements repos.DemoTwoWorkItem
+// ByID implements _sourceRepos.DemoTwoWorkItem
 func (_d DemoTwoWorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoTwoWorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d DemoTwoWorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id
 	return _d.DemoTwoWorkItem.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.Create")
+// Create implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoTwoWorkItem.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -84,9 +84,9 @@ func (_d DemoTwoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, 
 	return _d.DemoTwoWorkItem.Create(ctx, d, params)
 }
 
-// Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoTwoWorkItem.Update")
+// Update implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.DemoTwoWorkItem.Update")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

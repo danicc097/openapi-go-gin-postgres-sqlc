@@ -7,22 +7,22 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
-// ProjectWithTracing implements repos.Project interface instrumented with opentracing spans
+// ProjectWithTracing implements _sourceRepos.Project interface instrumented with opentracing spans
 type ProjectWithTracing struct {
-	repos.Project
+	_sourceRepos.Project
 	_instance      string
 	_spanDecorator func(span trace.Span, params, results map[string]interface{})
 }
 
 // NewProjectWithTracing returns ProjectWithTracing
-func NewProjectWithTracing(base repos.Project, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) ProjectWithTracing {
+func NewProjectWithTracing(base _sourceRepos.Project, instance string, spanDecorator ...func(span trace.Span, params, results map[string]interface{})) ProjectWithTracing {
 	d := ProjectWithTracing{
 		Project:   base,
 		_instance: instance,
@@ -35,9 +35,9 @@ func NewProjectWithTracing(base repos.Project, instance string, spanDecorator ..
 	return d
 }
 
-// ByID implements repos.Project
+// ByID implements _sourceRepos.Project
 func (_d ProjectWithTracing) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByID")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Project.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -60,9 +60,9 @@ func (_d ProjectWithTracing) ByID(ctx context.Context, d models.DBTX, id models.
 	return _d.Project.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Project
+// ByName implements _sourceRepos.Project
 func (_d ProjectWithTracing) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByName")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Project.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -85,9 +85,9 @@ func (_d ProjectWithTracing) ByName(ctx context.Context, d models.DBTX, name mod
 	return _d.Project.ByName(ctx, d, name, opts...)
 }
 
-// IsTeamInProject implements repos.Project
+// IsTeamInProject implements _sourceRepos.Project
 func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.IsTeamInProject")
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "_sourceRepos.Project.IsTeamInProject")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{

@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// ProjectWithTimeout implements repos.Project interface instrumented with timeouts
+// ProjectWithTimeout implements _sourceRepos.Project interface instrumented with timeouts
 type ProjectWithTimeout struct {
-	repos.Project
+	_sourceRepos.Project
 	config ProjectWithTimeoutConfig
 }
 
@@ -27,14 +27,14 @@ type ProjectWithTimeoutConfig struct {
 }
 
 // NewProjectWithTimeout returns ProjectWithTimeout
-func NewProjectWithTimeout(base repos.Project, config ProjectWithTimeoutConfig) ProjectWithTimeout {
+func NewProjectWithTimeout(base _sourceRepos.Project, config ProjectWithTimeoutConfig) ProjectWithTimeout {
 	return ProjectWithTimeout{
 		Project: base,
 		config:  config,
 	}
 }
 
-// ByID implements repos.Project
+// ByID implements _sourceRepos.Project
 func (_d ProjectWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -44,7 +44,7 @@ func (_d ProjectWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.
 	return _d.Project.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Project
+// ByName implements _sourceRepos.Project
 func (_d ProjectWithTimeout) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
@@ -54,7 +54,7 @@ func (_d ProjectWithTimeout) ByName(ctx context.Context, d models.DBTX, name mod
 	return _d.Project.ByName(ctx, d, name, opts...)
 }
 
-// IsTeamInProject implements repos.Project
+// IsTeamInProject implements _sourceRepos.Project
 func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	var cancelFunc func()
 	if _d.config.IsTeamInProjectTimeout > 0 {

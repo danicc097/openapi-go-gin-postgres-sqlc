@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// DemoWorkItemWithPrometheus implements repos.DemoWorkItem interface with all methods wrapped
+// DemoWorkItemWithPrometheus implements _sourceRepos.DemoWorkItem interface with all methods wrapped
 // with Prometheus metrics
 type DemoWorkItemWithPrometheus struct {
-	base         repos.DemoWorkItem
+	base         _sourceRepos.DemoWorkItem
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var demoworkitemDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewDemoWorkItemWithPrometheus returns an instance of the repos.DemoWorkItem decorated with prometheus summary metric
-func NewDemoWorkItemWithPrometheus(base repos.DemoWorkItem, instanceName string) DemoWorkItemWithPrometheus {
+// NewDemoWorkItemWithPrometheus returns an instance of the _sourceRepos.DemoWorkItem decorated with prometheus summary metric
+func NewDemoWorkItemWithPrometheus(base _sourceRepos.DemoWorkItem, instanceName string) DemoWorkItemWithPrometheus {
 	return DemoWorkItemWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.DemoWorkItem
+// ByID implements _sourceRepos.DemoWorkItem
 func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,8 +52,8 @@ func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+// Create implements _sourceRepos.DemoWorkItem
+func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -66,7 +66,7 @@ func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, 
 	return _d.base.Create(ctx, d, params)
 }
 
-// Paginated implements repos.DemoWorkItem
+// Paginated implements _sourceRepos.DemoWorkItem
 func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,8 +80,8 @@ func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d models.DBT
 	return _d.base.Paginated(ctx, d, cursor, opts...)
 }
 
-// Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+// Update implements _sourceRepos.DemoWorkItem
+func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

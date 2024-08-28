@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// WorkItemTagWithPrometheus implements repos.WorkItemTag interface with all methods wrapped
+// WorkItemTagWithPrometheus implements _sourceRepos.WorkItemTag interface with all methods wrapped
 // with Prometheus metrics
 type WorkItemTagWithPrometheus struct {
-	base         repos.WorkItemTag
+	base         _sourceRepos.WorkItemTag
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var workitemtagDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewWorkItemTagWithPrometheus returns an instance of the repos.WorkItemTag decorated with prometheus summary metric
-func NewWorkItemTagWithPrometheus(base repos.WorkItemTag, instanceName string) WorkItemTagWithPrometheus {
+// NewWorkItemTagWithPrometheus returns an instance of the _sourceRepos.WorkItemTag decorated with prometheus summary metric
+func NewWorkItemTagWithPrometheus(base _sourceRepos.WorkItemTag, instanceName string) WorkItemTagWithPrometheus {
 	return WorkItemTagWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.WorkItemTag
+// ByID implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTagID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d WorkItemTagWithPrometheus) ByID(ctx context.Context, d models.DBTX, id 
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemTag
+// ByName implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d WorkItemTagWithPrometheus) ByName(ctx context.Context, d models.DBTX, n
 	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }
 
-// Create implements repos.WorkItemTag
+// Create implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.WorkItemTagCreateParams) (wp1 *models.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d WorkItemTagWithPrometheus) Create(ctx context.Context, d models.DBTX, p
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.WorkItemTag
+// Delete implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.WorkItemTagID) (wp1 *models.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {
@@ -94,7 +94,7 @@ func (_d WorkItemTagWithPrometheus) Delete(ctx context.Context, d models.DBTX, i
 	return _d.base.Delete(ctx, d, id)
 }
 
-// Update implements repos.WorkItemTag
+// Update implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemTagID, params *models.WorkItemTagUpdateParams) (wp1 *models.WorkItemTag, err error) {
 	_since := time.Now()
 	defer func() {

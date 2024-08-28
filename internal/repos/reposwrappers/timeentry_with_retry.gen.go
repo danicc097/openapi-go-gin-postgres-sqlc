@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// TimeEntryWithRetry implements repos.TimeEntry interface instrumented with retries
+// TimeEntryWithRetry implements _sourceRepos.TimeEntry interface instrumented with retries
 type TimeEntryWithRetry struct {
-	repos.TimeEntry
+	_sourceRepos.TimeEntry
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewTimeEntryWithRetry returns TimeEntryWithRetry
-func NewTimeEntryWithRetry(base repos.TimeEntry, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) TimeEntryWithRetry {
+func NewTimeEntryWithRetry(base _sourceRepos.TimeEntry, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) TimeEntryWithRetry {
 	return TimeEntryWithRetry{
 		TimeEntry:      base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewTimeEntryWithRetry(base repos.TimeEntry, logger *zap.SugaredLogger, retr
 	}
 }
 
-// ByID implements repos.TimeEntry
+// ByID implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithRetry) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryByID")
@@ -73,7 +73,7 @@ func (_d TimeEntryWithRetry) ByID(ctx context.Context, d models.DBTX, id models.
 	return
 }
 
-// Create implements repos.TimeEntry
+// Create implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithRetry) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryCreate")
@@ -113,7 +113,7 @@ func (_d TimeEntryWithRetry) Create(ctx context.Context, d models.DBTX, params *
 	return
 }
 
-// Delete implements repos.TimeEntry
+// Delete implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithRetry) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryDelete")
@@ -153,7 +153,7 @@ func (_d TimeEntryWithRetry) Delete(ctx context.Context, d models.DBTX, id model
 	return
 }
 
-// Update implements repos.TimeEntry
+// Update implements _sourceRepos.TimeEntry
 func (_d TimeEntryWithRetry) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT TimeEntryWithRetryUpdate")

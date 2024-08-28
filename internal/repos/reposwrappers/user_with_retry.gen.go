@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// UserWithRetry implements repos.User interface instrumented with retries
+// UserWithRetry implements _sourceRepos.User interface instrumented with retries
 type UserWithRetry struct {
-	repos.User
+	_sourceRepos.User
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewUserWithRetry returns UserWithRetry
-func NewUserWithRetry(base repos.User, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) UserWithRetry {
+func NewUserWithRetry(base _sourceRepos.User, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) UserWithRetry {
 	return UserWithRetry{
 		User:           base,
 		_retryCount:    retryCount,
@@ -33,7 +33,7 @@ func NewUserWithRetry(base repos.User, logger *zap.SugaredLogger, retryCount int
 	}
 }
 
-// ByAPIKey implements repos.User
+// ByAPIKey implements _sourceRepos.User
 func (_d UserWithRetry) ByAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByAPIKey")
@@ -73,7 +73,7 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d models.DBTX, apiKey stri
 	return
 }
 
-// ByEmail implements repos.User
+// ByEmail implements _sourceRepos.User
 func (_d UserWithRetry) ByEmail(ctx context.Context, d models.DBTX, email string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByEmail")
@@ -113,7 +113,7 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d models.DBTX, email string
 	return
 }
 
-// ByExternalID implements repos.User
+// ByExternalID implements _sourceRepos.User
 func (_d UserWithRetry) ByExternalID(ctx context.Context, d models.DBTX, extID string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByExternalID")
@@ -153,7 +153,7 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d models.DBTX, extID s
 	return
 }
 
-// ByID implements repos.User
+// ByID implements _sourceRepos.User
 func (_d UserWithRetry) ByID(ctx context.Context, d models.DBTX, id models.UserID, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByID")
@@ -193,7 +193,7 @@ func (_d UserWithRetry) ByID(ctx context.Context, d models.DBTX, id models.UserI
 	return
 }
 
-// ByProject implements repos.User
+// ByProject implements _sourceRepos.User
 func (_d UserWithRetry) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID) (ua1 []models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByProject")
@@ -233,7 +233,7 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d models.DBTX, projectID 
 	return
 }
 
-// ByTeam implements repos.User
+// ByTeam implements _sourceRepos.User
 func (_d UserWithRetry) ByTeam(ctx context.Context, d models.DBTX, teamID models.TeamID) (ua1 []models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByTeam")
@@ -273,7 +273,7 @@ func (_d UserWithRetry) ByTeam(ctx context.Context, d models.DBTX, teamID models
 	return
 }
 
-// ByUsername implements repos.User
+// ByUsername implements _sourceRepos.User
 func (_d UserWithRetry) ByUsername(ctx context.Context, d models.DBTX, username string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryByUsername")
@@ -313,7 +313,7 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d models.DBTX, username 
 	return
 }
 
-// Create implements repos.User
+// Create implements _sourceRepos.User
 func (_d UserWithRetry) Create(ctx context.Context, d models.DBTX, params *models.UserCreateParams) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryCreate")
@@ -353,7 +353,7 @@ func (_d UserWithRetry) Create(ctx context.Context, d models.DBTX, params *model
 	return
 }
 
-// CreateAPIKey implements repos.User
+// CreateAPIKey implements _sourceRepos.User
 func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d models.DBTX, user *models.User) (up1 *models.UserAPIKey, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryCreateAPIKey")
@@ -393,7 +393,7 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d models.DBTX, user *m
 	return
 }
 
-// Delete implements repos.User
+// Delete implements _sourceRepos.User
 func (_d UserWithRetry) Delete(ctx context.Context, d models.DBTX, id models.UserID) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryDelete")
@@ -433,7 +433,7 @@ func (_d UserWithRetry) Delete(ctx context.Context, d models.DBTX, id models.Use
 	return
 }
 
-// DeleteAPIKey implements repos.User
+// DeleteAPIKey implements _sourceRepos.User
 func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.UserAPIKey, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryDeleteAPIKey")
@@ -473,8 +473,8 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d models.DBTX, apiKey 
 	return
 }
 
-// Paginated implements repos.User
-func (_d UserWithRetry) Paginated(ctx context.Context, d models.DBTX, params repos.GetPaginatedUsersParams) (ua1 []models.User, err error) {
+// Paginated implements _sourceRepos.User
+func (_d UserWithRetry) Paginated(ctx context.Context, d models.DBTX, params _sourceRepos.GetPaginatedUsersParams) (ua1 []models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryPaginated")
 		if err != nil {
@@ -513,7 +513,7 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d models.DBTX, params rep
 	return
 }
 
-// Update implements repos.User
+// Update implements _sourceRepos.User
 func (_d UserWithRetry) Update(ctx context.Context, d models.DBTX, id models.UserID, params *models.UserUpdateParams) (up1 *models.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryUpdate")

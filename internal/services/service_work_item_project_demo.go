@@ -42,7 +42,8 @@ func NewDemoWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *DemoWorkIte
 func (w *DemoWorkItem) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID) (*models.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, id)
+	opts := w.wiSvc.getSharedDBOpts()
+	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)
 	}
@@ -77,10 +78,9 @@ func (w *DemoWorkItem) Create(ctx context.Context, d models.DBTX, caller CtxUser
 		return nil, err
 	}
 
-	opts := append(w.wiSvc.getSharedDBOpts(), models.WithWorkItemJoin(models.WorkItemJoins{DemoWorkItem: true}))
-	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts...)
+	wi, err := w.ByID(ctx, d, demoWi.WorkItemID)
 	if err != nil {
-		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)
+		return nil, fmt.Errorf("ByID: %w", err)
 	}
 
 	return wi, nil

@@ -8,13 +8,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// WorkItemTagWithTimeout implements repos.WorkItemTag interface instrumented with timeouts
+// WorkItemTagWithTimeout implements _sourceRepos.WorkItemTag interface instrumented with timeouts
 type WorkItemTagWithTimeout struct {
-	repos.WorkItemTag
+	_sourceRepos.WorkItemTag
 	config WorkItemTagWithTimeoutConfig
 }
 
@@ -31,14 +31,14 @@ type WorkItemTagWithTimeoutConfig struct {
 }
 
 // NewWorkItemTagWithTimeout returns WorkItemTagWithTimeout
-func NewWorkItemTagWithTimeout(base repos.WorkItemTag, config WorkItemTagWithTimeoutConfig) WorkItemTagWithTimeout {
+func NewWorkItemTagWithTimeout(base _sourceRepos.WorkItemTag, config WorkItemTagWithTimeoutConfig) WorkItemTagWithTimeout {
 	return WorkItemTagWithTimeout{
 		WorkItemTag: base,
 		config:      config,
 	}
 }
 
-// ByID implements repos.WorkItemTag
+// ByID implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTagID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
@@ -48,7 +48,7 @@ func (_d WorkItemTagWithTimeout) ByID(ctx context.Context, d models.DBTX, id mod
 	return _d.WorkItemTag.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.WorkItemTag
+// ByName implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.WorkItemTagSelectConfigOption) (wp1 *models.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
@@ -58,7 +58,7 @@ func (_d WorkItemTagWithTimeout) ByName(ctx context.Context, d models.DBTX, name
 	return _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 }
 
-// Create implements repos.WorkItemTag
+// Create implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTimeout) Create(ctx context.Context, d models.DBTX, params *models.WorkItemTagCreateParams) (wp1 *models.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
@@ -68,7 +68,7 @@ func (_d WorkItemTagWithTimeout) Create(ctx context.Context, d models.DBTX, para
 	return _d.WorkItemTag.Create(ctx, d, params)
 }
 
-// Delete implements repos.WorkItemTag
+// Delete implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTimeout) Delete(ctx context.Context, d models.DBTX, id models.WorkItemTagID) (wp1 *models.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.DeleteTimeout > 0 {
@@ -78,7 +78,7 @@ func (_d WorkItemTagWithTimeout) Delete(ctx context.Context, d models.DBTX, id m
 	return _d.WorkItemTag.Delete(ctx, d, id)
 }
 
-// Update implements repos.WorkItemTag
+// Update implements _sourceRepos.WorkItemTag
 func (_d WorkItemTagWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemTagID, params *models.WorkItemTagUpdateParams) (wp1 *models.WorkItemTag, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {

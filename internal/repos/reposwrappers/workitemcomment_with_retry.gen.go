@@ -9,22 +9,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
-// WorkItemCommentWithRetry implements repos.WorkItemComment interface instrumented with retries
+// WorkItemCommentWithRetry implements _sourceRepos.WorkItemComment interface instrumented with retries
 type WorkItemCommentWithRetry struct {
-	repos.WorkItemComment
+	_sourceRepos.WorkItemComment
 	_retryCount    int
 	_retryInterval time.Duration
 	logger         *zap.SugaredLogger
 }
 
 // NewWorkItemCommentWithRetry returns WorkItemCommentWithRetry
-func NewWorkItemCommentWithRetry(base repos.WorkItemComment, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemCommentWithRetry {
+func NewWorkItemCommentWithRetry(base _sourceRepos.WorkItemComment, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) WorkItemCommentWithRetry {
 	return WorkItemCommentWithRetry{
 		WorkItemComment: base,
 		_retryCount:     retryCount,
@@ -33,7 +33,7 @@ func NewWorkItemCommentWithRetry(base repos.WorkItemComment, logger *zap.Sugared
 	}
 }
 
-// ByID implements repos.WorkItemComment
+// ByID implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, opts ...models.WorkItemCommentSelectConfigOption) (wp1 *models.WorkItemComment, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemCommentWithRetryByID")
@@ -73,7 +73,7 @@ func (_d WorkItemCommentWithRetry) ByID(ctx context.Context, d models.DBTX, id m
 	return
 }
 
-// Create implements repos.WorkItemComment
+// Create implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithRetry) Create(ctx context.Context, d models.DBTX, params *models.WorkItemCommentCreateParams) (wp1 *models.WorkItemComment, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemCommentWithRetryCreate")
@@ -113,7 +113,7 @@ func (_d WorkItemCommentWithRetry) Create(ctx context.Context, d models.DBTX, pa
 	return
 }
 
-// Delete implements repos.WorkItemComment
+// Delete implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d models.DBTX, id models.WorkItemCommentID) (wp1 *models.WorkItemComment, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemCommentWithRetryDelete")
@@ -153,7 +153,7 @@ func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d models.DBTX, id
 	return
 }
 
-// Update implements repos.WorkItemComment
+// Update implements _sourceRepos.WorkItemComment
 func (_d WorkItemCommentWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemCommentID, params *models.WorkItemCommentUpdateParams) (wp1 *models.WorkItemComment, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemCommentWithRetryUpdate")

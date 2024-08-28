@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// ActivityWithPrometheus implements repos.Activity interface with all methods wrapped
+// ActivityWithPrometheus implements _sourceRepos.Activity interface with all methods wrapped
 // with Prometheus metrics
 type ActivityWithPrometheus struct {
-	base         repos.Activity
+	base         _sourceRepos.Activity
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var activityDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewActivityWithPrometheus returns an instance of the repos.Activity decorated with prometheus summary metric
-func NewActivityWithPrometheus(base repos.Activity, instanceName string) ActivityWithPrometheus {
+// NewActivityWithPrometheus returns an instance of the _sourceRepos.Activity decorated with prometheus summary metric
+func NewActivityWithPrometheus(base _sourceRepos.Activity, instanceName string) ActivityWithPrometheus {
 	return ActivityWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.Activity
+// ByID implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.ActivityID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,7 +52,7 @@ func (_d ActivityWithPrometheus) ByID(ctx context.Context, d models.DBTX, id mod
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// ByName implements repos.Activity
+// ByName implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
@@ -66,7 +66,7 @@ func (_d ActivityWithPrometheus) ByName(ctx context.Context, d models.DBTX, name
 	return _d.base.ByName(ctx, d, name, projectID, opts...)
 }
 
-// ByProjectID implements repos.Activity
+// ByProjectID implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.ActivitySelectConfigOption) (aa1 []models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
@@ -80,7 +80,7 @@ func (_d ActivityWithPrometheus) ByProjectID(ctx context.Context, d models.DBTX,
 	return _d.base.ByProjectID(ctx, d, projectID, opts...)
 }
 
-// Create implements repos.Activity
+// Create implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.ActivityCreateParams) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
@@ -94,7 +94,7 @@ func (_d ActivityWithPrometheus) Create(ctx context.Context, d models.DBTX, para
 	return _d.base.Create(ctx, d, params)
 }
 
-// Delete implements repos.Activity
+// Delete implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.ActivityID) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {
@@ -108,7 +108,7 @@ func (_d ActivityWithPrometheus) Delete(ctx context.Context, d models.DBTX, id m
 	return _d.base.Delete(ctx, d, id)
 }
 
-// Restore implements repos.Activity
+// Restore implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) Restore(ctx context.Context, d models.DBTX, id models.ActivityID) (err error) {
 	_since := time.Now()
 	defer func() {
@@ -122,7 +122,7 @@ func (_d ActivityWithPrometheus) Restore(ctx context.Context, d models.DBTX, id 
 	return _d.base.Restore(ctx, d, id)
 }
 
-// Update implements repos.Activity
+// Update implements _sourceRepos.Activity
 func (_d ActivityWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.ActivityID, params *models.ActivityUpdateParams) (ap1 *models.Activity, err error) {
 	_since := time.Now()
 	defer func() {

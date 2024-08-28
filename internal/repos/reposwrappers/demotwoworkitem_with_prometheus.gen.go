@@ -8,16 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	_sourceRepos "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// DemoTwoWorkItemWithPrometheus implements repos.DemoTwoWorkItem interface with all methods wrapped
+// DemoTwoWorkItemWithPrometheus implements _sourceRepos.DemoTwoWorkItem interface with all methods wrapped
 // with Prometheus metrics
 type DemoTwoWorkItemWithPrometheus struct {
-	base         repos.DemoTwoWorkItem
+	base         _sourceRepos.DemoTwoWorkItem
 	instanceName string
 }
 
@@ -30,15 +30,15 @@ var demotwoworkitemDurationSummaryVec = promauto.NewSummaryVec(
 	},
 	[]string{"instance_name", "method", "result"})
 
-// NewDemoTwoWorkItemWithPrometheus returns an instance of the repos.DemoTwoWorkItem decorated with prometheus summary metric
-func NewDemoTwoWorkItemWithPrometheus(base repos.DemoTwoWorkItem, instanceName string) DemoTwoWorkItemWithPrometheus {
+// NewDemoTwoWorkItemWithPrometheus returns an instance of the _sourceRepos.DemoTwoWorkItem decorated with prometheus summary metric
+func NewDemoTwoWorkItemWithPrometheus(base _sourceRepos.DemoTwoWorkItem, instanceName string) DemoTwoWorkItemWithPrometheus {
 	return DemoTwoWorkItemWithPrometheus{
 		base:         base,
 		instanceName: instanceName,
 	}
 }
 
-// ByID implements repos.DemoTwoWorkItem
+// ByID implements _sourceRepos.DemoTwoWorkItem
 func (_d DemoTwoWorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
@@ -52,8 +52,8 @@ func (_d DemoTwoWorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX,
 	return _d.base.ByID(ctx, d, id, opts...)
 }
 
-// Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
+// Create implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, params _sourceRepos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -66,8 +66,8 @@ func (_d DemoTwoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBT
 	return _d.base.Create(ctx, d, params)
 }
 
-// Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
+// Update implements _sourceRepos.DemoTwoWorkItem
+func (_d DemoTwoWorkItemWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params _sourceRepos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
