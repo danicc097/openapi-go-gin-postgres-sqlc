@@ -3,10 +3,9 @@
 //
 // Example:
 //
-// 	inflector.Singularize("People") // returns "Person"
+//	inflector.Singularize("People") // returns "Person"
 //
-// 	inflector.Pluralize("octopus) // returns "octopuses"
-//
+//	inflector.Pluralize("octopus) // returns "octopuses"
 package inflector
 
 import (
@@ -105,7 +104,7 @@ func init() {
 			{`(?i)(matr|vert|ind)(ix|ex)$`, `${1}ices`},
 			{`(?i)(x|ch|ss|sh)$`, `${1}es`},
 			{`(?i)([^aeiouy]|qu)y$`, `${1}ies`},
-			{`(?i)(hive)$`, `$1s`},
+			{`(?i)(hive)s$`, `$1`},
 			{`(?i)(?:([^f])fe|([lre])f)$`, `${1}${2}ves`},
 			{`(?i)sis$`, `ses`},
 			{`(?i)([ti])um$`, `${1}a`},
@@ -185,6 +184,7 @@ func init() {
 			{`(?i)([^aeiouy]|qu)ies$`, `${1}y`},
 			{`(?i)(tive)s$`, `$1`},
 			{`(?i)([lre])ves$`, `${1}f`},
+			{`(?i)hives$`, `hive`},
 			{`(?i)([^fo])ves$`, `${1}fe`},
 			{`(?i)(hive)s$`, `$1`},
 			{`(?i)(drive)s$`, `$1`},
