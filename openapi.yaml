@@ -1709,7 +1709,8 @@ components:
       x-is-generated: true
       x-go-type: UserAPIKey
     ModelsUserID: # Generated schema. DO NOT EDIT.
-      example: cdb15f83-1c5d-4727-98d1-8924ccd1fc01
+      example: 248df4b7-aa70-47b8-a036-33ac447e668d
+      format: uuid
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       type: string
       x-go-type: UserID

@@ -316,7 +316,10 @@ export interface components {
       expiresOn: string;
       userID: components["schemas"]["ModelsUserID"];
     };
-    /** @example cdb15f83-1c5d-4727-98d1-8924ccd1fc01 */
+    /**
+     * Format: uuid
+     * @example 248df4b7-aa70-47b8-a036-33ac447e668d
+     */
     ModelsUserID: string;
     ModelsWorkItem: {
       /** Format: date-time */

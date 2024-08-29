@@ -107,6 +107,7 @@
                 "x-oapi-ignore": true
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -254,6 +255,7 @@
                 "x-oapi-ignore": true
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -390,6 +392,7 @@
           "minLength": 1
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -648,6 +651,7 @@
           "x-oapi-ignore": true
         },
         "receiver": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -658,6 +662,7 @@
           "x-is-generated": true
         },
         "sender": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -872,6 +877,7 @@
           "x-go-type": "TimeEntryID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -983,6 +989,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -1025,6 +1032,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -1046,6 +1054,7 @@
       "x-go-type": "UserAPIKey"
     },
     "ModelsUserID": {
+      "format": "uuid",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
       "x-go-type": "UserID",
@@ -1152,6 +1161,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -1383,6 +1393,7 @@
                     "x-oapi-ignore": true
                   },
                   "receiver": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -1393,6 +1404,7 @@
                     "x-is-generated": true
                   },
                   "sender": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -1428,6 +1440,7 @@
                 "type": "boolean"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -1501,6 +1514,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -1754,6 +1768,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -1850,6 +1865,7 @@
           "x-oapi-ignore": true
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -1965,6 +1981,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -2043,6 +2060,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -2097,6 +2115,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -2257,6 +2276,7 @@
           "type": "string"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -2960,6 +2980,7 @@
                         ]
                       },
                       "userID": {
+                        "format": "uuid",
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
                         "x-go-type": "UserID",
@@ -3064,6 +3085,7 @@
                     "x-go-type": "TimeEntryID"
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -3128,6 +3150,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -3419,6 +3442,7 @@
                         ]
                       },
                       "userID": {
+                        "format": "uuid",
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
                         "x-go-type": "UserID",
@@ -3523,6 +3547,7 @@
                     "x-go-type": "TimeEntryID"
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -3587,6 +3612,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -3866,6 +3892,7 @@
                     "x-oapi-ignore": true
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -3995,6 +4022,7 @@
                     "x-oapi-ignore": true
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -4186,6 +4214,7 @@
               ]
             },
             "userID": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -4254,6 +4283,7 @@
           "x-go-type": "TeamID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -4310,6 +4340,7 @@
           "x-go-type": "TeamID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -4475,6 +4506,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -4579,6 +4611,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -4643,6 +4676,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -4951,6 +4985,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -5055,6 +5090,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -5119,6 +5155,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -5390,6 +5427,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -5494,6 +5532,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -5558,6 +5597,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -6631,6 +6671,7 @@
               ]
             },
             "userID": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -6884,6 +6925,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -6932,6 +6974,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -7037,6 +7080,7 @@
           "x-go-type": "TimeEntryID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -7206,6 +7250,7 @@
               "x-oapi-ignore": true
             },
             "receiver": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -7216,6 +7261,7 @@
               "x-is-generated": true
             },
             "sender": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -7251,6 +7297,7 @@
           "type": "boolean"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -7491,6 +7538,7 @@
                 "x-oapi-ignore": true
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -7638,6 +7686,7 @@
                 "x-oapi-ignore": true
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -7774,6 +7823,7 @@
           "minLength": 1
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8032,6 +8082,7 @@
           "x-oapi-ignore": true
         },
         "receiver": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8042,6 +8093,7 @@
           "x-is-generated": true
         },
         "sender": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8256,6 +8308,7 @@
           "x-go-type": "TimeEntryID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8367,6 +8420,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8409,6 +8463,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8430,6 +8485,7 @@
       "x-go-type": "UserAPIKey"
     },
     "ModelsUserID": {
+      "format": "uuid",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
       "x-go-type": "UserID",
@@ -8536,6 +8592,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -8767,6 +8824,7 @@
                     "x-oapi-ignore": true
                   },
                   "receiver": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -8777,6 +8835,7 @@
                     "x-is-generated": true
                   },
                   "sender": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -8812,6 +8871,7 @@
                 "type": "boolean"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -8885,6 +8945,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -9138,6 +9199,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -9234,6 +9296,7 @@
           "x-oapi-ignore": true
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -9349,6 +9412,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -9427,6 +9491,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -9481,6 +9546,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -9641,6 +9707,7 @@
           "type": "string"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -10344,6 +10411,7 @@
                         ]
                       },
                       "userID": {
+                        "format": "uuid",
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
                         "x-go-type": "UserID",
@@ -10448,6 +10516,7 @@
                     "x-go-type": "TimeEntryID"
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -10512,6 +10581,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -10803,6 +10873,7 @@
                         ]
                       },
                       "userID": {
+                        "format": "uuid",
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
                         "x-go-type": "UserID",
@@ -10907,6 +10978,7 @@
                     "x-go-type": "TimeEntryID"
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -10971,6 +11043,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -11250,6 +11323,7 @@
                     "x-oapi-ignore": true
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -11379,6 +11453,7 @@
                     "x-oapi-ignore": true
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -11570,6 +11645,7 @@
               ]
             },
             "userID": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -11638,6 +11714,7 @@
           "x-go-type": "TeamID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -11694,6 +11771,7 @@
           "x-go-type": "TeamID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -11859,6 +11937,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -11963,6 +12042,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -12027,6 +12107,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -12335,6 +12416,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -12439,6 +12521,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -12503,6 +12586,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -12774,6 +12858,7 @@
                     ]
                   },
                   "userID": {
+                    "format": "uuid",
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
                     "x-go-type": "UserID",
@@ -12878,6 +12963,7 @@
                 "x-go-type": "TimeEntryID"
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -12942,6 +13028,7 @@
                 ]
               },
               "userID": {
+                "format": "uuid",
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
                 "x-go-type": "UserID",
@@ -14015,6 +14102,7 @@
               ]
             },
             "userID": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -14268,6 +14356,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -14316,6 +14405,7 @@
           ]
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -14421,6 +14511,7 @@
           "x-go-type": "TimeEntryID"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
@@ -14590,6 +14681,7 @@
               "x-oapi-ignore": true
             },
             "receiver": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -14600,6 +14692,7 @@
               "x-is-generated": true
             },
             "sender": {
+              "format": "uuid",
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
               "x-go-type": "UserID",
@@ -14635,6 +14728,7 @@
           "type": "boolean"
         },
         "userID": {
+          "format": "uuid",
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
           "x-go-type": "UserID",
