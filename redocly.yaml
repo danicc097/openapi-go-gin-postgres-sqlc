@@ -1,0 +1,16 @@
+apis:
+  main:
+    root: ./openapi.exploded.yaml # !!merge not supported via underlying js libs
+extends:
+  - recommended
+rules:
+  tag-description: off
+  operation-summary: error
+  no-unresolved-refs: error
+  no-unused-components: warn
+  operation-2xx-response: error
+  operation-operationId: error
+  operation-singular-tag: error
+  no-enum-type-mismatch: error
+  no-identical-paths: error
+  no-ambiguous-paths: error

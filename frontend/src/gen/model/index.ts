@@ -8,7 +8,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export * from './activityResponse';
-export * from './anyValue';
 export * from './cacheDemoWorkItemResponse';
 export * from './cacheDemoWorkItemResponseMetadata';
 export * from './createActivityRequest';

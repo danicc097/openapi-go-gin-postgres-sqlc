@@ -4341,6 +4341,7 @@ type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UserResponse
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -4408,6 +4409,7 @@ type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UserResponse
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -4429,6 +4431,7 @@ func (r UpdateUserResponse) StatusCode() int {
 type UpdateUserAuthorizationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
 }
 
 // Status returns HTTPResponse.Status
@@ -6089,6 +6092,14 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil
@@ -6172,6 +6183,14 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil
@@ -6188,6 +6207,15 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 	response := &UpdateUserAuthorizationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
 	}
 
 	return response, nil

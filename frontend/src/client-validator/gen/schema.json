@@ -2077,9 +2077,6 @@
         "filterMode"
       ]
     },
-    "AnyValue": {
-      "description": "represents any value, including `null`"
-    },
     "PaginationFilter": {
       "oneOf": [
         {
@@ -3043,9 +3040,6 @@
     },
     "PaginationFilterArray": {
       "$ref": "#/definitions/PaginationFilterArray"
-    },
-    "AnyValue": {
-      "$ref": "#/definitions/AnyValue"
     },
     "PaginationFilter": {
       "$ref": "#/definitions/PaginationFilter"

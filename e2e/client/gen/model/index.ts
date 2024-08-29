@@ -7,7 +7,6 @@
  */
 
 export * from './activityResponse'
-export * from './anyValue'
 export * from './cacheDemoWorkItemResponse'
 export * from './cacheDemoWorkItemResponseMetadata'
 export * from './createActivityRequest'

@@ -698,8 +698,6 @@ export interface components {
       filterMode: components["schemas"]["PaginationFilterModes"];
       value?: ((string | null)[]) | null;
     };
-    /** @description represents any value, including `null` */
-    AnyValue: Record<string, unknown> | null;
     PaginationFilter: components["schemas"]["PaginationFilterPrimitive"] | components["schemas"]["PaginationFilterArray"];
     Pagination: {
       filter?: components["schemas"]["PaginationFilter"];
@@ -1663,6 +1661,16 @@ export interface operations {
           "application/json": components["schemas"]["UserResponse"];
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
     };
   };
   /** updates user role and scopes by id */
@@ -1685,6 +1693,16 @@ export interface operations {
     responses: {
       /** @description User auth updated successfully. */
       204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
     };
   };
   /** deletes the user by id */
@@ -1735,6 +1753,16 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["UserResponse"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

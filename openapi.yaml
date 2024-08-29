@@ -881,6 +881,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponse'
           description: ok
+        !!merge <<: *x-error-response
       tags:
         - user
   /user/{id}/authorization:
@@ -900,6 +901,7 @@ paths:
       responses:
         204:
           description: User auth updated successfully.
+        !!merge <<: *x-error-response
       x-required-scopes:
         - scopes:write
       x-required-role: admin
@@ -935,6 +937,7 @@ paths:
         description: Updated user object
         required: true
       responses:
+        !!merge <<: *x-error-response
         200:
           content:
             application/json:
@@ -2634,9 +2637,9 @@ components:
           nullable: true
       required: ["filterMode"]
     # kin-openapi can't handle these in url.Values at all
-    AnyValue:
-      nullable: true
-      description: represents any value, including `null`
+    # AnyValue:
+    # nullable: true
+    # description: represents any value, including `null`
     PaginationFilter:
       oneOf:
         - $ref: '#/components/schemas/PaginationFilterPrimitive'

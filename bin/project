@@ -298,6 +298,8 @@ x.install-tools() {
       "go install github.com/maxbrunsfeld/counterfeiter/v6@latest"
       "go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1"
       "go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2"
+      # vacuum lint openapi.exploded.yaml -ed
+      "go install github.com/daveshanley/vacuum@latest"
     )
     for command in "${commands[@]}"; do
       $command &
@@ -420,7 +422,7 @@ x.gen.pregen() {
     update_roles_and_scopes
 
     validate_spec
-    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH" # should not edit spec
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH"
     update_spec_with_structs
     remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

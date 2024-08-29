@@ -5782,9 +5782,6 @@
         "filterMode"
       ]
     },
-    "AnyValue": {
-      "description": "represents any value, including `null`"
-    },
     "PaginationFilter": {
       "oneOf": [
         {
@@ -13168,9 +13165,6 @@
       "required": [
         "filterMode"
       ]
-    },
-    "AnyValue": {
-      "description": "represents any value, including `null`"
     },
     "PaginationFilter": {
       "oneOf": [
