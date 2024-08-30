@@ -2196,11 +2196,11 @@ components:
         firstName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[a-zA-Z \'-]+$
+          pattern: "^[a-zA-Z '-]+$"
         lastName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[a-zA-Z \'-]+$
+          pattern: "^[a-zA-Z '-]+$"
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update

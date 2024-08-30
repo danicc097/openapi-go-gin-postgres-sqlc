@@ -345,48 +345,13 @@ x.gen.pregen() {
     echo "Running generation"
 
     # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
-    generate_structs_map # xo gen will create/update model structs
+    generate_structs_map # spec structs or their content in rest package might have changed
 
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || mark_failed_tool_build
 
     local rest_structs=() refs=() spec_schemas=()
-    declare -A rest_schema_lookup spec_schema_lookup
 
-    go-utils.find_structs rest_structs "$REST_MODELS"
-    for schema in "${rest_structs[@]}"; do # only interested in generating rest models.spec.go schemas. let the rest fail normally.
-      rest_schema_lookup["$schema"]=1
-    done
-
-    mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH")
-    for schema in "${spec_schemas[@]}"; do # only interested in generating rest models.spec.go schemas. let the rest fail.
-      spec_schema_lookup["$schema"]=1
-    done
-
-    local missing_rest_models=()
-    mapfile -t refs < <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH | sort | uniq)
-    for ref in "${refs[@]}"; do
-      if [[ -n "${rest_schema_lookup["$ref"]}" && -z "${spec_schema_lookup["$ref"]}" ]]; then
-        missing_rest_models+=("$ref")
-      fi
-    done
-
-    if [[ ${#missing_rest_models[@]} -gt 0 ]]; then
-      echo "${YELLOW}Generating missing rest package \$ref's:"
-      printf "${YELLOW}  - %s\n" "${missing_rest_models[@]}"
-      echo "${OFF}"
-
-      local new_schemas=""
-      for ref in "${missing_rest_models[@]}"; do
-        new_schemas+="\"$ref\": {
-            \"x-gen-struct\": \"$ref\",
-            \"x-is-generated\": true
-          },"
-      done
-
-      yq eval-all ".components.schemas += {
-        ${new_schemas%,}
-      }" -i "$SPEC_PATH"
-    fi
+    generate_missing_spec_schemas
 
     codegen validate-spec -env=".env.$X_ENV"
     # useless after merging models and db
@@ -396,28 +361,7 @@ x.gen.pregen() {
 
     ######## Ensure consistent style for future codegen
 
-    echo "Applying PascalCase to operation IDs in $SPEC_PATH"
-
-    # outputs safe double-quoted paths for yq
-    # https://github.com/mikefarah/yq/issues/1295
-    mapfile -t opid_paths < <(yq e '
-      .paths[][].operationId
-      | path
-      | with(.[] | select(contains(".") or contains("/") or contains("{")); . = "\"" + . + "\"")
-      | join(".")
-    ' $SPEC_PATH)
-    mapfile -t opids < <(yq e ".paths[][].operationId" $SPEC_PATH)
-
-    local ops=""
-    for i in ${!opids[@]}; do
-      local new_opid=""
-      to_pascal new_opid "${opids[$i]}"
-      ops+=".${opid_paths[$i]}=\"${new_opid}\" |" # cant have space
-    done
-
-    yq_op="${ops%"|"}"
-
-    yq e "$yq_op" -i "$SPEC_PATH"
+    pascal_case_spec_operation_ids
 
     update_roles_and_scopes
 
@@ -429,7 +373,75 @@ x.gen.pregen() {
   xsetup.backup.cleanup
 }
 
+pascal_case_spec_operation_ids() {
+  echo "Applying PascalCase to operation IDs"
+
+  # outputs safe double-quoted paths for yq
+  # https://github.com/mikefarah/yq/issues/1295
+  mapfile -t opid_paths < <(yq e '
+      .paths[][].operationId
+      | path
+      | with(.[] | select(contains(".") or contains("/") or contains("{")); . = "\"" + . + "\"")
+      | join(".")
+    ' $SPEC_PATH)
+  mapfile -t opids < <(yq e ".paths[][].operationId" $SPEC_PATH)
+
+  local ops=""
+  for i in ${!opids[@]}; do
+    local new_opid=""
+    to_pascal new_opid "${opids[$i]}"
+    ops+=".${opid_paths[$i]}=\"${new_opid}\" |" # cant have space
+  done
+
+  yq_op="${ops%"|"}"
+
+  yq e "$yq_op" -i "$SPEC_PATH"
+}
+
+# ext vars: spec_schemas, rest_structs
+generate_missing_spec_schemas() {
+  declare -A rest_schema_lookup spec_schema_lookup
+
+  go-utils.find_structs rest_structs "$REST_MODELS"
+  for schema in "${rest_structs[@]}"; do # only interested in generating rest models.spec.go schemas. let the rest fail normally.
+    rest_schema_lookup["$schema"]=1
+  done
+
+  mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH")
+  for schema in "${spec_schemas[@]}"; do # only interested in generating rest models.spec.go schemas. let the rest fail.
+    spec_schema_lookup["$schema"]=1
+  done
+
+  local missing_rest_models=()
+  mapfile -t refs < <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH | sort | uniq)
+  for ref in "${refs[@]}"; do
+    if [[ -n "${rest_schema_lookup["$ref"]}" && -z "${spec_schema_lookup["$ref"]}" ]]; then
+      missing_rest_models+=("$ref")
+    fi
+  done
+
+  if [[ ${#missing_rest_models[@]} -gt 0 ]]; then
+    echo "${YELLOW}Generating missing rest package \$ref's:"
+    printf "${YELLOW}  - %s\n" "${missing_rest_models[@]}"
+    echo "${OFF}"
+
+    local new_schemas=""
+    for ref in "${missing_rest_models[@]}"; do
+      new_schemas+="\"$ref\": {
+            \"x-gen-struct\": \"$ref\",
+            \"x-is-generated\": true
+          },"
+    done
+
+    yq eval-all ".components.schemas += {
+        ${new_schemas%,}
+      }" -i "$SPEC_PATH"
+  fi
+}
+
 validate_spec() {
+  echo "Validating spec $SPEC_PATH"
+
   mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and (has("x-is-generated") | not)) | key' $SPEC_PATH)
   [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct can only be used in generated schemas (x-is-generated). Found in:
 $(join_by $'\n' "${invalid_schemas[@]}")"
@@ -467,7 +479,7 @@ $(join_by $'\n' "${services_prefix_clashes[@]}")"
 }
 
 update_roles_and_scopes() {
-  echo "Updating roles and scopes in $SPEC_PATH"
+  echo "Updating roles and scopes"
   ######## Sync spec enums with external policy sources and validate existing schema enums.
   ######## External json files are the source of truth, indexed by enum name
   # arrays can't be nested in bash
@@ -2538,6 +2550,7 @@ find_deleted_pkg_schemas() {
   local pkg="$2"
   local pkg_prefix=""
   to_pascal pkg_prefix "$pkg"
+
   echo "Finding deleted structs or enums from package '$pkg_prefix'..."
   mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH" | grep -E "^${pkg_prefix}" || true)
 
@@ -2554,6 +2567,8 @@ find_deleted_pkg_schemas() {
 }
 
 update_spec_with_structs() {
+  echo "Updating spec with rest package structs"
+
   mapfile -t structs_to_generate < <(yq e '.components.schemas[] | select(has("x-gen-struct")).x-gen-struct' $SPEC_PATH)
 
   local rest_structs=()
@@ -2637,6 +2652,8 @@ update_spec_with_structs() {
 }
 
 remove_schemas_marked_for_deletion() {
+  echo "Removing schemas marked for deletion"
+
   local paths_arr paths
   paths_arr=$(yq e '..
       | select(has("x-TO-BE-DELETED"))
