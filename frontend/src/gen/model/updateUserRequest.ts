@@ -13,12 +13,12 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 export interface UpdateUserRequest {
   /**
    * originally from auth server but updatable
-   * @pattern ^[\p{L} '-]+$
+   * @pattern ^[a-zA-Z \'-]+$
    */
   firstName?: string;
   /**
    * originally from auth server but updatable
-   * @pattern ^[\p{L} '-]+$
+   * @pattern ^[a-zA-Z \'-]+$
    */
   lastName?: string;
 }

@@ -1392,12 +1392,12 @@
         "firstName": {
           "description": "originally from auth server but updatable",
           "type": "string",
-          "pattern": "^[\\p{L} '-]+$"
+          "pattern": "^[a-zA-Z \\'-]+$"
         },
         "lastName": {
           "description": "originally from auth server but updatable",
           "type": "string",
-          "pattern": "^[\\p{L} '-]+$"
+          "pattern": "^[a-zA-Z \\'-]+$"
         }
       },
       "type": "object"

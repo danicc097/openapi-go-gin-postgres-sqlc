@@ -345,9 +345,9 @@ x.gen.pregen() {
     echo "Running generation"
 
     # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
-    generate_structs_map # structs might have been removed in the meantime
+    generate_structs_map # xo gen will create/update model structs
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || mark_failed_tool_build # xo gen may create/update models.
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || mark_failed_tool_build
 
     local rest_structs=() refs=() spec_schemas=()
     declare -A rest_schema_lookup spec_schema_lookup
@@ -1088,7 +1088,7 @@ x.gen.frontend() {
     mkdir -p frontend/src/types
     rm -rf $FRONTEND_GEN
 
-    yq 'explode(.)' $SPEC_PATH >$exploded_spec # js-lib won't support anchors - used by most gen libs
+    yq 'explode(.)' $SPEC_PATH >$exploded_spec # js-yaml wont support explicit tags - used by most gen libs
 
     {
       node frontend/scripts/generate-client-validator.js
@@ -1162,8 +1162,6 @@ x.gen() {
 
     wait_without_error || err Failed jobs
 
-    x.test.xo
-
     {
       x.gen.pregen
       x.gen.client-server
@@ -1191,7 +1189,9 @@ x.gen() {
 # Build code generation custom tools.
 x.gen.build-tools() {
   { { {
-    generate_structs_map # openapi-go requires structs already compiled
+    # openapi-go via codegen cli requires structs already compiled, but we will rebuild
+    # right before codegen gen-schema since PublicStructs is not used anywhere else inside codegen
+    # generate_structs_map
 
     out_dir=$BUILD_DIR
 

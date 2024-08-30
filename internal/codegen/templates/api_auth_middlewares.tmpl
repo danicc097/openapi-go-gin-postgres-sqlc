@@ -21,9 +21,11 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
         {{- if $authInfo.Role }}
         MinimumRole: models.Role("{{$authInfo.Role}}"),
         {{- end }}
-        {{- if $authInfo.Scopes }}
+        {{- if (gt (len $authInfo.Scopes) 0) }}
         RequiredScopes: models.Scopes{
-          {{ stringsJoinSlice $authInfo.Scopes "models.Scope(\"" "\")" ",\n" -}}
+          {{range $authInfo.Scopes -}}
+              models.Scope("{{.}}"),
+          {{end -}}
         },
         {{- end }}
       }),
