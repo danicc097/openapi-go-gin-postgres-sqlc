@@ -1042,6 +1042,7 @@ func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWo
 	return body, err
 }
 
+// Discriminator via struct field ProjectName.
 func (t CreateWorkItemRequest) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"projectName"`
@@ -1141,6 +1142,7 @@ func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, erro
 	return body, err
 }
 
+// Discriminator via struct field FilterMode.
 func (t PaginationFilter) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"filterMode"`
@@ -1264,6 +1266,7 @@ func (t WorkItemResponse) AsDemoTwoWorkItemResponse() (DemoTwoWorkItemResponse, 
 	return body, err
 }
 
+// Discriminator via struct field ProjectName.
 func (t WorkItemResponse) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"projectName"`
