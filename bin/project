@@ -973,7 +973,7 @@ additional-imports:
 EOF
     )
     # IMPORTANT: additional-imports packages affect x-go extensions
-    # see https://github.com/deepmap/oapi-codegen?tab=readme-ov-file#openapi-extensions
+    # see https://github.com/oapi-codegen/oapi-codegen?tab=readme-ov-file#openapi-extensions
 
     # TODO: we already have structs.gen.go indexed by "Models(models struct)" or plain rest type...
     # however this might be faster if the build is cached (templates unchanged). could construct internally as map set anyway

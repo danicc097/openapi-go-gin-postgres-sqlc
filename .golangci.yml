@@ -63,7 +63,7 @@ linters-settings:
         json: goCamel
         yaml: goCamel
   staticcheck:
-    go: "1.21"
+    go: "1.22"
     checks:
       - "all"
   gci:

@@ -6,7 +6,7 @@ x-uuidIDParameterBase: &x-uuidIDParameterBase
   schema:
     type: string
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-    # https://github.com/deepmap/oapi-codegen/issues/760
+    # https://github.com/oapi-codegen/oapi-codegen/issues/760
     x-go-type: uuid.UUID
     x-go-type-import:
       name: uuid
@@ -2647,7 +2647,7 @@ components:
       discriminator:
         propertyName: filterMode
         # oapi broken for these - it probably indexes by schema so we dont get all mappings...
-        # https://github.com/deepmap/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
+        # https://github.com/oapi-codegen/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
         # TODO: raise issues on both.
         # also orval is broken
         # ref: https://github.com/OAI/OpenAPI-Specification/discussions/3283
