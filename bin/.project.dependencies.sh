@@ -44,7 +44,7 @@ check.bin.column() {
 
 install.bin.column() {
   { { {
-    wget https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-2.36.2.tar.gz
+    wget --tries=10 https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-2.36.2.tar.gz
     tar -xf util-linux-2.36.2.tar.gz
     cd util-linux-2.36.2 || exit 1
     ./configure
@@ -72,7 +72,7 @@ install.bin.protoc() {
   { { {
     VERSION=3.19.4
     id="protoc-$VERSION-linux-x86_64"
-    wget https://github.com/protocolbuffers/protobuf/releases/download/v"$VERSION"/$id.zip
+    wget --tries=10 https://github.com/protocolbuffers/protobuf/releases/download/v"$VERSION"/$id.zip
     unzip -q "$id".zip -d "$id"
     mv "$id"/bin/protoc ./bin/tools/
     rm -rf "$id"
@@ -145,7 +145,7 @@ check.bin.pg_format() {
 install.bin.pg_format() {
   { { {
     local version="5.2"
-    wget https://github.com/darold/pgFormatter/archive/refs/tags/v"$version".tar.gz
+    wget --tries=10 https://github.com/darold/pgFormatter/archive/refs/tags/v"$version".tar.gz
     tar xzf v"$version".tar.gz
     cd pgFormatter-"$version"/ || exit 1
     perl Makefile.PL
@@ -279,7 +279,7 @@ install.bin.mkcert() {
   { { {
     VERSION="1.4.3"
     sudo apt-get install libnss3-tools -y
-    wget https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
+    wget --tries=10 https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
     chmod +x mkcert
     mv mkcert ./bin/tools/
     mkcert -install
