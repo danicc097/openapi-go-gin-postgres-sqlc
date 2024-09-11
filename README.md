@@ -103,8 +103,8 @@ direnv allow # you can also customize direnv with .envrc.local as you would a re
 cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
 
 project bootstrap # dependency and tools interactive installation
-project gen
 project recreate-shared-services
+project gen
 project run.all
 ```
 
