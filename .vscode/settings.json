@@ -97,4 +97,9 @@
   "files.associations": {
     "*.sql": "postgres"
   },
+  "redoclyOpenAPI.trace.server": "off",
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
+    ".vscode/openapi-schema.json": "openapi.yaml"
+  },
 }

@@ -599,7 +599,7 @@ docker.images.load_latest() {
 AWK_REMOVE_GO_COMMENTS='
      /\/\*/ { f=1 } # set flag that is a block comment
 
-     f==0 && !/^\s*(\/\/|\/\*)/ { # skip // or /*
+     f==0 && !/^[ \t]*(\/\/|\/\*)/ { # skip // or /*
         print  # print non-commented lines
      }
      /\*\// { f=0 } # reset flag at end of block comment

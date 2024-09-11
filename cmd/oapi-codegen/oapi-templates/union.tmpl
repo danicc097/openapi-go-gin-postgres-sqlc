@@ -89,6 +89,7 @@
     {{end}}
 
     {{if and ($discriminator) (not skip_discriminator_utils) }}
+        // Discriminator via struct field {{$discriminator.PropertyName}}.
         func (t {{.TypeName}}) Discriminator() (string, error) {
             var discriminator struct {
                 Discriminator string {{$discriminator.JSONTag}}

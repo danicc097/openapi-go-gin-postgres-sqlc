@@ -1,6 +1,6 @@
 package main
 
-// https://github.com/deepmap/oapi-codegen/pull/707
+// https://github.com/oapi-codegen/oapi-codegen/pull/707
 
 import (
 	"embed"
@@ -14,10 +14,10 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
-	"github.com/deepmap/oapi-codegen/v2/pkg/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/iancoleman/strcase"
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/codegen"
+	"github.com/oapi-codegen/oapi-codegen/v2/pkg/util"
 	"gopkg.in/yaml.v3"
 )
 

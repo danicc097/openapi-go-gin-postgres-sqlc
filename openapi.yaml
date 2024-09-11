@@ -6,7 +6,7 @@ x-uuidIDParameterBase: &x-uuidIDParameterBase
   schema:
     type: string
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-    # https://github.com/deepmap/oapi-codegen/issues/760
+    # https://github.com/oapi-codegen/oapi-codegen/issues/760
     x-go-type: uuid.UUID
     x-go-type-import:
       name: uuid
@@ -881,6 +881,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResponse'
           description: ok
+        !!merge <<: *x-error-response
       tags:
         - user
   /user/{id}/authorization:
@@ -900,6 +901,7 @@ paths:
       responses:
         204:
           description: User auth updated successfully.
+        !!merge <<: *x-error-response
       x-required-scopes:
         - scopes:write
       x-required-role: admin
@@ -935,6 +937,7 @@ paths:
         description: Updated user object
         required: true
       responses:
+        !!merge <<: *x-error-response
         200:
           content:
             application/json:
@@ -1706,7 +1709,8 @@ components:
       x-is-generated: true
       x-go-type: UserAPIKey
     ModelsUserID: # Generated schema. DO NOT EDIT.
-      example: cdb15f83-1c5d-4727-98d1-8924ccd1fc01
+      example: 248df4b7-aa70-47b8-a036-33ac447e668d
+      format: uuid
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       type: string
       x-go-type: UserID
@@ -2192,11 +2196,11 @@ components:
         firstName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[\p{L} '-]+$
+          pattern: "^[a-zA-Z '-]+$"
         lastName:
           description: originally from auth server but updatable
           type: string
-          pattern: ^[\p{L} '-]+$
+          pattern: "^[a-zA-Z '-]+$"
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update
@@ -2216,7 +2220,6 @@ components:
         - loc
         - msg
         - detail
-        - type
       type: object
       properties:
         loc:
@@ -2634,9 +2637,9 @@ components:
           nullable: true
       required: ["filterMode"]
     # kin-openapi can't handle these in url.Values at all
-    AnyValue:
-      nullable: true
-      description: represents any value, including `null`
+    # AnyValue:
+    # nullable: true
+    # description: represents any value, including `null`
     PaginationFilter:
       oneOf:
         - $ref: '#/components/schemas/PaginationFilterPrimitive'
@@ -2644,7 +2647,7 @@ components:
       discriminator:
         propertyName: filterMode
         # oapi broken for these - it probably indexes by schema so we dont get all mappings...
-        # https://github.com/deepmap/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
+        # https://github.com/oapi-codegen/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
         # TODO: raise issues on both.
         # also orval is broken
         # ref: https://github.com/OAI/OpenAPI-Specification/discussions/3283

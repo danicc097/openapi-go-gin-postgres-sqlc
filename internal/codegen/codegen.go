@@ -196,13 +196,6 @@ func (o *CodeGen) generateOpIDAuthMiddlewares() error {
 
 	funcs := template.FuncMap{
 		"stringsJoin": strings.Join,
-		"stringsJoinSlice": func(elems []string, prefix string, suffix string, sep string) string {
-			for i, e := range elems {
-				elems[i] = prefix + e + suffix
-			}
-
-			return strings.Join(elems, sep)
-		},
 	}
 
 	tmpl := "templates/api_auth_middlewares.tmpl"

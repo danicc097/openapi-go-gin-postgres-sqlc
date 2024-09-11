@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine3.18 AS build
+FROM golang:1.22-alpine3.18 AS build
 
 ARG DOCKER_UID
 ARG DOCKER_GID
