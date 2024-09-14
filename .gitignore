@@ -1,3 +1,4 @@
+**/repopack-output.*
 **/.vite
 .direnv
 db/schema.sql
