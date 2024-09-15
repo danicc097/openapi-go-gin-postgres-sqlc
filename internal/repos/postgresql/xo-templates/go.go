@@ -97,6 +97,17 @@ const (
 	// example: "properties":private,another-property && "type":ProjectName && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
 
+func allProperties() []string {
+	return []string{
+		propertiesJoinOperator,
+		propertyRefsIgnore,
+		propertyShareRefConstraints,
+		propertyJSONPrivate,
+		propertyOpenAPINotRequired,
+		propertyOpenAPIHidden,
+	}
+}
+
 // to not have to analyze everything for convertConstraints
 var cardinalityRE = regexp.MustCompile(string(cardinalityAnnot) + annotationAssignmentOperator + "([A-Za-z0-9_-]*)")
 
@@ -1571,7 +1582,14 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 func extractPropertiesAnnotation(annotation annotation) []string {
 	var properties []string
 	for _, p := range strings.Split(annotation, propertiesJoinOperator) {
-		properties = append(properties, strings.TrimSpace(strings.ToLower(p)))
+		prop := strings.TrimSpace(strings.ToLower(p))
+		if prop == "" {
+			continue
+		}
+		if !contains(allProperties(), prop) {
+			panic(fmt.Sprintf("unknown sql comment property: %s", prop))
+		}
+		properties = append(properties, prop)
 	}
 
 	return properties
