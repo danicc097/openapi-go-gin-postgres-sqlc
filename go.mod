@@ -47,7 +47,7 @@ require (
 	github.com/smartystreets/gunit v1.4.5
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggest/jsonschema-go v0.3.72
-	github.com/swaggest/openapi-go v0.2.53
+	github.com/swaggest/openapi-go v0.2.54
 	github.com/zitadel/oidc/v2 v2.12.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.49.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.27.0
