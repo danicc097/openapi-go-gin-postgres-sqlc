@@ -1,0 +1,41 @@
+package main
+
+import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"strconv"
+)
+
+/**
+
+extra safety:
+  - we can generate typed path, parameter functions etc. since we already have openapi gen
+  - endpoints simply send html if HX-Request=true header (its set in all requests)
+  - can validate `hx-` (must exist, just index html language server customData json.
+*/
+
+templ Hello(name string) {
+	<div>Hello, { name }</div>
+}
+
+templ Greeting(user models.User) {
+	<div class="greeting">
+		@Hello(user.Username)
+	</div>
+}
+
+templ counts(global, session int) {
+	<form id="countsForm" action="/" method="POST" hx-post="/" hx-select="#countsForm" hx-swap="outerHTML">
+		<div class="columns">
+			<div class={ "column", "has-text-centered", "is-primary", "border" }>
+				<h1 class="title is-size-1 has-text-centered">{ strconv.Itoa(global) }</h1>
+				<p class="subtitle has-text-centered">Global</p>
+				<div><button class="button is-primary" type="submit" name="global" value="global">+1</button></div>
+			</div>
+			<div class={ "column", "has-text-centered", "border" }>
+				<h1 class="title is-size-1 has-text-centered">{ strconv.Itoa(session) }</h1>
+				<p class="subtitle has-text-centered">Session</p>
+				<div><button class="button is-secondary" type="submit" name="session" value="session">+1</button></div>
+			</div>
+		</div>
+	</form>
+}
