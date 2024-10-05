@@ -105,6 +105,7 @@ cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
 project bootstrap # dependency and tools interactive installation
 project recreate-shared-services
 project gen
+project db.initial-data
 project run.all
 ```
 
