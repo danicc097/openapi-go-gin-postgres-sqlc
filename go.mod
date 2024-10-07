@@ -59,7 +59,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
 	golang.org/x/sync v0.8.0
-	golang.org/x/text v0.17.0
+	golang.org/x/text v0.19.0
 	mvdan.cc/gofumpt v0.6.0
 )
 
