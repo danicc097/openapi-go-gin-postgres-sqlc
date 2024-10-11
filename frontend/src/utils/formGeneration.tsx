@@ -806,6 +806,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     if (!selectFocused) setIsSelectVisible(false)
   }, [selectFocused])
 
+  if (_props.error?.includes('match pattern')) {
+    _props.error = `${itemName} does not match allowed patterns`
+  }
+
   if (component) {
     // explicit component given
     formFieldComponent = React.cloneElement(component, {
