@@ -324,6 +324,8 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <FormData />
         {/* TODO: if not visible (large forms), should show a popup arrow on viewport bottom left "Go to errors" to focus on callout */}
         <DynamicFormErrorCallout />
+
+        {/* TODO: can have undo-redo functionality by using RHF reset(...)*/}
         <form
           onSubmit={(e) => {
             setHasClickedSubmit(true)
