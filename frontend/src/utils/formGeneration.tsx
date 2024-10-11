@@ -322,6 +322,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
+        {/* TODO: if not visible (large forms), should show a popup arrow on viewport bottom left "Go to errors" to focus on callout */}
         <DynamicFormErrorCallout />
         <form
           onSubmit={(e) => {

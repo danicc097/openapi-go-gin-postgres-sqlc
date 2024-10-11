@@ -404,7 +404,6 @@ export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
   const filterMode = dynamicConfig?.filterModes[column.id]
   const value = column.getFilterValue()
 
-  // FIXME: on checked=false change not rerendered, only on indeterminate
   return (
     <Checkbox
       {...props}
@@ -412,8 +411,7 @@ export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
       ref={ref as any}
       checked={value === 'true'}
       data-checked={value === 'true'}
-      indeterminate={value === undefined}
-      data-indeterminate={value === undefined}
+      {...(value === undefined && { indeterminate: true, 'data-indeterminate': true })}
       size="xs"
       onChange={(event) => {
         const newValue =
