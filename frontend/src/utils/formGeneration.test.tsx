@@ -26,7 +26,7 @@ import { JSONSchema } from 'json-schema-to-ts'
 import userEvent from '@testing-library/user-event'
 import { VirtuosoMockContext } from 'react-virtuoso'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
-import { User } from 'src/gen/model'
+import { UserResponse } from 'src/gen/model'
 import { schema, refPattern, schemaFields } from 'src/utils/jsonSchema.test'
 import { setup } from 'src/test-utils/render'
 
@@ -217,7 +217,7 @@ describe('form generation', () => {
                     email: `user${i}@mail.com`,
                     userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
                     role: 'user',
-                  } as User
+                  } as UserResponse
                 }),
                 optionTransformer(el) {
                   return <UserComboboxOption user={el} />
@@ -229,7 +229,7 @@ describe('form generation', () => {
                   return el.userID
                 },
                 pillTransformer(el) {
-                  return <>el.email</>
+                  return <>{el.email}</>
                 },
                 searchValueTransformer(el) {
                   return `${el.email} ${el.username}`
