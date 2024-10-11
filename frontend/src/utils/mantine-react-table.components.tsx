@@ -404,6 +404,7 @@ export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
   const filterMode = dynamicConfig?.filterModes[column.id]
   const value = column.getFilterValue()
 
+  // FIXME: on checked=false change not rerendered, only on indeterminate
   return (
     <Checkbox
       {...props}
