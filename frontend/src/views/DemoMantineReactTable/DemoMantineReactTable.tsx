@@ -1,3 +1,7 @@
+/**
+ * TODO: abstract way to generate pagination tables for everything already spec as PaginationXXX
+ *
+ */
 import { ComponentProps, MouseEventHandler, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,

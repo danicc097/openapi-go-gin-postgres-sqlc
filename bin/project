@@ -1539,12 +1539,20 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
 
-  # https://github.com/cosmtrek/air/blob/master/air_example.toml
-  # NOTE: building binary unreliable, leads to bin not found.
+  # https://github.com/air-verse/air/blob/master/air_example.toml
+  # NOTE: building binary unreliable sometimes, leads to bin not found.
+  local build_cmd="go build -o /mnt/ramdisk/rest-server ./cmd/rest-server/main.go"
+  local bin_cmd="/mnt/ramdisk/rest-server -env=.env.$X_ENV"
+  if ! test -d /mnt/ramdisk; then # setup with sudo mkdir -p /mnt/ramdisk; sudo mount -t tmpfs -o size=100M tmpfs /mnt/ramdisk
+    build_cmd=""
+    bin_cmd="go run ./cmd/rest-server/main.go -env=.env.$X_ENV"
+  fi
+  echo "Running $bin_cmd"
+
   air \
     --build.pre_cmd "$pre_build_cmd" \
-    --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/main.go -env=.env.$X_ENV" \
+    --build.cmd "$build_cmd" \
+    --build.bin "$bin_cmd" \
     --build.include_ext "go,work,mod" \
     --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \

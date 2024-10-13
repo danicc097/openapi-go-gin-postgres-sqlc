@@ -322,7 +322,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
         <FormData />
+        {/* TODO: if not visible (large forms), should show a popup arrow on viewport bottom left "Go to errors" to focus on callout */}
         <DynamicFormErrorCallout />
+
+        {/* TODO: can have undo-redo functionality by using RHF reset(...)*/}
         <form
           onSubmit={(e) => {
             setHasClickedSubmit(true)
@@ -805,6 +808,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   useEffect(() => {
     if (!selectFocused) setIsSelectVisible(false)
   }, [selectFocused])
+
+  if (_props.error?.includes('match pattern')) {
+    _props.error = `${itemName} does not match allowed patterns`
+  }
 
   if (component) {
     // explicit component given
