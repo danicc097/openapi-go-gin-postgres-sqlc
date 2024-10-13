@@ -212,7 +212,7 @@ install.bin.direnv() {
 check.bin.pnpm() {
   { { {
     vers=$(pnpm --version)k
-    minver=8
+    minver=9
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
@@ -223,7 +223,7 @@ check.bin.pnpm() {
 
 install.bin.pnpm() {
   { { {
-    npm install --prefix ./bin/tools/ -g pnpm@8.3.1
+    npm install --prefix ./bin/tools/ -g pnpm@9.12.0
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
