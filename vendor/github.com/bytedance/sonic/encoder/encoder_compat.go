@@ -1,4 +1,4 @@
-// +build !amd64 !go1.16 go1.23
+// +build !amd64,!arm64 go1.24 !go1.17 arm64,!go1.20
 
 /*
 * Copyright 2023 ByteDance Inc.
@@ -28,8 +28,11 @@ import (
 )
 
 func init() {
-    println("WARNING: sonic only supports Go1.16~1.22 && CPU amd64, but your environment is not suitable")
+    println("WARNING:(encoder) sonic only supports (Go1.17~1.23 && CPU amd64) or (G01.20~1.23  && CPU arm64) , but your environment is not suitable")
 }
+
+// EnableFallback indicates if encoder use fallback
+const EnableFallback = true
 
 // Options is a set of encoding options.
 type Options uint64
@@ -188,15 +191,19 @@ func Encode(val interface{}, opts Options) ([]byte, error) {
 // EncodeInto is like Encode but uses a user-supplied buffer instead of allocating
 // a new one.
 func EncodeInto(buf *[]byte, val interface{}, opts Options) error {
-   if buf == nil {
-       panic("user-supplied buffer buf is nil")
-   }
-   w := bytes.NewBuffer(*buf)
-   enc := json.NewEncoder(w)
-   enc.SetEscapeHTML((opts & EscapeHTML) != 0)
-   err := enc.Encode(val)
-   *buf = w.Bytes()
-   return err
+    if buf == nil {
+        panic("user-supplied buffer buf is nil")
+    }
+    w := bytes.NewBuffer(*buf)
+    enc := json.NewEncoder(w)
+    enc.SetEscapeHTML((opts & EscapeHTML) != 0)
+    err := enc.Encode(val)
+    *buf = w.Bytes()
+    l := len(*buf)
+    if l > 0 && (opts & NoEncoderNewline != 0) && (*buf)[l-1] == '\n' {
+        *buf = (*buf)[:l-1]
+    }
+    return err
 }
 
 // HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029
