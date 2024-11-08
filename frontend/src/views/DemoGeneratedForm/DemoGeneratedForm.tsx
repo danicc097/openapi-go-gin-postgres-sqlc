@@ -378,6 +378,9 @@ export default function DemoGeneratedForm() {
               'members.userID': 'User',
               tagIDsMultiselect: 'Tags',
             },
+            /** TODO: array of arrays|string to allow horizontal grouping instead renderOrderPriority */
+            // no need to ensure all fields are present
+            // renderLayout: [['demoProject.ref', 'demoProject.line'], 'members', ...],
             renderOrderPriority: ['tagIDsMultiselect', 'members'],
             accordion: {
               'base.items': {
@@ -389,6 +392,7 @@ export default function DemoGeneratedForm() {
             // and returns a string[] of warnings.
             // can be used for adhoc warnings, e.g. this value may be too high, or
             // this user hasn't logged in >n months, this date is before today's date, etc.
+            // TODO: these should be default values for nested array fields on creation, != formDefaultValues
             defaultValues: {
               'demoProject.ref': '11112222',
               'members.role': 'preparer',
