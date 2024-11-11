@@ -1,16 +1,5 @@
 // Copyright The OpenTelemetry Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
 
 // Based on https://github.com/DataDog/dd-trace-go/blob/8fb554ff7cf694267f9077ae35e27ce4689ed8b6/contrib/gin-gonic/gin/gintrace.go
 
@@ -63,6 +52,14 @@ func Middleware(service string, opts ...Option) gin.HandlerFunc {
 				return
 			}
 		}
+		for _, f := range cfg.GinFilters {
+			if !f(c) {
+				// Serve the request to the next middleware
+				// if a filter rejects the request.
+				c.Next()
+				return
+			}
+		}
 		c.Set(tracerKey, tracer)
 		savedCtx := c.Request.Context()
 		defer func() {
@@ -71,6 +68,7 @@ func Middleware(service string, opts ...Option) gin.HandlerFunc {
 		ctx := cfg.Propagators.Extract(savedCtx, propagation.HeaderCarrier(c.Request.Header))
 		opts := []oteltrace.SpanStartOption{
 			oteltrace.WithAttributes(semconvutil.HTTPServerRequest(service, c.Request)...),
+			oteltrace.WithAttributes(semconv.HTTPRoute(c.FullPath())),
 			oteltrace.WithSpanKind(oteltrace.SpanKindServer),
 		}
 		var spanName string
@@ -81,9 +79,6 @@ func Middleware(service string, opts ...Option) gin.HandlerFunc {
 		}
 		if spanName == "" {
 			spanName = fmt.Sprintf("HTTP %s route not found", c.Request.Method)
-		} else {
-			rAttr := semconv.HTTPRoute(spanName)
-			opts = append(opts, oteltrace.WithAttributes(rAttr))
 		}
 		ctx, span := tracer.Start(ctx, spanName, opts...)
 		defer span.End()
