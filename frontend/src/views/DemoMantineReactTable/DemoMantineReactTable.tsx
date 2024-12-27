@@ -1,11 +1,8 @@
-// FIXME: infinite tsc loop at 100% and cannot build due to this file only. Whole project should take a few seconds only
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-nocheck
-
 /**
  * TODO: abstract way to generate pagination tables for everything already spec as PaginationXXX
  *
  */
+
 import { ComponentProps, MouseEventHandler, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,
@@ -75,7 +72,8 @@ import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mj
 import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
 import ErrorCallout from 'src/components/Callout/ErrorCallout'
 
-type Column = MRT_ColumnDef<UserResponse>
+// FIXME: infinite tsc loop at 100% and cannot build due to this file only. Whole project should take a few seconds only
+type Column = any // MRT_ColumnDef<UserResponse>
 
 type DefaultFilters = keyof typeof ENTITY_FIELDS.user
 

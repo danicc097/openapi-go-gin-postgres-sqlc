@@ -1,5 +1,4 @@
 import { capitalize, upperCase } from 'lodash'
-import { User } from 'src/gen/model'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',

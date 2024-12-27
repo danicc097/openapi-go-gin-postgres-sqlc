@@ -33,9 +33,8 @@ export const parseErrorDetail = (errorDetail: ValidationError): string => {
     if (errorDetail.loc[0] === 'query') return `Invalid ${errorDetail.loc[1]}: ${errorDetail.msg}`
 
     if (errorDetail.loc[0] === 'body') {
-      let invalidField: string = errorDetail.loc[2]
-      if (!invalidField) invalidField = errorDetail.loc[1] // main object
-
+      const invalidField = errorDetail.loc[2] || errorDetail.loc[1]
+      if (!invalidField) return errorMessage
       errorMessage = `Invalid ${errorFieldToMessageMapping[invalidField] ?? invalidField}: ${errorDetail?.msg}`
     }
   } else {

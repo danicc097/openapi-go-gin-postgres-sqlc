@@ -1,9 +1,9 @@
-import type { User } from 'src/gen/model'
+import type { UserResponse } from 'src/gen/model'
 import { checkAuthorization } from 'src/services/authorization'
 import { describe, expect, it, test } from 'vitest'
 
 describe('roles and scopes', async () => {
-  const user = {} as User
+  const user = {} as UserResponse
 
   test('role', () => {
     user.role = 'user'

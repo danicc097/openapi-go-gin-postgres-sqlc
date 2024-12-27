@@ -27,7 +27,6 @@ import { JSONSchema } from 'json-schema-to-ts'
 import userEvent from '@testing-library/user-event'
 import { VirtuosoMockContext } from 'react-virtuoso'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
-import { User } from 'src/gen/model'
 import { JSONSchema4 } from 'json-schema'
 
 export const refPattern = '^[0-9]{8}$'

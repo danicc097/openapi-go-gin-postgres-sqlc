@@ -50,7 +50,7 @@ function parseErrors(errors: ErrorObject[]): ValidationError[] {
       (out[i] = {
         invalidParams: {
           name: error.instancePath.split('/').slice(1).join('.'),
-          reason: error.message,
+          reason: error.message || 'Unknown error',
         },
       }),
   )
