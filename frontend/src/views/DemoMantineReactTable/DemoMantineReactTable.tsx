@@ -1,3 +1,7 @@
+// FIXME: infinite tsc loop at 100% and cannot build due to this file only. Whole project should take a few seconds only
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-nocheck
+
 /**
  * TODO: abstract way to generate pagination tables for everything already spec as PaginationXXX
  *
