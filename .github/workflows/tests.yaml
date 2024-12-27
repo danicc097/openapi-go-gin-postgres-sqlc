@@ -78,7 +78,6 @@ jobs:
 
           { test -n "$bg_pid" && kill $bg_pid; } || true
 
-
       - name: Postgres logs
         if: failure() # always()
         run: docker logs postgres_db_openapi-go-gin
@@ -100,3 +99,8 @@ jobs:
       # https://stackoverflow.com/questions/65242830/in-a-github-actions-workflow-is-there-a-way-to-have-multiple-jobs-reuse-the-sam
       # https://github.com/kmadof/github-actions-manual/blob/main/.github/actions/say-hello/action.yml
 
+      - name: Build frontend
+        run: |
+          source .envrc
+
+          project build.frontend

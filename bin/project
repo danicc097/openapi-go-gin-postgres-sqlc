@@ -1372,6 +1372,15 @@ x.test.backend() {
   xsetup.backup.cleanup
 }
 
+# Build frontend.
+# Args: [...]
+x.build.frontend() {
+  config_template_setup frontend
+
+  cd frontend
+  pnpm run build
+}
+
 # Test frontend. Accepts `vitest` parameters.
 # Args: [...]
 x.test.frontend() {
