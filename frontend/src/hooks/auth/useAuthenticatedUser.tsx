@@ -38,8 +38,6 @@ export default function useAuthenticatedUser() {
     currentUser.error?.status !== HttpStatus.UNAUTHORIZED_401
   // console.log({ isFirstRender })
 
-  console.log({ isAuthenticating })
-
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)

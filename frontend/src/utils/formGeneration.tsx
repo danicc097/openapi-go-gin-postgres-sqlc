@@ -321,6 +321,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
       <>
+        {/** TODO: usedebounce for all fields  */}
         <FormData />
         {/* TODO: if not visible (large forms), should show a popup arrow on viewport bottom left "Go to errors" to focus on callout */}
         <DynamicFormErrorCallout />
@@ -563,9 +564,14 @@ const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
   const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[itemFormField])
   const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
   const formFieldWatch = form.watch(itemFormField)
+  // TODO: dynamic watching of all nested elements (for warning function recompute only)
+  // warningFn does rerender for
+  // const formArrayElementWatch = form.watch(`${itemFormField}.items.0`)
   const formSlice = useFormSlice()
 
   useEffect(() => {
+    // FIXME: warnings are not recalculated unless the array is modified.
+    // should update useffect deps watching nested values of current array element without triggering inf rerendering
     if (warningFn) {
       const warnings = joinWithAnd(warningFn(formFieldWatch))
       console.log({ warnings, fieldWarnings, formFieldWatch })
@@ -680,7 +686,8 @@ function FormData() {
   const form = useFormContext()
   const myFormState = useFormState({ control: form.control })
 
-  console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
+  const hasErrors = hasNonEmptyValue(myFormState.errors)
+  if (hasErrors) console.error('form has errors')
 
   let code = ''
   try {

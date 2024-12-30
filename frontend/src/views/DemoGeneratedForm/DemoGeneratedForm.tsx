@@ -359,7 +359,7 @@ export default function DemoGeneratedForm() {
             labels: {
               'base.closed': 'Closed',
               'base.description': 'Description',
-              // 'base.metadata': 'metadata', // ignored -> not a key
+              // 'base.metadata': 'metadata', // in excluded form keys
               'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
               'base.targetDate': 'Target date',
               'demoProject.reopened': 'Reopened',
@@ -436,28 +436,16 @@ export default function DemoGeneratedForm() {
                     </Group>
                   )
                 },
-                formValueTransformer(el) {
-                  return el.workItemTagID
-                },
-                pillTransformer(el) {
-                  return <div>{el.name}</div>
-                },
-                labelColor(el) {
-                  return el.color
-                },
+                formValueTransformer: (el) => el.workItemTagID,
+                pillTransformer: (el) => <div>{el.name}</div>,
+                labelColor: (el) => el.color,
               }),
               'members.role': selectOptionsBuilder({
                 type: 'select',
                 values: WORK_ITEM_ROLES,
-                optionTransformer: (el) => {
-                  return <WorkItemRoleBadge role={el} />
-                },
-                formValueTransformer(el) {
-                  return el
-                },
-                pillTransformer(el) {
-                  return <WorkItemRoleBadge role={el} />
-                },
+                optionTransformer: (el) => <WorkItemRoleBadge role={el} />,
+                formValueTransformer: (el) => el,
+                pillTransformer: (el) => <WorkItemRoleBadge role={el} />,
               }),
             },
             input: {
