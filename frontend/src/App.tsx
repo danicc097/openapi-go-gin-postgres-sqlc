@@ -41,7 +41,6 @@ function ErrorFallback({ error }: any) {
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))
-const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectManagementPage/ProjectManagementPage'))
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 

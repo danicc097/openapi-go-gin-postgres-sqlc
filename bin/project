@@ -1669,6 +1669,7 @@ x.backend.typecheck() {
 }
 
 # depends on gen.xo output
+# still no branded types in orval: https://github.com/orval-labs/orval/issues/1222
 orval_frontend_branded_types() {
   local import_string="import type * as EntityIDs from 'src/gen/entity-ids'"
   local escaped_import_string=$(escape_sed "$import_string")
@@ -1686,7 +1687,10 @@ orval_frontend_branded_types() {
       "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: faker.number.int({min: undefined, max: undefined})/${camel}: faker.number.int({min: undefined, max: undefined}) as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.number.int({min: undefined, max: undefined})/${camel}: faker.number.int({min: undefined, max: undefined}) as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}:[[:space:]]*faker\.helpers\.arrayElement(\[faker\.number\.int({min:[[:space:]]*undefined,[[:space:]]*max:[[:space:]]*undefined}),[[:space:]]*null\])/${camel}: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]) as EntityIDs.${pascal} | null/g"
     )
+
   done
 
   local uuid_ids=()
@@ -1699,6 +1703,7 @@ orval_frontend_branded_types() {
       "-e" "s/${camel}?: Models${pascal}/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: Models${pascal}/${camel}: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: faker.word.sample()/${camel}: faker.string.uuid() as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.string.uuid()/${camel}: faker.string.uuid() as EntityIDs.${pascal}/g"
     )
   done
 
