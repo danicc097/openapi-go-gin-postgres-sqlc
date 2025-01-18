@@ -480,48 +480,6 @@ export const getGetProjectWorkitemsQueryKey = (projectName: 'demo' | 'demo_two',
     }
 
     
-export const getGetProjectWorkitemsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two',
-    params?: GetProjectWorkitemsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProjectWorkitemsQueryKey(projectName,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal, pageParam }) => getProjectWorkitems(projectName,{...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetProjectWorkitemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type GetProjectWorkitemsInfiniteQueryError = ErrorType<unknown>
-
-/**
- * @summary returns workitems for a project
- */
-export const useGetProjectWorkitemsInfinite = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(
- projectName: 'demo' | 'demo_two',
-    params?: GetProjectWorkitemsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
-
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-
-  const queryOptions = getGetProjectWorkitemsInfiniteQueryOptions(projectName,params,options)
-
-  const query = useInfiniteQuery(queryOptions) as  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
 export const getGetProjectWorkitemsQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two',
     params?: GetProjectWorkitemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
@@ -538,7 +496,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectWorkitemsQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>

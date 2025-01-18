@@ -359,7 +359,7 @@ export default function DemoGeneratedForm() {
             labels: {
               'base.closed': 'Closed',
               'base.description': 'Description',
-              // 'base.metadata': 'metadata', // ignored -> not a key
+              // 'base.metadata': 'metadata', // in excluded form keys
               'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
               'base.targetDate': 'Target date',
               'demoProject.reopened': 'Reopened',
@@ -378,6 +378,9 @@ export default function DemoGeneratedForm() {
               'members.userID': 'User',
               tagIDsMultiselect: 'Tags',
             },
+            /** TODO: array of arrays|string to allow horizontal grouping instead renderOrderPriority */
+            // no need to ensure all fields are present
+            // renderLayout: [['demoProject.ref', 'demoProject.line'], 'members', ...],
             renderOrderPriority: ['tagIDsMultiselect', 'members'],
             accordion: {
               'base.items': {
@@ -389,6 +392,7 @@ export default function DemoGeneratedForm() {
             // and returns a string[] of warnings.
             // can be used for adhoc warnings, e.g. this value may be too high, or
             // this user hasn't logged in >n months, this date is before today's date, etc.
+            // TODO: these should be default values for nested array fields on creation, != formDefaultValues
             defaultValues: {
               'demoProject.ref': '11112222',
               'members.role': 'preparer',
@@ -432,28 +436,16 @@ export default function DemoGeneratedForm() {
                     </Group>
                   )
                 },
-                formValueTransformer(el) {
-                  return el.workItemTagID
-                },
-                pillTransformer(el) {
-                  return <div>{el.name}</div>
-                },
-                labelColor(el) {
-                  return el.color
-                },
+                formValueTransformer: (el) => el.workItemTagID,
+                pillTransformer: (el) => <div>{el.name}</div>,
+                labelColor: (el) => el.color,
               }),
               'members.role': selectOptionsBuilder({
                 type: 'select',
                 values: WORK_ITEM_ROLES,
-                optionTransformer: (el) => {
-                  return <WorkItemRoleBadge role={el} />
-                },
-                formValueTransformer(el) {
-                  return el
-                },
-                pillTransformer(el) {
-                  return <WorkItemRoleBadge role={el} />
-                },
+                optionTransformer: (el) => <WorkItemRoleBadge role={el} />,
+                formValueTransformer: (el) => el,
+                pillTransformer: (el) => <WorkItemRoleBadge role={el} />,
               }),
             },
             input: {

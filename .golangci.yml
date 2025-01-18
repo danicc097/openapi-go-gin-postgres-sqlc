@@ -7,6 +7,8 @@ run:
 linters:
   enable-all: true
   disable:
+    - nlreturn
+    - mnd
     - dupword
     - ireturn # oapi-codegen strict handlers
     # - interfacebloat

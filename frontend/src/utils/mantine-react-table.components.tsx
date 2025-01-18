@@ -411,8 +411,7 @@ export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
       ref={ref as any}
       checked={value === 'true'}
       data-checked={value === 'true'}
-      indeterminate={value === undefined}
-      data-indeterminate={value === undefined}
+      {...(value === undefined && { indeterminate: true, 'data-indeterminate': true })}
       size="xs"
       onChange={(event) => {
         const newValue =

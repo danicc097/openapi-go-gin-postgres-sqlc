@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import type { ReactNode } from 'react'
 import { OperationAuth } from 'src/config'
-import type { Role, Scopes, User } from 'src/gen/model'
+import type { Role, Scopes } from 'src/gen/model'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useOperationAuth as useIsAuthorizedForOp } from 'src/hooks/auth/useOperationAuth'
 import { checkAuthorization } from 'src/services/authorization'

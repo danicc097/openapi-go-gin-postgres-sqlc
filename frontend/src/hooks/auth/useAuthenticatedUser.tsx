@@ -5,7 +5,6 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import { useEffect, useRef, useState } from 'react'
 import { AXIOS_INSTANCE } from 'src/api/mutator'
-import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
 import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
@@ -38,8 +37,6 @@ export default function useAuthenticatedUser() {
     ui.accessToken !== '' &&
     currentUser.error?.status !== HttpStatus.UNAUTHORIZED_401
   // console.log({ isFirstRender })
-
-  console.log({ isAuthenticating })
 
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {

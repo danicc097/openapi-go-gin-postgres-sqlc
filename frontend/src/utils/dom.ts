@@ -6,7 +6,7 @@ interface Coord {
 }
 
 export function getAbsolutePosition(element: HTMLElement): Coord {
-  if (!element) return
+  if (!element) return { xStart: 0, yStart: 0, xEnd: 0, yEnd: 0 }
 
   const rect = element.getBoundingClientRect()
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft

@@ -1,6 +1,7 @@
 import { defineConfig } from 'orval'
 import { faker } from '@faker-js/faker'
-import _, { uniqueId } from 'lodash'
+import * as _ from 'lodash'
+
 // relative paths only
 import { reactQueryDefaultAppOptions } from './src/react-query.default'
 
@@ -24,7 +25,21 @@ export default defineConfig({
           useQuery: true,
           useInfinite: true, // https://tanstack.com/query/v4/docs/guides/infinite-queries
           options: reactQueryDefaultAppOptions.queries,
-          useInfiniteQueryParam: 'cursor', // same param for all app paginated queries
+          // FIXME: leads to issues with /events, /oidc and /project where it assumes there's a cursor param
+          useInfiniteQueryParam: 'cursor', // same param for all app paginated queries.
+        },
+        operations: {
+          ..._.fromPairs(
+            ['GetProjectWorkitems', 'MyProviderLogin', 'Events'].map((operation) => [
+              operation,
+              {
+                query: {
+                  useQuery: true,
+                  useInfinite: false,
+                },
+              },
+            ]),
+          ),
         },
         mock: {
           delay: 200,

@@ -13,7 +13,7 @@ dependencies:
     version: 1.4.0
   orval:
     specifier: ^6.23.0
-    version: 6.23.0(typescript@4.8.2)
+    version: 6.23.0(typescript@5.7.2)
 
 devDependencies:
   '@types/node':
@@ -32,8 +32,8 @@ devDependencies:
     specifier: ^2.7.1
     version: 2.7.1
   typescript:
-    specifier: ^4.8.2
-    version: 4.8.2
+    specifier: ^5.7.2
+    version: 5.7.2
 
 packages:
 
@@ -1163,7 +1163,7 @@ packages:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
     dev: false
 
   /cliui@8.0.1:
@@ -2373,7 +2373,7 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /orval@6.23.0(typescript@4.8.2):
+  /orval@6.23.0(typescript@5.7.2):
     resolution: {integrity: sha512-elAyEIIpf/1kydP5V33UtONfkuN3v7L8ogzF/eJNzhvv4zsq8TwEADiY8GAw5EyzOiFFF07SSJxtoY4ez1FmFg==}
     hasBin: true
     dependencies:
@@ -2397,7 +2397,7 @@ packages:
       openapi-types: 12.1.3
       openapi3-ts: 3.2.0
       string-argv: 0.3.2
-      tsconfck: 2.1.2(typescript@4.8.2)
+      tsconfck: 2.1.2(typescript@5.7.2)
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@vitest/browser'
@@ -2852,7 +2852,7 @@ packages:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: false
 
-  /tsconfck@2.1.2(typescript@4.8.2):
+  /tsconfck@2.1.2(typescript@5.7.2):
     resolution: {integrity: sha512-ghqN1b0puy3MhhviwO2kGF8SeMDNhEbnKxjK7h6+fvY9JAxqvXi8y5NAHSQv687OVboS2uZIByzGd45/YxrRHg==}
     engines: {node: ^14.13.1 || ^16 || >=18}
     hasBin: true
@@ -2862,7 +2862,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      typescript: 4.8.2
+      typescript: 5.7.2
     dev: false
 
   /tslib@1.14.1:
@@ -2928,9 +2928,9 @@ packages:
       is-typed-array: 1.1.12
     dev: false
 
-  /typescript@4.8.2:
-    resolution: {integrity: sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==}
-    engines: {node: '>=4.2.0'}
+  /typescript@5.7.2:
+    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
+    engines: {node: '>=14.17'}
     hasBin: true
 
   /ufo@1.3.2:

@@ -1,12 +1,12 @@
 import { OperationAuth, ROLES } from 'src/config'
-import { WorkItemRole, type Role, type Scopes, type User } from 'src/gen/model'
+import { WorkItemRole, type Role, type Scopes, type UserResponse } from 'src/gen/model'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { apiPath } from 'src/services/apiPaths'
 import { joinWithAnd } from 'src/utils/format'
 import { keys } from 'src/utils/object'
 
 interface CheckAuthorizationParams {
-  user?: User
+  user?: UserResponse
   requiredRole?: Role | null
   requiredScopes?: Scopes | null
 }

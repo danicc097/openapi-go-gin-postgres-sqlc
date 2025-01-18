@@ -1372,6 +1372,15 @@ x.test.backend() {
   xsetup.backup.cleanup
 }
 
+# Build frontend.
+# Args: [...]
+x.build.frontend() {
+  config_template_setup frontend
+
+  cd frontend
+  pnpm run build
+}
+
 # Test frontend. Accepts `vitest` parameters.
 # Args: [...]
 x.test.frontend() {
@@ -1539,12 +1548,20 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
 
-  # https://github.com/cosmtrek/air/blob/master/air_example.toml
-  # NOTE: building binary unreliable, leads to bin not found.
+  # https://github.com/air-verse/air/blob/master/air_example.toml
+  # NOTE: building binary unreliable sometimes, leads to bin not found.
+  local build_cmd="go build -o /mnt/ramdisk/rest-server ./cmd/rest-server/main.go"
+  local bin_cmd="/mnt/ramdisk/rest-server -env=.env.$X_ENV"
+  if ! test -d /mnt/ramdisk; then # setup with sudo mkdir -p /mnt/ramdisk; sudo mount -t tmpfs -o size=100M tmpfs /mnt/ramdisk
+    build_cmd=""
+    bin_cmd="go run ./cmd/rest-server/main.go -env=.env.$X_ENV"
+  fi
+  echo "Running $bin_cmd"
+
   air \
     --build.pre_cmd "$pre_build_cmd" \
-    --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/main.go -env=.env.$X_ENV" \
+    --build.cmd "$build_cmd" \
+    --build.bin "$bin_cmd" \
     --build.include_ext "go,work,mod" \
     --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \
@@ -1652,6 +1669,7 @@ x.backend.typecheck() {
 }
 
 # depends on gen.xo output
+# still no branded types in orval: https://github.com/orval-labs/orval/issues/1222
 orval_frontend_branded_types() {
   local import_string="import type * as EntityIDs from 'src/gen/entity-ids'"
   local escaped_import_string=$(escape_sed "$import_string")
@@ -1669,7 +1687,10 @@ orval_frontend_branded_types() {
       "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: faker.number.int({min: undefined, max: undefined})/${camel}: faker.number.int({min: undefined, max: undefined}) as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.number.int({min: undefined, max: undefined})/${camel}: faker.number.int({min: undefined, max: undefined}) as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}:[[:space:]]*faker\.helpers\.arrayElement(\[faker\.number\.int({min:[[:space:]]*undefined,[[:space:]]*max:[[:space:]]*undefined}),[[:space:]]*null\])/${camel}: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]) as EntityIDs.${pascal} | null/g"
     )
+
   done
 
   local uuid_ids=()
@@ -1682,6 +1703,7 @@ orval_frontend_branded_types() {
       "-e" "s/${camel}?: Models${pascal}/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: Models${pascal}/${camel}: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: faker.word.sample()/${camel}: faker.string.uuid() as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.string.uuid()/${camel}: faker.string.uuid() as EntityIDs.${pascal}/g"
     )
   done
 
