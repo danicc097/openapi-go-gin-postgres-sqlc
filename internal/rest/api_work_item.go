@@ -37,8 +37,6 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 	jsonBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Failed to read request body", err)
-
-		return nil, nil
 	}
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
@@ -46,16 +44,12 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 	project, err := projectByDiscriminator(request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Failed to get project", err)
-
-		return nil, nil
 	}
 
 	var res any // depends on project
 	b, err := request.Body.ValueByDiscriminator()
 	if err != nil {
 		renderErrorResponse(c, "Failed to read discriminator", err)
-
-		return nil, nil
 	}
 
 	//exhaustive:enforce
@@ -74,8 +68,6 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		})
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
-
-			return nil, nil
 		}
 
 		res = DemoWorkItemResponse{
@@ -96,8 +88,6 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		})
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
-
-			return nil, nil
 		}
 
 		res = DemoTwoWorkItemResponse{
@@ -106,8 +96,6 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		}
 	default:
 		renderErrorResponse(c, "Unknown discriminator", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
-
-		return nil, nil
 	}
 
 	var resJson *CreateWorkitem201JSONResponse

@@ -53,7 +53,6 @@ func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCa
 	userinfo, err := GetUserInfoFromCtx(c)
 	if err != nil {
 		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "user info not found"))
-		return nil, nil
 	}
 
 	ctx := c.Request.Context()
@@ -61,13 +60,11 @@ func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCa
 	u, err := h.svc.Authentication.GetOrRegisterUserFromUserInfo(ctx, *userinfo)
 	if err != nil {
 		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "could not get or register user"))
-		return nil, nil
 	}
 
 	accessToken, err := h.svc.Authentication.CreateAccessTokenForUser(ctx, u)
 	if err != nil {
 		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "could not create access token"))
-		return nil, nil
 	}
 
 	http.SetCookie(c.Writer, &http.Cookie{

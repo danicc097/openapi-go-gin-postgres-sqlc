@@ -18,8 +18,6 @@ func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkIte
 	wit, err := h.svc.WorkItemTag.Create(ctx, tx, caller, &body.WorkItemTagCreateParams)
 	if err != nil {
 		renderErrorResponse(c, "Could not create work item tag", err)
-
-		return nil, nil
 	}
 
 	return CreateWorkItemTag201JSONResponse{WorkItemTag: *wit}, nil

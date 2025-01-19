@@ -3318,6 +3318,16 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 
 // DeleteActivity operation middleware
 func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID models.ActivityID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteActivityRequestObject
 
 	request.ActivityID = activityID
@@ -3345,6 +3355,16 @@ func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID models.Act
 
 // GetActivity operation middleware
 func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID models.ActivityID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetActivityRequestObject
 
 	request.ActivityID = activityID
@@ -3372,6 +3392,16 @@ func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID models.Activi
 
 // UpdateActivity operation middleware
 func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID models.ActivityID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateActivityRequestObject
 
 	request.ActivityID = activityID
@@ -3408,6 +3438,16 @@ func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID models.Act
 
 // AdminPing operation middleware
 func (sh *strictHandlers) AdminPing(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request AdminPingRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -3433,6 +3473,16 @@ func (sh *strictHandlers) AdminPing(ctx *gin.Context) {
 
 // MyProviderCallback operation middleware
 func (sh *strictHandlers) MyProviderCallback(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request MyProviderCallbackRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -3458,6 +3508,16 @@ func (sh *strictHandlers) MyProviderCallback(ctx *gin.Context) {
 
 // MyProviderLogin operation middleware
 func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context, params externalRef0.MyProviderLoginParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request MyProviderLoginRequestObject
 
 	request.Params = params
@@ -3485,6 +3545,16 @@ func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context, params externalRef0.
 
 // Events operation middleware
 func (sh *strictHandlers) Events(ctx *gin.Context, params externalRef0.EventsParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request EventsRequestObject
 
 	request.Params = params
@@ -3512,6 +3582,16 @@ func (sh *strictHandlers) Events(ctx *gin.Context, params externalRef0.EventsPar
 
 // GetPaginatedNotifications operation middleware
 func (sh *strictHandlers) GetPaginatedNotifications(ctx *gin.Context, params externalRef0.GetPaginatedNotificationsParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetPaginatedNotificationsRequestObject
 
 	request.Params = params
@@ -3539,6 +3619,16 @@ func (sh *strictHandlers) GetPaginatedNotifications(ctx *gin.Context, params ext
 
 // OpenapiYamlGet operation middleware
 func (sh *strictHandlers) OpenapiYamlGet(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request OpenapiYamlGetRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -3564,6 +3654,16 @@ func (sh *strictHandlers) OpenapiYamlGet(ctx *gin.Context) {
 
 // Ping operation middleware
 func (sh *strictHandlers) Ping(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request PingRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -3589,6 +3689,16 @@ func (sh *strictHandlers) Ping(ctx *gin.Context) {
 
 // GetProject operation middleware
 func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetProjectRequestObject
 
 	request.ProjectName = projectName
@@ -3616,6 +3726,16 @@ func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.
 
 // CreateActivity operation middleware
 func (sh *strictHandlers) CreateActivity(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateActivityRequestObject
 
 	request.ProjectName = projectName
@@ -3652,6 +3772,16 @@ func (sh *strictHandlers) CreateActivity(ctx *gin.Context, projectName externalR
 
 // GetProjectBoard operation middleware
 func (sh *strictHandlers) GetProjectBoard(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetProjectBoardRequestObject
 
 	request.ProjectName = projectName
@@ -3679,6 +3809,16 @@ func (sh *strictHandlers) GetProjectBoard(ctx *gin.Context, projectName external
 
 // GetProjectConfig operation middleware
 func (sh *strictHandlers) GetProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetProjectConfigRequestObject
 
 	request.ProjectName = projectName
@@ -3706,6 +3846,16 @@ func (sh *strictHandlers) GetProjectConfig(ctx *gin.Context, projectName externa
 
 // UpdateProjectConfig operation middleware
 func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateProjectConfigRequestObject
 
 	request.ProjectName = projectName
@@ -3742,6 +3892,16 @@ func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName exte
 
 // InitializeProject operation middleware
 func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request InitializeProjectRequestObject
 
 	request.ProjectName = projectName
@@ -3778,6 +3938,16 @@ func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName extern
 
 // CreateTeam operation middleware
 func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateTeamRequestObject
 
 	request.ProjectName = projectName
@@ -3814,6 +3984,16 @@ func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.
 
 // CreateWorkItemTag operation middleware
 func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateWorkItemTagRequestObject
 
 	request.ProjectName = projectName
@@ -3850,6 +4030,16 @@ func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName extern
 
 // CreateWorkItemType operation middleware
 func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateWorkItemTypeRequestObject
 
 	request.ProjectName = projectName
@@ -3886,6 +4076,16 @@ func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName exter
 
 // GetProjectWorkitems operation middleware
 func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetProjectWorkitemsRequestObject
 
 	request.ProjectName = projectName
@@ -3914,6 +4114,16 @@ func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName exte
 
 // DeleteTeam operation middleware
 func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID models.TeamID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteTeamRequestObject
 
 	request.TeamID = teamID
@@ -3941,6 +4151,16 @@ func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID models.TeamID) {
 
 // GetTeam operation middleware
 func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID models.TeamID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetTeamRequestObject
 
 	request.TeamID = teamID
@@ -3968,6 +4188,16 @@ func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID models.TeamID) {
 
 // UpdateTeam operation middleware
 func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID models.TeamID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateTeamRequestObject
 
 	request.TeamID = teamID
@@ -4004,6 +4234,16 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID models.TeamID) {
 
 // CreateTimeEntry operation middleware
 func (sh *strictHandlers) CreateTimeEntry(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateTimeEntryRequestObject
 
 	// CreateTimeEntryRequest
@@ -4038,6 +4278,16 @@ func (sh *strictHandlers) CreateTimeEntry(ctx *gin.Context) {
 
 // DeleteTimeEntry operation middleware
 func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -4065,6 +4315,16 @@ func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID models.T
 
 // GetTimeEntry operation middleware
 func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -4092,6 +4352,16 @@ func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID models.Time
 
 // UpdateTimeEntry operation middleware
 func (sh *strictHandlers) UpdateTimeEntry(ctx *gin.Context, timeEntryID models.TimeEntryID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateTimeEntryRequestObject
 
 	request.TimeEntryID = timeEntryID
@@ -4128,6 +4398,16 @@ func (sh *strictHandlers) UpdateTimeEntry(ctx *gin.Context, timeEntryID models.T
 
 // GetCurrentUser operation middleware
 func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetCurrentUserRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -4153,6 +4433,16 @@ func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
 
 // GetPaginatedUsers operation middleware
 func (sh *strictHandlers) GetPaginatedUsers(ctx *gin.Context, params externalRef0.GetPaginatedUsersParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetPaginatedUsersRequestObject
 
 	request.Params = params
@@ -4180,6 +4470,16 @@ func (sh *strictHandlers) GetPaginatedUsers(ctx *gin.Context, params externalRef
 
 // DeleteUser operation middleware
 func (sh *strictHandlers) DeleteUser(ctx *gin.Context, id uuid.UUID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteUserRequestObject
 
 	request.Id = id
@@ -4207,6 +4507,16 @@ func (sh *strictHandlers) DeleteUser(ctx *gin.Context, id uuid.UUID) {
 
 // UpdateUser operation middleware
 func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateUserRequestObject
 
 	request.Id = id
@@ -4243,6 +4553,16 @@ func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 
 // UpdateUserAuthorization operation middleware
 func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateUserAuthorizationRequestObject
 
 	request.Id = id
@@ -4279,6 +4599,16 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 
 // DeleteWorkItemTag operation middleware
 func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4306,6 +4636,16 @@ func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID mode
 
 // GetWorkItemTag operation middleware
 func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4333,6 +4673,16 @@ func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID models.
 
 // UpdateWorkItemTag operation middleware
 func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID models.WorkItemTagID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4369,6 +4719,16 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID mode
 
 // DeleteWorkItemType operation middleware
 func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4396,6 +4756,16 @@ func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID mo
 
 // GetWorkItemType operation middleware
 func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4423,6 +4793,16 @@ func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID model
 
 // UpdateWorkItemType operation middleware
 func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID models.WorkItemTypeID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4459,6 +4839,16 @@ func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID mo
 
 // CreateWorkitem operation middleware
 func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateWorkitemRequestObject
 
 	// CreateWorkitemRequest
@@ -4493,6 +4883,16 @@ func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 
 // GetPaginatedWorkItem operation middleware
 func (sh *strictHandlers) GetPaginatedWorkItem(ctx *gin.Context, params externalRef0.GetPaginatedWorkItemParams) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetPaginatedWorkItemRequestObject
 
 	request.Params = params
@@ -4520,6 +4920,16 @@ func (sh *strictHandlers) GetPaginatedWorkItem(ctx *gin.Context, params external
 
 // DeleteWorkitem operation middleware
 func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID models.WorkItemID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -4547,6 +4957,16 @@ func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID models.Wor
 
 // GetWorkItem operation middleware
 func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID models.WorkItemID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetWorkItemRequestObject
 
 	request.WorkItemID = workItemID
@@ -4574,6 +4994,16 @@ func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID models.WorkIt
 
 // UpdateWorkitem operation middleware
 func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID models.WorkItemID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -4601,6 +5031,16 @@ func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID models.Wor
 
 // CreateWorkItemComment operation middleware
 func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request CreateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -4637,6 +5077,16 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int
 
 // DeleteWorkItemComment operation middleware
 func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request DeleteWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -4665,6 +5115,16 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID mod
 
 // GetWorkItemComment operation middleware
 func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request GetWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -4693,6 +5153,16 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID models
 
 // UpdateWorkItemComment operation middleware
 func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID models.WorkItemID, workItemCommentID models.WorkItemCommentID) {
+	defer func() {
+		if r := recover(); r != nil {
+			// handler() may panic to notify early handler exit
+			if _, ok := r.(*HandlerExitError); !ok {
+				panic(r)
+			}
+			// swallow panic, assume error response was rendered already to gin context
+		}
+	}()
+
 	var request UpdateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID

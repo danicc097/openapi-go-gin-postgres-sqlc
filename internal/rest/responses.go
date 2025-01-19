@@ -17,10 +17,35 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// HandlerExitError is used to exit handlers early after rendering an error response.
+type HandlerExitError struct{}
+
+func (e *HandlerExitError) Error() string {
+	return "handler exit requested"
+}
+
+type RenderErrorOptions struct {
+	WithoutPanic bool
+}
+
+type RenderErrorOption func(*RenderErrorOptions)
+
+// WithoutPanic prevents renderErrorResponse from panicking with a HandlerExitError.
+func WithoutPanic() RenderErrorOption {
+	return func(o *RenderErrorOptions) {
+		o.WithoutPanic = true
+	}
+}
+
 // renderErrorResponse writes an error response from title and error.
 // title represents an error title which will be shown to end users.
 // Inspired by https://www.rfc-editor.org/rfc/rfc7807.
-func renderErrorResponse(c *gin.Context, title string, err error) {
+func renderErrorResponse(c *gin.Context, title string, err error, opts ...RenderErrorOption) {
+	options := RenderErrorOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
+
 	if err == nil {
 		err = errors.New("unknown error")
 	}
@@ -126,6 +151,12 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 	CtxWithRequestError(c)
 
 	renderResponse(c, resp, resp.Status)
+
+	// will trigger handler exit only for convenience in handlers and their utility functions.
+	// it then recovers and executes subsequent middlewares.
+	if !options.WithoutPanic {
+		panic(&HandlerExitError{})
+	}
 }
 
 func extractValidationError(err error) *models.HTTPValidationError {

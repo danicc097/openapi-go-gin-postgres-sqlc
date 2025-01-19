@@ -32,7 +32,7 @@ func (m *dbMiddleware) BeginTransaction() gin.HandlerFunc {
 
 		tx, err := m.pool.BeginTx(ctx, pgx.TxOptions{})
 		if err != nil {
-			renderErrorResponse(c, "", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin transaction"))
+			renderErrorResponse(c, "", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not begin transaction"), WithoutPanic())
 			c.Abort()
 
 			return

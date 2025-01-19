@@ -12,8 +12,6 @@ func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPa
 	nn, err := h.svc.Notification.PaginatedUserNotifications(c.Request.Context(), h.pool, caller.UserID, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not fetch notifications", err)
-
-		return nil, nil
 	}
 
 	nextCursor := ""

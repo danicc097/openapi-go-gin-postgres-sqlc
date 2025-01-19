@@ -18,8 +18,6 @@ func (h *StrictHandlers) CreateTeam(c *gin.Context, request CreateTeamRequestObj
 	team, err := h.svc.Team.Create(ctx, tx, &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not create team", err)
-
-		return nil, nil
 	}
 
 	h.event.Queue(ctx, fmt.Sprintf("team created: %v", team.TeamID), models.TopicTeamCreated)
@@ -36,8 +34,6 @@ func (h *StrictHandlers) UpdateTeam(c *gin.Context, request UpdateTeamRequestObj
 	team, err := h.svc.Team.Update(ctx, tx, models.TeamID(request.TeamID), &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update team", err)
-
-		return nil, nil
 	}
 
 	return UpdateTeam200JSONResponse{Team: *team}, nil
@@ -50,8 +46,6 @@ func (h *StrictHandlers) GetTeam(c *gin.Context, request GetTeamRequestObject) (
 	team, err := h.svc.Team.ByID(ctx, tx, models.TeamID(request.TeamID))
 	if err != nil {
 		renderErrorResponse(c, "Could not get team", err)
-
-		return nil, nil
 	}
 
 	return GetTeam200JSONResponse{Team: *team}, nil
@@ -64,8 +58,6 @@ func (h *StrictHandlers) DeleteTeam(c *gin.Context, request DeleteTeamRequestObj
 	_, err := h.svc.Team.Delete(ctx, tx, models.TeamID(request.TeamID))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete team", err)
-
-		return nil, nil
 	}
 
 	return DeleteTeam204Response{}, nil
