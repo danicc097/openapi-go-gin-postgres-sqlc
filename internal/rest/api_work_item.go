@@ -1,16 +1,13 @@
 package rest
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,28 +26,14 @@ func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, request DeleteWorkitemRe
 func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error) {
 	ctx := c.Request.Context()
 
-	span := GetSpanFromCtx(c)
-
 	caller, _ := GetUserCallerFromCtx(c)
 	tx := GetTxFromCtx(c)
 
-	jsonBody, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		renderErrorResponse(c, "Failed to read request body", err)
-	}
-	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
-
-	project, err := projectByDiscriminator(request.Body)
-	if err != nil {
-		renderErrorResponse(c, "Failed to get project", err)
-	}
+	addRequestBodyToSpan(c)
 
 	var res any // depends on project
-	b, err := request.Body.ValueByDiscriminator()
-	if err != nil {
-		renderErrorResponse(c, "Failed to read discriminator", err)
-	}
+
+	project, b := projectAndBodyByDiscriminator(c, request.Body)
 
 	//exhaustive:enforce
 	switch project {

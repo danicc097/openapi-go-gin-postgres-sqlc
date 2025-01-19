@@ -1,6 +1,9 @@
 package rest
 
 import (
+	"bytes"
+	"io"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
@@ -37,4 +40,15 @@ func newOTelSpanWithUser(c *gin.Context, opts ...trace.SpanStartOption) trace.Sp
 		WithName(tracing.GetOTelSpanName(2))
 
 	return builder.Build(c.Request.Context())
+}
+
+func addRequestBodyToSpan(c *gin.Context) {
+	span := GetSpanFromCtx(c)
+
+	jsonBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		renderErrorResponse(c, "Failed to read request body", err)
+	}
+	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 }

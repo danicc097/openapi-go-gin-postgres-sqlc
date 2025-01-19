@@ -38,6 +38,9 @@ func WithoutPanic() RenderErrorOption {
 }
 
 // renderErrorResponse writes an error response from title and error.
+// When used inside a StrictHandlers' handler, it panics with a HandlerExitError which
+// is recovered immediately by the handler wrapper.
+// When used outside a StrictHandlers' handler, WithoutPanic must be used to prevent unrecovered panics.
 // title represents an error title which will be shown to end users.
 // Inspired by https://www.rfc-editor.org/rfc/rfc7807.
 func renderErrorResponse(c *gin.Context, title string, err error, opts ...RenderErrorOption) {

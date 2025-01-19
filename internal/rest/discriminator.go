@@ -1,20 +1,25 @@
 package rest
 
 import (
-	"fmt"
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/gin-gonic/gin"
 )
 
 type PolymorphicBody interface {
 	Discriminator() (string, error)
+	ValueByDiscriminator() (interface{}, error)
 }
 
-func projectByDiscriminator(b PolymorphicBody) (models.ProjectName, error) {
-	d, err := b.Discriminator()
+func projectAndBodyByDiscriminator(c *gin.Context, body PolymorphicBody) (models.ProjectName, interface{}) {
+	d, err := body.Discriminator()
 	if err != nil {
-		return "", fmt.Errorf("could not get project discriminator: %w", err)
+		renderErrorResponse(c, "could not get project discriminator: %w", err)
 	}
 
-	return models.ProjectName(d), nil
+	b, err := body.ValueByDiscriminator()
+	if err != nil {
+		renderErrorResponse(c, "could not convert body: %w", err)
+	}
+
+	return models.ProjectName(d), b
 }
