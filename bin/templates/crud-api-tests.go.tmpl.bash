@@ -56,7 +56,6 @@ $(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -217,7 +216,6 @@ done)
 		// },
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

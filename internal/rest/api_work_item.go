@@ -98,7 +98,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 	var resJson *CreateWorkitem201JSONResponse
 	json.Unmarshal(rawMessage(res), &resJson)
-	return *resJson, nil
+	return resJson, nil
 }
 
 func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error) {

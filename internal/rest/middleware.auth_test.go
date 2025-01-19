@@ -95,7 +95,6 @@ func TestAuthorizationMiddleware(t *testing.T) {
 	svcs := services.New(logger, services.CreateTestRepos(t), testPool)
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			res := httptest.NewRecorder()

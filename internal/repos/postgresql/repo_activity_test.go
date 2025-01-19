@@ -53,7 +53,6 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 
@@ -68,7 +67,6 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range nonUniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }

@@ -51,7 +51,6 @@ func TestHandlers_DeleteUser(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -233,7 +232,6 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

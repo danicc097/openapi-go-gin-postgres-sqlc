@@ -39,7 +39,6 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }

@@ -26,7 +26,6 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 
@@ -50,7 +49,6 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range nonUniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }
