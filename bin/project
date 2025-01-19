@@ -1250,14 +1250,19 @@ x.lint.go() {
   # golangci-lint run --config=.golangci.yml --allow-parallel-runners --fast --fix &>/dev/null || true
 }
 
-exhaustruct_lint() {
+exhaustive_lint() {
   local lint_config=$(
     cat <<EOF
 linters:
   disable-all: true
   enable:
     - exhaustruct
+    - exhaustive
 linters-settings:
+  exhaustive:
+    explicit-exhaustive-switch: true
+    explicit-exhaustive-map: true
+    default-case-required: true
   exhaustruct:
     # lint struct usage in all packages that use them
     include:
@@ -1359,7 +1364,7 @@ x.test.backend.setup() {
 x.test.backend() {
   xsetup.backup
   { { {
-    exhaustruct_lint
+    exhaustive_lint
 
     x.test.xo
 

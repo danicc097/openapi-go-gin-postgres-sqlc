@@ -43,10 +43,12 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
-	// body := &models.CreateWorkItemRequest{}
-	// if err := json.Unmarshal(jsonBody, body); err != nil {
-	// 	return nil, nil
-	// }
+	project, err := projectByDiscriminator(request.Body)
+	if err != nil {
+		renderErrorResponse(c, "Failed to get project", err)
+
+		return nil, nil
+	}
 
 	var res any // depends on project
 	b, err := request.Body.ValueByDiscriminator()
@@ -56,16 +58,18 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		return nil, nil
 	}
 
-	switch body := b.(type) {
-	case models.CreateDemoWorkItemRequest:
+	//exhaustive:enforce
+	switch project {
+	case models.ProjectNameDemo:
+		body, _ := b.(models.CreateDemoWorkItemRequest)
 		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, caller, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 				DemoProject: body.DemoProject,
 				Base:        body.Base,
 			},
 			WorkItemCreateParams: services.WorkItemCreateParams{
-				// TagIDs: body.TagIDs,
-				// Members: body.Members,
+				TagIDs:  body.TagIDs,
+				Members: restMembersToServices(body.Members),
 			},
 		})
 		if err != nil {
@@ -78,8 +82,18 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			WorkItemBase: fillBaseWorkItemResponse(workItem),
 			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
-	case models.CreateDemoTwoWorkItemRequest:
-		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, caller, services.DemoTwoWorkItemCreateParams{})
+	case models.ProjectNameDemoTwo:
+		body, _ := b.(models.CreateDemoTwoWorkItemRequest)
+		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, caller, services.DemoTwoWorkItemCreateParams{
+			DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
+				DemoTwoProject: body.DemoTwoProject,
+				Base:           body.Base,
+			},
+			WorkItemCreateParams: services.WorkItemCreateParams{
+				TagIDs:  body.TagIDs,
+				Members: restMembersToServices(body.Members),
+			},
+		})
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
@@ -91,7 +105,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
-		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
+		renderErrorResponse(c, "Unknown discriminator", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
 
 		return nil, nil
 	}
