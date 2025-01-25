@@ -3,18 +3,6 @@ create schema if not exists v;
 
 create schema if not exists "cache";
 
-create extension if not exists pg_stat_statements schema extensions;
-
-create extension if not exists hypopg schema extensions;
-
-create extension if not exists index_advisor schema extensions;
-
-create extension if not exists pg_trgm schema extensions;
-
-create extension if not exists btree_gin schema extensions;
-
-create extension if not exists rum schema extensions;
-
 -- alter database postgres_test set timezone to 'America/New_York';
 create or replace function jsonb_set_deep (target jsonb , path text[] , val jsonb)
   returns jsonb
@@ -846,18 +834,19 @@ create trigger sync_user_projects
 --
 -- audit
 --
+/*
 select
-  audit.enable_tracking ('public.kanban_steps');
+ audit.enable_tracking ('public.kanban_steps');
 
 select
-  audit.enable_tracking ('public.projects');
+ audit.enable_tracking ('public.projects');
 
 select
-  audit.enable_tracking ('public.teams');
+ audit.enable_tracking ('public.teams');
 
 select
-  audit.enable_tracking ('public.work_items');
-
+ audit.enable_tracking ('public.work_items');
+ */
 ----
 create or replace function project_exists (project_name text)
   returns boolean
