@@ -1,9 +1,6 @@
 # https://github.com/MarioCarrion/todo-api-microservice-example/blob/main/.golangci.yml
-run:
-  skip-files: # ignore yaml error...
-    - ".*\\.xo\\.go$"
-    - ".*\\.gen\\.go$"
-    - ".*\\.pb\\.go$"
+# yaml-language-server: $schema=https://raw.githubusercontent.com/golangci/golangci-lint/refs/tags/v1.63.4/jsonschema/golangci.jsonschema.json
+
 linters:
   enable-all: true
   disable:
@@ -65,7 +62,6 @@ linters-settings:
         json: goCamel
         yaml: goCamel
   staticcheck:
-    go: "1.22"
     checks:
       - "all"
   gci:
@@ -117,6 +113,10 @@ linters-settings:
     ignorePackageGlobs:
       - github.com/danicc097/openapi-go-gin-postgres-sqlc/*
 issues:
+  exclude-files:
+    - ".*\\.xo\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*\\.pb\\.go$"
   exclude-rules:
     - path: "internal/testutil/*" # doesn't work with internal/... for some reason
       linters:

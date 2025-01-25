@@ -285,7 +285,7 @@ x.install-tools() {
     commands=(
       "go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2"
       "go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0"
-      "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2"
+      "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4"
       "go install github.com/tufin/oasdiff@v1.10.9"
       "go install golang.org/x/tools/cmd/goimports@latest"
       "go install mvdan.cc/gofumpt@latest"
