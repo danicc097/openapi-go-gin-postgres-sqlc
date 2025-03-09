@@ -52,7 +52,6 @@ func TestUser_Update(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -109,7 +108,6 @@ func TestUser_SoftDelete(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -192,7 +190,6 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 
@@ -227,7 +224,6 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range nonUniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }

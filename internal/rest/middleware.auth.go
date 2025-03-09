@@ -45,7 +45,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if apiKey != "" {
 			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey) // includes caller joins
 			if err != nil || u == nil {
-				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"))
+				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"), WithoutPanic())
 				c.Abort()
 
 				return
@@ -60,7 +60,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := m.svc.Authentication.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1]) // includes caller joins
 			if err != nil || u == nil {
-				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token: %s", err))
+				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token: %s", err), WithoutPanic())
 				c.Abort()
 
 				return
@@ -73,7 +73,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
+		renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"), WithoutPanic())
 		c.Abort()
 	}
 }
@@ -91,7 +91,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		errs := []string{}
 		user, err := GetUserCallerFromCtx(c)
 		if err != nil {
-			renderErrorResponse(c, "Could not get current user.", nil)
+			renderErrorResponse(c, "Could not get current user.", nil, WithoutPanic())
 			c.Abort()
 
 			return
@@ -100,7 +100,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 		if config.MinimumRole != "" {
 			userRole, ok := m.svc.Authorization.RoleByRank(user.RoleRank)
 			if !ok {
-				renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"))
+				renderErrorResponse(c, fmt.Sprintf("Unknown rank value: %d", user.RoleRank), errors.New("unknown rank"), WithoutPanic())
 				c.Abort()
 
 				return
@@ -129,7 +129,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 			errorMsg = fmt.Sprintf("either %s are required", slices.Join(errs, " or "))
 		}
 
-		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized: "+errorMsg))
+		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized: "+errorMsg), WithoutPanic())
 		c.Abort()
 	}
 }

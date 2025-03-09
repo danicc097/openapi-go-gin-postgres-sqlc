@@ -22,6 +22,16 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
     {{$opid := .OperationId}}
     // {{$opid}} operation middleware
     func (sh *strictHandlers) {{.OperationId}}(ctx *gin.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params externalRef0.{{.OperationId}}Params{{end}}) {
+        defer func() {
+            if r := recover(); r != nil {
+               // handler() may panic to notify early handler exit
+                if _, ok := r.(*HandlerExitError); !ok {
+                    panic(r)
+                }
+                // swallow panic, assume error response was rendered already to gin context
+            }
+        }()
+
         var request {{$opid | ucFirst}}RequestObject
 
         {{range .PathParams -}}

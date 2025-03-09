@@ -52,7 +52,7 @@ install.bin.column() {
     cp .libs/column ../bin/tools/
     cd ..
     rm -rf util-linux-2.*
-    column --version
+    column --version || column -v
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

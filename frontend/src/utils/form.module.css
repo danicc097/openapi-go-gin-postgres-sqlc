@@ -5,6 +5,13 @@
   padding: 2px;
   padding-left: var(--mantine-spacing-xs);
   border-radius: var(--mantine-radius-sm);
+
+  background-color: var(--bg-color);
+  color: var(--text-color);
+
+  button {
+    color: var(--text-color);
+  }
 }
 
 .valueComponentInnerBox {

@@ -58,7 +58,6 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -112,7 +111,6 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -154,7 +152,6 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }

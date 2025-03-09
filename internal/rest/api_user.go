@@ -21,15 +21,11 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 	user, err := h.svc.User.Update(c, tx, models.UserID{UUID: request.Id}, caller, request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
-
-		return nil, nil
 	}
 
 	role, ok := h.svc.Authorization.RoleByRank(user.RoleRank)
 	if !ok {
 		renderErrorResponse(c, fmt.Sprintf("Role with rank %d not found", user.RoleRank), nil)
-
-		return nil, nil
 	}
 
 	res := UserResponse{User: user, Role: role.Name}
@@ -43,8 +39,6 @@ func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObj
 	_, err := h.svc.User.Delete(c, tx, models.NewUserID(request.Id))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
-
-		return nil, nil
 	}
 
 	return DeleteUser204Response{}, nil
@@ -57,8 +51,6 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 	if !ok {
 		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
 		renderErrorResponse(c, msg, errors.New(msg))
-
-		return nil, nil
 	}
 
 	res := UserResponse{
@@ -82,8 +74,6 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 
 	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, models.UserID{UUID: request.Id}, caller, request.Body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
-
-		return nil, nil
 	}
 
 	return UpdateUserAuthorization204Response{}, nil
@@ -93,8 +83,6 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 	users, err := h.svc.User.Paginated(c, h.pool, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
-
-		return nil, nil
 	}
 
 	nextCursor := ""
@@ -103,8 +91,6 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		nextCursor, err = getNextCursor(lastUser, request.Params.Column, models.TableEntityUser)
 		if err != nil {
 			renderErrorResponse(c, "Could not define next cursor", err)
-
-			return nil, nil
 		}
 	}
 	items := make([]UserResponse, len(users))

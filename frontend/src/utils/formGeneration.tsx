@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { css } from '@emotion/react'
-import type { EmotionJSX, ReactJSXElement } from '@emotion/react/types/jsx-namespace'
 import {
   Group,
   TextInput,
@@ -38,6 +36,7 @@ import {
   InputBaseProps,
   List,
 } from '@mantine/core'
+import cx from 'clsx'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
 import { useFocusWithin } from '@mantine/hooks'
@@ -77,7 +76,6 @@ import {
   type UseFormSetError,
 } from 'react-hook-form'
 import { json } from 'react-router-dom'
-import { ApiError } from 'src/api/mutator'
 import DynamicFormErrorCallout from 'src/components/Callout/DynamicFormErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
 import useRenders from 'src/hooks/utils/useRenders'
@@ -332,9 +330,9 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
             setHasClickedSubmit(true)
             onSubmit(e)
           }}
-          css={css`
-            min-width: 100%;
-          `}
+          style={{
+            minWidth: '100%',
+          }}
           data-testid={formName}
         >
           <Button type="submit">Submit</Button>
@@ -362,9 +360,9 @@ type GeneratedInputsProps = {
 }
 
 const containerProps = {
-  css: css`
-    width: 100%;
-  `,
+  style: {
+    width: '100%',
+  },
 }
 
 function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsProps) {
@@ -391,9 +389,9 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
     const itemName = singularize(options.labels[schemaKey] || '')
 
     const inputProps = {
-      css: css`
-        width: 100%;
-      `,
+      style: {
+        minWidth: '100%',
+      },
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       'data-testid': `${formName}-${formField}`,
@@ -418,9 +416,9 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
           mt={12}
           mb={12}
           withBorder
-          css={css`
-            width: 100%;
-          `}
+          style={{
+            minWidth: '100%',
+          }}
         >
           {/* existing array fields, if any */}
           {
@@ -466,9 +464,9 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       <Group
         key={schemaKey}
         align="center"
-        css={css`
-          width: 100%;
-        `}
+        style={{
+          minWidth: '100%',
+        }}
       >
         {field.type !== 'object' ? (
           <>
@@ -584,9 +582,9 @@ const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
   return (
     <div
       key={index}
-      css={css`
-        min-width: 100%;
-      `}
+      style={{
+        minWidth: '100%',
+      }}
     >
       <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
         <Flex justify={'space-between'} direction={'row-reverse'} mb={10}>
@@ -618,9 +616,9 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
   if (options.selectOptions?.[schemaKey]?.type === 'multiselect') {
     return (
       <Flex
-        css={css`
-          width: 100%;
-        `}
+        style={{
+          minWidth: '100%',
+        }}
       >
         <GeneratedInput
           schemaKey={schemaKey}
@@ -646,9 +644,9 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
         // IMPORTANT: https://react-hook-form.com/docs/usefieldarray Does not support flat field array.
         // if reordering needed change spec to use object. since it's all generated its the easiest way to not mess up validation, etc.
         key={k}
-        css={css`
-          width: 100%;
-        `}
+        style={{
+          minWidth: '100%',
+        }}
       >
         <GeneratedInput
           schemaKey={schemaKey}
@@ -670,9 +668,9 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
       gap={6}
       align="left"
       direction="column"
-      css={css`
-        width: 100%;
-      `}
+      style={{
+        minWidth: '100%',
+      }}
     >
       <Card radius={cardRadius} p={6} withBorder className={classes.arrayChildCard}>
         {children}
@@ -1490,12 +1488,10 @@ function CustomPill({
   return (
     <Box
       className={classes.valueComponentOuterBox}
-      css={css`
-        background-color: ${color};
-        * {
-          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313'};
-        }
-      `}
+      style={{
+        '--bg-color': color,
+        '--text-color': getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313',
+      }}
       {...props}
     >
       <Box className={classes.valueComponentInnerBox}>{invalidValue || transformer(option)}</Box>

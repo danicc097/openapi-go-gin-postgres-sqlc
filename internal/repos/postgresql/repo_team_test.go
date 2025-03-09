@@ -49,7 +49,6 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 		},
 	}
 	for _, tc := range uniqueTestCases {
-		tc := tc
 		runGenericFilterTests(t, tc)
 	}
 }
@@ -122,7 +121,6 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -82,7 +82,7 @@ func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 				options.ErrorHandler(c, err.Error(), http.StatusBadRequest)
 			} else {
 				// error response customized via WithCustomSchemaErrorFunc
-				renderErrorResponse(c, "Invalid request", internal.WrapErrorf(err, models.ErrorCodeRequestValidation, "OpenAPI request validation failed"))
+				renderErrorResponse(c, "Invalid request", internal.WrapErrorf(err, models.ErrorCodeRequestValidation, "OpenAPI request validation failed"), WithoutPanic())
 			}
 
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -102,7 +102,7 @@ func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 		rvi, err := buildRequestValidationInput(m.router, c.Request, &options.Options)
 		if err != nil {
 			// error response customized via WithCustomSchemaErrorFunc
-			renderErrorResponse(c, fmt.Sprintf("openapi request validation input: %v", err), err)
+			renderErrorResponse(c, fmt.Sprintf("openapi request validation input: %v", err), err, WithoutPanic())
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return
@@ -120,7 +120,7 @@ func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		if err := openapi3filter.ValidateResponse(c.Request.Context(), input); err != nil {
 			rbw.body.Reset()
-			renderErrorResponse(c, "Invalid response", internal.WrapErrorf(err, models.ErrorCodeResponseValidation, "OpenAPI response validation failed"))
+			renderErrorResponse(c, "Invalid response", internal.WrapErrorf(err, models.ErrorCodeResponseValidation, "OpenAPI response validation failed"), WithoutPanic())
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return

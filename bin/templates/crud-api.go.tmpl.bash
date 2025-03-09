@@ -18,8 +18,6 @@ $(test -n "$with_project" && echo "	params.ProjectID = internal.ProjectIDByName[
 	${camel_name}, err := h.svc.${pascal_name}.Create(c, tx, &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not create ${sentence_name}", err)
-
-		return nil, nil
 	}
 
 	res := ${pascal_name}Response{
@@ -36,8 +34,6 @@ func (h *StrictHandlers) Get${pascal_name}(c *gin.Context, request Get${pascal_n
 	${camel_name}, err := h.svc.${pascal_name}.ByID(c, tx, request.${pascal_name}ID)
 	if err != nil {
 		renderErrorResponse(c, "Could not create ${sentence_name}", err)
-
-		return nil, nil
 	}
 
 	res := ${pascal_name}Response{
@@ -56,8 +52,6 @@ func (h *StrictHandlers) Update${pascal_name}(c *gin.Context, request Update${pa
 	${camel_name}, err := h.svc.${pascal_name}.Update(c, tx, request.${pascal_name}ID, &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update ${sentence_name}", err)
-
-		return nil, nil
 	}
 
 	res := ${pascal_name}Response{
@@ -74,8 +68,6 @@ func (h *StrictHandlers) Delete${pascal_name}(c *gin.Context, request Delete${pa
 	_, err := h.svc.${pascal_name}.Delete(c, tx, request.${pascal_name}ID)
 	if err != nil {
 		renderErrorResponse(c, "Could not delete ${sentence_name}", err)
-
-		return nil, nil
 	}
 
 	return Delete${pascal_name}204Response{}, nil
