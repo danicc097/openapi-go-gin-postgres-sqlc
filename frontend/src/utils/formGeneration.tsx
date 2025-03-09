@@ -743,10 +743,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       ? // TODO: use convertValueByType
         { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
       : type === 'integer'
-        ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
-        : type === 'number'
-          ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
-          : null),
+      ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
+      : type === 'number'
+      ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
+      : null),
   })
 
   const fieldState = form.getFieldState(formField)
