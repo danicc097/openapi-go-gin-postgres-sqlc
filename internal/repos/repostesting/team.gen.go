@@ -430,16 +430,6 @@ func (fake *FakeTeam) UpdateReturnsOnCall(i int, result1 *models.Team, result2 e
 func (fake *FakeTeam) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.byIDMutex.RLock()
-	defer fake.byIDMutex.RUnlock()
-	fake.byNameMutex.RLock()
-	defer fake.byNameMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	fake.updateMutex.RLock()
-	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -179,10 +179,6 @@ func (fake *FakeMovieGenreClient) TrainReturnsOnCall(i int, result1 *v1.TrainRep
 func (fake *FakeMovieGenreClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.predictMutex.RLock()
-	defer fake.predictMutex.RUnlock()
-	fake.trainMutex.RLock()
-	defer fake.trainMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

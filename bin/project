@@ -268,7 +268,7 @@ x.bootstrap() {
 
     traefik_dir="$HOME/traefik-bootstrap"
     with_tty confirm "Do you want to setup and run traefik (install dir: $traefik_dir)?" && x.setup.traefik "$traefik_dir"
-    echo "${RED}Make sure to add \`complete -o nospace -C project project\` to your ~/.bashrc for completion.${OFF}"
+    echo "${YELLOW}Make sure to add \`complete -o nospace -C project project\` to your ~/.bashrc for completion.${OFF}"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1549,24 +1549,17 @@ x.run.backend() {
 
 # Run backend with hot-reloading.
 x.run.backend-hr() {
-  # TODO replace healthcheck with adhoc calls and bring services up in btaches
-  # to prevent either bombarding with req or having to wait too long at startup.
-  # see https://github.com/moby/moby/issues/33410
+  local build_path="./tmp/rest-server"
+  local build_cmd="go build -o $build_path ./cmd/rest-server/main.go"
 
-  # https://github.com/air-verse/air/blob/master/air_example.toml
-  # NOTE: building binary unreliable sometimes, leads to bin not found.
-  local build_cmd="go build -o /mnt/ramdisk/rest-server ./cmd/rest-server/main.go"
-  local bin_cmd="/mnt/ramdisk/rest-server -env=.env.$X_ENV"
-  if ! test -d /mnt/ramdisk; then # setup with sudo mkdir -p /mnt/ramdisk; sudo mount -t tmpfs -o size=100M tmpfs /mnt/ramdisk
-    build_cmd=""
-    bin_cmd="go run ./cmd/rest-server/main.go -env=.env.$X_ENV"
-  fi
-  echo "Running $bin_cmd"
+  mkdir -p ./tmp
+  echo "Building to: $build_path"
 
   air \
     --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "$build_cmd" \
-    --build.bin "$bin_cmd" \
+    --build.bin "$build_path" \
+    --build.args_bin "-env=.env.$X_ENV" \
     --build.include_ext "go,work,mod" \
     --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \
@@ -2207,7 +2200,8 @@ x.db.drop() {
 }
 
 export_gen_db_schema() {
-  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" | sed -e '/^--/d' >"$GEN_SCHEMA_PATH"
+  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" |
+    sed -e '/^--/d' -e '/^\\/d' >"$GEN_SCHEMA_PATH"
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
@@ -2269,6 +2263,7 @@ x.db.dump() {
     echo "Dumping database to $dump_file"
     docker.postgres pg_dump -U postgres -d "postgres_$X_ENV" |
       gzip >"$DUMPS_DIR/$dump_file"
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
