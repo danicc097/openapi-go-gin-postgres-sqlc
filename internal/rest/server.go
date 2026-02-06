@@ -203,7 +203,7 @@ func NewServer(ctx context.Context, conf Config, opts ...ServerOption) (*Server,
 	}
 	provider, err := rp.NewRelyingPartyOIDC(cfg.OIDC.Issuer, cfg.OIDC.ClientID, cfg.OIDC.ClientSecret, redirectURI, scopes, options...)
 	if err != nil {
-		return nil, fmt.Errorf("error creating provider: %w", err)
+		return nil, fmt.Errorf("error creating provider for issuer %s: %w", cfg.OIDC.Issuer, err)
 	}
 	//
 

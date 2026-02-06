@@ -144,7 +144,7 @@ check.bin.pg_format() {
 
 install.bin.pg_format() {
   { { {
-    local version="5.2"
+    local version="5.9"
     wget --tries=10 https://github.com/darold/pgFormatter/archive/refs/tags/v"$version".tar.gz
     tar xzf v"$version".tar.gz
     cd pgFormatter-"$version"/ || exit 1
@@ -213,9 +213,10 @@ check.bin.pnpm() {
   { { {
     vers=$(pnpm --version)k
     minver=9
-    if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
+    if [[ "$vers" =~ ^9\. ]]; then
       report_success
     else
+      echo "Current pnpm version $vers is not v9.x." >&2
       report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

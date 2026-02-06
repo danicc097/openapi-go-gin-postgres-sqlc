@@ -264,12 +264,6 @@ func (fake *FakeProject) IsTeamInProjectReturnsOnCall(i int, result1 bool, resul
 func (fake *FakeProject) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.byIDMutex.RLock()
-	defer fake.byIDMutex.RUnlock()
-	fake.byNameMutex.RLock()
-	defer fake.byNameMutex.RUnlock()
-	fake.isTeamInProjectMutex.RLock()
-	defer fake.isTeamInProjectMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

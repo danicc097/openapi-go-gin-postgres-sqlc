@@ -8,7 +8,8 @@ begin
   -- Remove /* */ style comments
   output_string := REGEXP_REPLACE(input_string , '/\*([^*]|\*+[^*/])*\*+/' , '' , 'g');
   -- Remove -- style comments
-  output_string := REGEXP_REPLACE(output_string , '--.*?\n' , '' , 'g');
+  output_string := REGEXP_REPLACE(output_string , '--.*?\n'
+    , '' , 'g');
   -- Replace newlines
   output_string := REGEXP_REPLACE(output_string , E'[\n\r]+' , ' ' , 'g');
   -- No ; in stored def
@@ -105,7 +106,7 @@ select
   , ARRAY_TO_STRING(array (
       select
         FORMAT('%s = EXCLUDED.%s' , c , c)
-      from data) , ', ') into all_columns
+    from data) , ', ') into all_columns
   , all_columns_with_type
   , conflict_update_columns;
 
@@ -121,7 +122,8 @@ insert into cache__%I
   on conflict (work_item_id)
   do update set
     %s -- construct for all rows c = EXCLUDED.c (excluded is populated with all rows)
-  ' , project_name , all_columns , all_columns_with_type , project_name , conflict_update_columns)
+  '
+    , project_name , all_columns , all_columns_with_type , project_name , conflict_update_columns)
   using new.work_item_id;
   return NEW;
 end;
@@ -175,8 +177,8 @@ begin
         FROM information_schema.columns
         WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''' , project_name) into project_table_col_and_type;
   -- execute 'CREATE SCHEMA IF NOT EXISTS cache;';
-  execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type ||
-    ',' || foreign_key_constraints_text);
+  execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' ||
+    work_items_col_and_type || ',' || foreign_key_constraints_text);
   -- we lose "tags" annotation from column comments in ref
   for col
   , tags_comment in
@@ -291,30 +293,32 @@ begin
         , description gin_trgm_ops
         )';
       else
-        idx_def := ''; raise exception 'No index definition found for cache__%' , project_name;
+        idx_def := '';
+        raise exception 'No index definition found for cache__%' , project_name;
       end case;
 
       perform
         create_or_update_index (idx_name , project_name , idx_def);
+      --
+      -- adhoc indexes. TODO: abstract away idx create/replace
+      --
+      case project_name
+      when 'demo_work_items' then
+        idx_name := FORMAT('public.cache__%I_last_message_at_index' , project_name);
+
         --
-        -- adhoc indexes. TODO: abstract away idx create/replace
-        --
-        case project_name
-        when 'demo_work_items' then
-          idx_name := FORMAT('public.cache__%I_last_message_at_index' , project_name);
-          --
-          idx_def := 'using btree (last_message_at)';
-          perform
-            create_or_update_index (idx_name , project_name , idx_def);
-          else
-        end case;
-        --
-        -- triggers
-        --
-        execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
+        idx_def := 'using btree (last_message_at)';
+        perform
+          create_or_update_index (idx_name , project_name , idx_def);
+      else
+      end case;
+      --
+      -- triggers
+      --
+      execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
         after insert or update on %1$I for each row
         execute function sync_work_items (%1$s);' , project_name);
-        end loop;
-      end;
+    end loop;
+end;
 $BODY$
 language plpgsql;

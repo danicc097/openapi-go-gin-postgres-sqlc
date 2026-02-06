@@ -343,14 +343,6 @@ func (fake *FakeNotification) PaginatedUserNotificationsReturnsOnCall(i int, res
 func (fake *FakeNotification) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createMutex.RLock()
-	defer fake.createMutex.RUnlock()
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	fake.latestNotificationsMutex.RLock()
-	defer fake.latestNotificationsMutex.RUnlock()
-	fake.paginatedUserNotificationsMutex.RLock()
-	defer fake.paginatedUserNotificationsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
