@@ -7,14 +7,15 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 )
 
 // authMiddleware handles authentication and authorization middleware.
@@ -120,7 +121,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 
 				return
 			}
-			errs = append(errs, fmt.Sprintf("scope(s) %s", slices.JoinWithAnd(config.RequiredScopes)))
+			errs = append(errs, "scope(s) "+slices.JoinWithAnd(config.RequiredScopes))
 		}
 
 		if len(errs) == 1 {
@@ -129,7 +130,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 			errorMsg = fmt.Sprintf("either %s are required", slices.Join(errs, " or "))
 		}
 
-		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized: "+errorMsg), WithoutPanic())
+		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "%s", "unauthorized: "+errorMsg), WithoutPanic())
 		c.Abort()
 	}
 }
@@ -139,7 +140,7 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 	switch input.SecurityScheme.Type {
 	case "apiKey":
 		if input.SecurityScheme.In != "header" {
-			return fmt.Errorf("api key authentication only supported in header")
+			return errors.New("api key authentication only supported in header")
 		}
 
 		_, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(input.SecurityScheme.Name)]
@@ -151,12 +152,12 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 		}
 	case "http":
 		if input.SecurityScheme.Scheme != "bearer" {
-			return fmt.Errorf("http security scheme only supports 'bearer' scheme")
+			return errors.New("http security scheme only supports 'bearer' scheme")
 		}
 
 		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(AuthorizationHeaderKey)]
 		if !found {
-			return fmt.Errorf("authorization header missing")
+			return errors.New("authorization header missing")
 		}
 
 		if !strings.HasPrefix(authHeader[0], "Bearer ") {

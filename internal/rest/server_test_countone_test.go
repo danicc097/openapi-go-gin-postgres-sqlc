@@ -3,16 +3,16 @@
 package rest_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel"
 )
 
 // TODO: exclude CountOne_ in -run flag by default.
@@ -26,7 +26,7 @@ func TestTracing(t *testing.T) {
 	// as of now must run with count=1
 	t.Parallel()
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoErrorf(t, err, "Couldn't run test server\n")
 
@@ -35,18 +35,18 @@ func TestTracing(t *testing.T) {
 	svc := services.New(testutil.NewLogger(t), services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	ufixture := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 		Scopes:     []models.Scope{models.ScopeWorkItemCommentDelete},
 	})
 
 	requiredProject := models.ProjectNameDemo
-	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-	workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
-	workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)
+	teamf := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: requiredProject})
+	workItemf := ff.CreateWorkItem(t.Context(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
+	workItemCommentf := ff.CreateWorkItemComment(t.Context(), ufixture.UserID, workItemf.WorkItemID)
 
 	id := workItemCommentf.WorkItemCommentID
-	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+	res, err := srv.client.DeleteWorkItemCommentWithResponse(t.Context(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, res.StatusCode(), string(res.Body))
 

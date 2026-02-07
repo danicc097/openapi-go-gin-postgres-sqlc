@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestErrorCause(t *testing.T) {
@@ -30,7 +31,7 @@ func TestErrorCause(t *testing.T) {
 	errors.As(err, &ierr)
 	assert.Equal(t, "root", ierr.Cause().Error())
 
-	err = fmt.Errorf("not an internal.Error")
+	err = errors.New("not an internal.Error")
 	err = internal.WrapErrorf(err, models.ErrorCodeUnknown, "root")
 	errors.As(err, &ierr)
 	assert.Equal(t, "not an internal.Error", ierr.Cause().Error())
@@ -50,7 +51,7 @@ func TestErrorWithLoc(t *testing.T) {
 	err = internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{"parent"}, "wrapped 2")
 	errors.As(err, &ierr)
 	assert.Equal(t, []string{"parent", "nested", "0"}, ierr.Loc())
-	assert.True(t, ierr.Code() == models.ErrorCodeNotFound)
+	assert.Equal(t, ierr.Code(), models.ErrorCodeNotFound)
 
 	err = internal.WrapErrorWithLocf(errors.New("some error"), models.ErrorCodeInvalidArgument, []string{"loc"}, "wrapped 1")
 	errors.As(err, &ierr)

@@ -1,18 +1,18 @@
 package postgresql_test
 
 import (
-	"context"
 	"encoding/json"
 	"reflect"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 func TestProject_ByIndexedQueries(t *testing.T) {
@@ -49,7 +49,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 	projectRepo := postgresql.NewProject()
 	projectID := internal.ProjectIDByName[models.ProjectNameDemo]
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("valid_subpath_replacement", func(t *testing.T) {
 		t.Parallel()

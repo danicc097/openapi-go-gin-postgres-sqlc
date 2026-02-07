@@ -4,16 +4,16 @@
 package tests
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
 
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
 /**
@@ -33,8 +33,7 @@ FIXME:
 */
 
 func cursorFrom(v interface{}) *interface{} {
-	var c interface{}
-	c = v
+	var c interface{} = v
 
 	return &c
 }
@@ -42,7 +41,7 @@ func cursorFrom(v interface{}) *interface{} {
 func TestCursorPagination_Timestamp(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	cursor := db.PaginationCursor{Column: "createdAt", Value: cursorFrom(time.Now().Add(-(24 + 1) * time.Hour)), Direction: db.DirectionDesc}
 	ee, err := db.XoTestsPagElementPaginated(ctx, testPool, cursor, db.WithXoTestsPagElementLimit(1), db.WithXoTestsPagElementJoin(db.XoTestsPagElementJoins{}))
@@ -62,11 +61,11 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 func createUserWithRetry(t *testing.T, params *db.XoTestsUserCreateParams) *db.XoTestsUser {
 	var err error
 
-	u, err := db.CreateXoTestsUser(context.Background(), testPool, params)
+	u, err := db.CreateXoTestsUser(t.Context(), testPool, params)
 
 	retries := 0
 	for err != nil && retries < 10 {
-		u, err = db.CreateXoTestsUser(context.Background(), testPool, params)
+		u, err = db.CreateXoTestsUser(t.Context(), testPool, params)
 		retries++
 	}
 	require.NoError(t, err)
@@ -77,7 +76,7 @@ func createUserWithRetry(t *testing.T, params *db.XoTestsUserCreateParams) *db.X
 func TestSharedRefConstraints(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// generated with refs-ignore,share-ref-constraints
 	cursor := db.PaginationCursor{Column: "workItemID", Value: cursorFrom(0), Direction: db.DirectionAsc}
@@ -96,13 +95,13 @@ func TestSharedRefConstraints(t *testing.T) {
 
 	ee, err = db.XoTestsCacheDemoWorkItemPaginated(ctx, testPool, cursor)
 	require.NoError(t, err)
-	require.Len(t, ee, 0)
+	require.Empty(t, ee)
 }
 
 func TestCursorPagination_HavingClause(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_1"})
 	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_2"})
@@ -148,26 +147,26 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 func Test_Filters(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	cursor := db.PaginationCursor{Column: "createdAt", Value: cursorFrom(time.Now().Add(-(24 + 1) * time.Hour)), Direction: db.DirectionDesc}
 	ee, err := db.XoTestsPagElementPaginated(ctx, testPool, cursor, db.WithXoTestsPagElementLimit(1), db.WithXoTestsPagElementJoin(db.XoTestsPagElementJoins{}))
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
-	assert.Equal(t, ee[0].Name, "element -2 days")
+	assert.Equal(t, "element -2 days", ee[0].Name)
 
 	cursor = db.PaginationCursor{Column: "createdAt", Value: cursorFrom(ee[0].CreatedAt), Direction: db.DirectionDesc}
 	ee, err = db.XoTestsPagElementPaginated(ctx, testPool, cursor, db.WithXoTestsPagElementLimit(2))
 	require.NoError(t, err)
 	require.Len(t, ee, 2)
-	assert.Equal(t, ee[0].Name, "element -3 days")
-	assert.Equal(t, ee[1].Name, "element -4 days")
+	assert.Equal(t, "element -3 days", ee[0].Name)
+	assert.Equal(t, "element -4 days", ee[1].Name)
 }
 
 func TestTrigram_Filters(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	ww, err := db.XoTestsWorkItems(ctx, testPool, db.WithXoTestsWorkItemFilters(map[string][]any{"description ILIKE  '%' || $1 || '%'": {"rome"}}))
 	require.NoError(t, err)
@@ -178,7 +177,7 @@ func TestTrigram_Filters(t *testing.T) {
 func TestM2M_SelectFilter(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	wi, err := db.XoTestsWorkItemByWorkItemID(ctx, testPool, 1, db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{Assignees: true}))
 	require.NoError(t, err)
@@ -188,7 +187,7 @@ func TestM2M_SelectFilter(t *testing.T) {
 		uid := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 		if member.User.UserID == uid {
 			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
-			assert.True(t, db.XoTestsWorkItemRolePreparer == *member.Role)
+			assert.Equal(t, db.XoTestsWorkItemRolePreparer, *member.Role)
 		}
 	}
 }
@@ -196,11 +195,11 @@ func TestM2M_SelectFilter(t *testing.T) {
 func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{AuthorBooks: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksJoin, 0)
+	require.Empty(t, *u.AuthorBooksJoin)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")))
 	require.NoError(t, err)
@@ -219,11 +218,11 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 func TestM2M_SurrogatePK(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{AuthorBooksBASK: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksBASKJoin, 0)
+	require.Empty(t, *u.AuthorBooksBASKJoin)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")))
 	require.NoError(t, err)
@@ -234,7 +233,7 @@ func TestM2M_SurrogatePK(t *testing.T) {
 	require.Len(t, *u.AuthorBooksBASKJoin, 2)
 	for _, b := range *u.AuthorBooksBASKJoin {
 		if b.Book.BookID == 1 {
-			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
+			assert.Equal(t, "not Jane Smith", *b.Pseudonym)
 		}
 	}
 }
@@ -242,11 +241,11 @@ func TestM2M_SurrogatePK(t *testing.T) {
 func TestM2M_TwoFKs(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{SellerBooks: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.SellerBooksJoin, 0)
+	require.Empty(t, *u.SellerBooksJoin)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")))
 	require.NoError(t, err)
@@ -255,13 +254,13 @@ func TestM2M_TwoFKs(t *testing.T) {
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{SellerBooks: true}))
 	require.NoError(t, err)
 	require.Len(t, *u.SellerBooksJoin, 1)
-	assert.EqualValues(t, (*u.SellerBooksJoin)[0].BookID, 1)
+	assert.EqualValues(t, 1, (*u.SellerBooksJoin)[0].BookID)
 }
 
 func TestM2O(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	userID := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, userID, db.WithXoTestsUserJoin(db.XoTestsUserJoins{SenderNotifications: true, ReceiverNotifications: true}))
@@ -278,7 +277,7 @@ func TestM2O(t *testing.T) {
 func TestO2OInferred_PKisFK(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	workitemID := db.XoTestsWorkItemID(1)
 
@@ -296,7 +295,7 @@ func TestO2OInferred_PKisFK(t *testing.T) {
 func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	userID := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 
@@ -313,7 +312,7 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 func TestCustomFilters(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	cursor := db.PaginationCursor{Column: "createdAt", Value: cursorFrom(time.Now().Add(-999 * time.Hour)), Direction: db.DirectionAsc}
 	uu, err := db.XoTestsUserPaginated(ctx, testPool, cursor,
 		db.WithXoTestsUserJoin(db.XoTestsUserJoins{UserAPIKey: true, AuthorBooks: true}),
@@ -334,7 +333,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 
 	var err error
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: "test_user_1"})
 	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: "test_user_2"})

@@ -3,12 +3,13 @@ package services
 import (
 	"context"
 	"fmt"
+	"slices"
+
+	"go.uber.org/zap"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	"go.uber.org/zap"
-	"golang.org/x/exp/slices"
 )
 
 type WorkItemTag struct {

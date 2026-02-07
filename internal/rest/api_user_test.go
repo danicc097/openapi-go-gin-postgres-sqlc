@@ -1,11 +1,13 @@
 package rest_test
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
@@ -13,8 +15,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestHandlers_DeleteUser(t *testing.T) {
@@ -22,7 +22,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -53,13 +53,13 @@ func TestHandlers_DeleteUser(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
 
-			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.DeleteUserWithResponse(t.Context(), ufixture.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("res.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
@@ -72,7 +72,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -86,16 +86,16 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
 		p := models.ProjectNameDemo
-		team1f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
-		team2f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
-		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		team1f := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: p})
+		team2f := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: p})
+		ufixture := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 			TeamIDs:    []models.TeamID{team1f.TeamID, team2f.TeamID},
 		})
 
-		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetCurrentUserWithResponse(t.Context(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -119,7 +119,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -135,13 +135,13 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 		scopes := models.Scopes{models.ScopeScopesWrite}
 
-		manager := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		manager := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
 
-		normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		normalUser := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 			Scopes:     scopes,
@@ -154,12 +154,12 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Role:   pointers.New(models.RoleManager),
 				Scopes: nil,
 			}
-			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserAuthorizationWithResponse(t.Context(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusNoContent, ures.StatusCode(), string(ures.Body))
 
-			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(t.Context(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 			require.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 			require.NoError(t, err)
 			assert.EqualValues(t, *updateAuthParams.Role, res.JSON200.Role)
@@ -168,7 +168,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("insufficient_caller_scopes", func(t *testing.T) {
 			t.Parallel()
 
-			managerWithoutScopes := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			managerWithoutScopes := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				Role:       models.RoleManager,
 				WithAPIKey: true,
 			})
@@ -177,7 +177,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Role:   pointers.New(models.RoleManager),
 				Scopes: nil,
 			}
-			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+			badres, err := srv.client.UpdateUserAuthorizationWithResponse(t.Context(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusForbidden, badres.StatusCode())
 		})
@@ -188,7 +188,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Role:   pointers.New(models.Role("bad")),
 				Scopes: nil,
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(t.Context(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
@@ -200,7 +200,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Scopes: &[]models.Scope{models.Scope("bad")},
 				Role:   nil,
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(t.Context(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
@@ -235,12 +235,12 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			normalUser := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				Role:       models.RoleUser,
 				WithAPIKey: true,
 			})
 
-			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserWithResponse(t.Context(), normalUser.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, ures.StatusCode(), string(ures.Body))
@@ -255,7 +255,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 			assert.EqualValues(t, normalUser.UserID, ures.JSON200.UserID)
 
-			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(t.Context(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.EqualValues(t, tc.body.FirstName, res.JSON200.FirstName)

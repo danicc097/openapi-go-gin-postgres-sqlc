@@ -1,9 +1,10 @@
 package rest_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
@@ -12,7 +13,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/require"
 )
 
 func TestHandlers_CreateWorkItemTag(t *testing.T) {
@@ -20,7 +20,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -45,8 +45,8 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-			userf := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			teamf := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: requiredProject})
+			userf := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
@@ -55,7 +55,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			require.NoError(t, err)
 
 			witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
-			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, rest.CreateWorkItemTagRequest{
+			res, err := srv.client.CreateWorkItemTagWithResponse(t.Context(), requiredProject, rest.CreateWorkItemTagRequest{
 				WorkItemTagCreateParams: *witCreateParams,
 			}, ReqWithAPIKey(userf.APIKey.APIKey))
 

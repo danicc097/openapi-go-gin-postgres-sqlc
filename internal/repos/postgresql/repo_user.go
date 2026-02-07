@@ -2,16 +2,18 @@ package postgresql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
-	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 // User represents the repository used for interacting with User records.
@@ -177,7 +179,7 @@ func (u *User) ByAPIKey(ctx context.Context, d models.DBTX, apiKey string) (*mod
 	}
 
 	if uak.UserJoin == nil {
-		return nil, fmt.Errorf("could not join user by api key")
+		return nil, errors.New("could not join user by api key")
 	}
 
 	return uak.UserJoin, nil

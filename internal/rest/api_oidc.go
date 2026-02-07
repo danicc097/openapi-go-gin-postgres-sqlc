@@ -3,15 +3,15 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/zitadel/oidc/v2/pkg/client/rp"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 const authRedirectCookieKey = "auth_redirect_uri"
@@ -23,13 +23,13 @@ func state() string {
 func (h *StrictHandlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	data, err := json.Marshal(info)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, "could not marshal userinfo: "+err.Error(), http.StatusInternalServerError)
 
 		return
 	}
 	_, err = w.Write(data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("could not write userinfo: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, "could not write userinfo: "+err.Error(), http.StatusInternalServerError)
 
 		return
 	}

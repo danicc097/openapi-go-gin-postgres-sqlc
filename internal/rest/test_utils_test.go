@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -67,10 +68,10 @@ func ConstructInternalPath(subpath string, options ...ConstructURLOption) (strin
 	}
 
 	if t.Kind() != reflect.Struct {
-		return "", fmt.Errorf("params must be a struct")
+		return "", errors.New("params must be a struct")
 	}
 
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		field := t.Field(i)
 		value := v.Field(i)
 
@@ -89,7 +90,7 @@ func ConstructInternalPath(subpath string, options ...ConstructURLOption) (strin
 		}
 
 		if value.Kind() == reflect.Slice {
-			for j := 0; j < value.Len(); j++ {
+			for j := range value.Len() {
 				elemValue := value.Index(j)
 				fieldValue := fmt.Sprintf("%v", elemValue.Interface())
 				query.Add(fieldName, fieldValue)

@@ -22,7 +22,7 @@ func GetKeys(tag string, s any, parent string) []string {
 	}
 
 	if val.Kind() == reflect.Slice || val.Kind() == reflect.Array {
-		for j := 0; j < val.Len(); j++ {
+		for j := range val.Len() {
 			elem := val.Index(j).Interface()
 			subkeys := GetKeys(tag, elem, "")
 			for _, subkey := range subkeys {
@@ -32,7 +32,7 @@ func GetKeys(tag string, s any, parent string) []string {
 	}
 
 	if val.Kind() == reflect.Struct {
-		for idx := 0; idx < val.NumField(); idx++ {
+		for idx := range val.NumField() {
 			typeField := val.Type().Field(idx)
 			tagValue := typeField.Tag.Get(tag)
 			if tagValue == "" {
@@ -45,7 +45,7 @@ func GetKeys(tag string, s any, parent string) []string {
 				if val.Field(idx).Len() > 0 {
 					keys = append(keys, key)
 				}
-				for j := 0; j < val.Field(idx).Len(); j++ {
+				for j := range val.Field(idx).Len() {
 					elem := val.Field(idx).Index(j).Interface()
 					subkeys := GetKeys(tag, elem, key)
 					for _, subkey := range subkeys {
@@ -89,7 +89,7 @@ func InitializeFields(v reflect.Value, maxDepth int) reflect.Value {
 		}
 		return InitializeFields(v.Elem(), maxDepth)
 	case reflect.Struct:
-		for i := 0; i < v.NumField(); i++ {
+		for i := range v.NumField() {
 			field := v.Field(i)
 			if field.CanSet() {
 				zeroValue := reflect.Zero(field.Type())
@@ -107,7 +107,7 @@ func InitializeFields(v reflect.Value, maxDepth int) reflect.Value {
 			}
 		}
 	case reflect.Slice, reflect.Array:
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			InitializeFields(v.Index(i), maxDepth)
 		}
 	case reflect.Map:
@@ -127,7 +127,7 @@ func HasJSONTag(st any) bool {
 		t = t.Elem()
 	}
 
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		field := t.Field(i)
 		if _, ok := field.Tag.Lookup("json"); ok {
 			return true

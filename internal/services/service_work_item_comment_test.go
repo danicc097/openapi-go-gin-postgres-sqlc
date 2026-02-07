@@ -1,8 +1,12 @@
 package services_test
 
 import (
-	"context"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
@@ -10,10 +14,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWorkItemComment_Update(t *testing.T) {
@@ -60,31 +60,31 @@ func TestWorkItemComment_Update(t *testing.T) {
 			repos := services.CreateTestRepos(t)
 			repos.Notification = repostesting.NewFakeNotification() // unless we want to test notification integration
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
-			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-			user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			teamf := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: requiredProject})
+			user := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, teamf.TeamID)
+				user.User, err = svc.User.AssignTeam(t.Context(), testPool, user.UserID, teamf.TeamID)
 				require.NoError(t, err)
 			}
 
-			creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			creator := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
 				TeamIDs:    []models.TeamID{teamf.TeamID},
 			})
 
-			demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(creator.User), teamf.TeamID)
+			demoWorkItemf := ff.CreateWorkItem(t.Context(), requiredProject, *services.NewCtxUser(creator.User), teamf.TeamID)
 
 			workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.UserID, demoWorkItemf.WorkItemID)
-			workitemcomment, err := svc.WorkItemComment.Create(context.Background(), testPool, workItemCommentCreateParams)
+			workitemcomment, err := svc.WorkItemComment.Create(t.Context(), testPool, workItemCommentCreateParams)
 			require.NoError(t, err)
 
 			w := services.NewWorkItemComment(logger, repos)

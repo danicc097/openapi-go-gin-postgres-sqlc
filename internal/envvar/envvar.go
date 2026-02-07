@@ -26,7 +26,7 @@ type Configuration struct{}
 // It also initializes/replaces app configuration.
 func Load(filename string) error {
 	if err := godotenv.Load(filename); err != nil {
-		return internal.NewErrorf(models.ErrorCodeUnknown, fmt.Sprintf("loading %s env var file: %s", filename, err))
+		return internal.NewErrorf(models.ErrorCodeUnknown, "%s", fmt.Sprintf("loading %s env var file: %s", filename, err))
 	}
 
 	if err := internal.NewAppConfig(); err != nil {

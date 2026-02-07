@@ -1,14 +1,14 @@
 package postgresql_test
 
 import (
-	"context"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDemoWorkItem_Update(t *testing.T) {
@@ -50,7 +50,7 @@ func TestDemoWorkItem_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewDemoWorkItem()
-			got, err := u.Update(context.Background(), testPool, tc.args.id, tc.args.params)
+			got, err := u.Update(t.Context(), testPool, tc.args.id, tc.args.params)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("DemoTwoWorkItem.Update() error = %v, wantErr %v", err, tc.wantErr)
 

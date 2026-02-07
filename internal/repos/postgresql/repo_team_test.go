@@ -1,17 +1,17 @@
 package postgresql_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
-	"github.com/jackc/pgx/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTeam_ByIndexedQueries(t *testing.T) {
@@ -20,7 +20,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 	projectRepo := postgresql.NewProject()
 	teamRepo := postgresql.NewTeam()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	require.NoError(t, err)
@@ -61,7 +61,7 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 	t.Run("syncs user", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := context.Background()
+		ctx := t.Context()
 
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 		require.NoError(t, err)
@@ -126,7 +126,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 
 			var err error
 
-			ctx := context.Background()
+			ctx := t.Context()
 
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)

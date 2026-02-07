@@ -1,10 +1,13 @@
 package postgresql_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
@@ -12,9 +15,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestUser_Update(t *testing.T) {
@@ -56,7 +56,7 @@ func TestUser_Update(t *testing.T) {
 			t.Parallel()
 
 			u := postgresql.NewUser()
-			got, err := u.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
+			got, err := u.Update(t.Context(), testPool, tc.args.id, &tc.args.params)
 			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 
@@ -112,10 +112,10 @@ func TestUser_SoftDelete(t *testing.T) {
 			t.Parallel()
 
 			userRepo := postgresql.NewUser()
-			_, err := userRepo.Delete(context.Background(), testPool, tc.args.id)
+			_, err := userRepo.Delete(t.Context(), testPool, tc.args.id)
 			require.NoError(t, err)
 
-			_, err = userRepo.ByID(context.Background(), testPool, tc.args.id)
+			_, err = userRepo.ByID(t.Context(), testPool, tc.args.id)
 			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 
@@ -139,7 +139,7 @@ func TestUser_SoftDelete(t *testing.T) {
 func TestUser_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	logger := testutil.NewLogger(t)
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 5, 65*time.Millisecond)
@@ -239,7 +239,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		user := newRandomUser(t, testPool)
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
+		uak, err := userRepo.CreateAPIKey(t.Context(), testPool, user)
 		require.NoError(t, err)
 		assert.NotEmpty(t, uak.APIKey)
 		assert.Equal(t, uak.UserID, user.UserID)
@@ -251,7 +251,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &models.User{UserID: models.NewUserID(uuid.New())})
+		_, err := userRepo.CreateAPIKey(t.Context(), testPool, &models.User{UserID: models.NewUserID(uuid.New())})
 
 		require.ErrorContains(t, err, errContains)
 	})
@@ -261,10 +261,10 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		newUser := newRandomUser(t, testPool)
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
+		uak, err := userRepo.CreateAPIKey(t.Context(), testPool, newUser)
 		require.NoError(t, err)
 
-		user, err := userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
+		user, err := userRepo.ByAPIKey(t.Context(), testPool, uak.APIKey)
 		require.NoError(t, err)
 
 		assert.Equal(t, user.UserID, newUser.UserID)
@@ -276,7 +276,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := errNoRows
 
-		_, err := userRepo.ByAPIKey(context.Background(), testPool, "missing")
+		_, err := userRepo.ByAPIKey(t.Context(), testPool, "missing")
 		require.ErrorContains(t, err, errContains)
 	})
 
@@ -285,14 +285,14 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		newUser := newRandomUser(t, testPool)
 
-		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
+		uak, err := userRepo.CreateAPIKey(t.Context(), testPool, newUser)
 		require.NoError(t, err)
 
-		deletedUak, err := userRepo.DeleteAPIKey(context.Background(), testPool, uak.APIKey)
+		deletedUak, err := userRepo.DeleteAPIKey(t.Context(), testPool, uak.APIKey)
 		require.NoError(t, err)
 		assert.Equal(t, deletedUak.APIKey, uak.APIKey)
 
-		_, err = userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
+		_, err = userRepo.ByAPIKey(t.Context(), testPool, uak.APIKey)
 		require.ErrorContains(t, err, errNoRows)
 	})
 }
@@ -326,7 +326,7 @@ func TestUser_Create(t *testing.T) {
 			params: *ucp,
 		}
 
-		got, err := userRepo.Create(context.Background(), testPool, &args.params)
+		got, err := userRepo.Create(t.Context(), testPool, &args.params)
 		require.NoError(t, err)
 
 		assert.Equal(t, want.FullName, got.FullName)
@@ -349,7 +349,7 @@ func TestUser_Create(t *testing.T) {
 			params: *ucp,
 		}
 
-		_, err := userRepo.Create(context.Background(), testPool, &args.params)
+		_, err := userRepo.Create(t.Context(), testPool, &args.params)
 		require.Error(t, err)
 
 		require.ErrorContains(t, err, errViolatesCheckConstraint)

@@ -1,10 +1,12 @@
 package postgresql_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -12,8 +14,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestUserFriendlyPgErrors(t *testing.T) {
@@ -42,7 +42,7 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 			params: *ucp,
 		}
 
-		got, err := witRepo.Create(context.Background(), testPool, &args.params)
+		got, err := witRepo.Create(t.Context(), testPool, &args.params)
 		require.NoError(t, err)
 
 		assert.Equal(t, want.Name, got.Name)
@@ -50,13 +50,13 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 		assert.Equal(t, want.Color, got.Color)
 		assert.Equal(t, want.ProjectID, got.ProjectID)
 
-		_, err = witRepo.Create(context.Background(), testPool, &args.params)
+		_, err = witRepo.Create(t.Context(), testPool, &args.params)
 		require.Error(t, err)
 
 		require.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and projectID=%d already exists", want.Name, want.ProjectID))
 
 		args.params.ProjectID = -999
-		_, err = witRepo.Create(context.Background(), testPool, &args.params)
+		_, err = witRepo.Create(t.Context(), testPool, &args.params)
 		require.Error(t, err)
 
 		require.ErrorContains(t, err, fmt.Sprintf("projectID \"%d\" is invalid", args.params.ProjectID))

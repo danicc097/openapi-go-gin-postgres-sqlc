@@ -10,20 +10,19 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 
-	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
-
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
 	"github.com/google/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
-	"golang.org/x/exp/slices"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 )
 
 func handleError(err error) {

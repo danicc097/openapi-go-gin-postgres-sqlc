@@ -5,10 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/time/rate"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
 func TestRateLimitMiddleware(t *testing.T) {
@@ -27,7 +28,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 	})
 
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
-	for i := 0; i < bl; i++ {
+	for range bl {
 		engine.ServeHTTP(resp, req)
 		assert.Equal(t, http.StatusOK, resp.Code)
 	}

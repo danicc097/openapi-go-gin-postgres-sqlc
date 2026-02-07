@@ -1,8 +1,11 @@
 package services_test
 
 import (
-	"context"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
@@ -12,9 +15,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/jackc/pgx/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWorkItemTag_Update(t *testing.T) {
@@ -29,16 +29,16 @@ func TestWorkItemTag_Update(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-	tagCreator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	teamf := ff.CreateTeam(t.Context(), servicetestutil.CreateTeamParams{Project: requiredProject})
+	tagCreator := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
 
-	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.UserID, teamf.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(t.Context(), testPool, tagCreator.UserID, teamf.TeamID)
 	require.NoError(t, err)
 
 	witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
-	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, *services.NewCtxUser(tagCreator.User), witCreateParams)
+	wit, err := svc.WorkItemTag.Create(t.Context(), testPool, *services.NewCtxUser(tagCreator.User), witCreateParams)
 	require.NoError(t, err)
 
 	type args struct {
@@ -96,17 +96,17 @@ func TestWorkItemTag_Update(t *testing.T) {
 			repos := services.CreateTestRepos(t)
 			repos.Notification = repostesting.NewFakeNotification()
 
-			ctx := context.Background()
+			ctx := t.Context()
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
-			user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			user := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, teamf.TeamID)
+				user.User, err = svc.User.AssignTeam(t.Context(), testPool, user.UserID, teamf.TeamID)
 				require.NoError(t, err)
 			}
 

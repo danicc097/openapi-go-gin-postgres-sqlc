@@ -17,6 +17,7 @@ import (
 	"go/token"
 	"go/types"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -29,7 +30,6 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/dave/dst/dstutil"
-	"golang.org/x/exp/maps"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -271,7 +271,7 @@ func main() {
 				}
 
 				// default to printing search results if any
-				sortedItems := maps.Keys(items)
+				sortedItems := slices.Collect(maps.Keys(items))
 				sort.Slice(sortedItems, func(i, j int) bool {
 					return sortedItems[i] < sortedItems[j]
 				})
@@ -324,7 +324,7 @@ func getReflectionType(s string) ReflectionType {
 func verifyNoImport(path string, imports []string, errCh chan<- error) {
 	fileImports, err := getImports(path)
 	if err != nil {
-		errCh <- fmt.Errorf("could not getImports in %s: %s", path, err)
+		errCh <- fmt.Errorf("could not getImports in %s: %w", path, err)
 		return
 	}
 	for _, importPath := range imports {

@@ -75,7 +75,7 @@ func (al *AdvisoryLock) WaitForRelease(retryCount int, d time.Duration) error {
 		return fmt.Errorf("conn: %w", err)
 	}
 
-	for i := 0; i < retryCount; i++ {
+	for range retryCount {
 		if !al.IsLocked() {
 			return nil
 		}
