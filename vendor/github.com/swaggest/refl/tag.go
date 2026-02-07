@@ -41,10 +41,10 @@ type WalkFieldFn func(v reflect.Value, sf reflect.StructField, path []reflect.St
 
 // WalkFieldsRecursively walks scalar and non-scalar fields of a struct recursively and calls user function on them.
 func WalkFieldsRecursively(v reflect.Value, f WalkFieldFn) {
-	walkFieldsRecursively(v, f, nil)
+	walkFieldsRecursively(v, f, nil, make(map[reflect.Type]struct{}))
 }
 
-func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.StructField) {
+func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.StructField, visited map[reflect.Type]struct{}) {
 	if v.Kind() == 0 {
 		return
 	}
@@ -69,8 +69,14 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 		if v.IsValid() {
 			fieldVal = v.Field(i)
 		} else {
+			if _, ok := visited[field.Type]; ok {
+				continue
+			}
+
 			fieldVal = reflect.Zero(field.Type)
 		}
+
+		visited[field.Type] = struct{}{}
 
 		if fieldVal.CanAddr() {
 			fieldVal = fieldVal.Addr()
@@ -89,10 +95,14 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 				pp += "." + p.Name
 			}
 
+			for k := range visited {
+				println("visited:", k.String())
+			}
+
 			panic("too deep recursion, possible cyclic reference: " + pp)
 		}
 
-		walkFieldsRecursively(fieldVal, f, append(path, field))
+		walkFieldsRecursively(fieldVal, f, append(path, field), visited)
 	}
 }
 

@@ -26,6 +26,22 @@ func NewReflector() *Reflector {
 	r := &Reflector{}
 	r.SpecEns()
 
+	r.DefaultOptions = append(r.DefaultOptions, jsonschema.InterceptSchema(func(params jsonschema.InterceptSchemaParams) (stop bool, err error) {
+		// See https://spec.openapis.org/oas/v3.0.0.html#data-types.
+		switch params.Value.Kind() { //nolint // Not all kinds have formats defined.
+		case reflect.Int64:
+			params.Schema.WithFormat("int64")
+		case reflect.Int32:
+			params.Schema.WithFormat("int32")
+		case reflect.Float32:
+			params.Schema.WithFormat("float")
+		case reflect.Float64:
+			params.Schema.WithFormat("double")
+		}
+
+		return false, nil
+	}))
+
 	return r
 }
 
@@ -279,6 +295,8 @@ func (r *Reflector) setupRequest(o *Operation, oc openapi.OperationContext) erro
 			); err != nil {
 				return err
 			}
+
+			r.parseRawRequestBody(o, cu)
 		case mimeJSON:
 			if err := joinErrors(
 				r.parseParameters(o, oc, cu),
@@ -300,6 +318,10 @@ func (r *Reflector) setupRequest(o *Operation, oc openapi.OperationContext) erro
 		if cu.Description != "" && o.RequestBody != nil && o.RequestBody.RequestBody != nil {
 			o.RequestBody.RequestBody.WithDescription(cu.Description)
 		}
+
+		if cu.Customize != nil && o.RequestBody != nil {
+			cu.Customize(o.RequestBody)
+		}
 	}
 
 	return nil
@@ -310,6 +332,7 @@ const (
 	tagFormData        = "formData"
 	tagForm            = "form"
 	tagHeader          = "header"
+	tagContentType     = "contentType"
 	mimeJSON           = "application/json"
 	mimeFormUrlencoded = "application/x-www-form-urlencoded"
 	mimeMultipart      = "multipart/form-data"
@@ -340,6 +363,16 @@ func (r *Reflector) stringRequestBody(
 	format string,
 ) {
 	o.RequestBodyEns().RequestBodyEns().WithContentItem(mime, mediaType(format))
+}
+
+func (r *Reflector) parseRawRequestBody(o *Operation, cu openapi.ContentUnit) {
+	if cu.Structure == nil {
+		return
+	}
+
+	refl.WalkTaggedFields(reflect.ValueOf(cu.Structure), func(_ reflect.Value, _ reflect.StructField, tag string) {
+		r.stringRequestBody(o, tag, "")
+	}, tagContentType)
 }
 
 func (r *Reflector) parseRequestBody(
@@ -613,6 +646,16 @@ func (r *Reflector) parseResponseHeader(resp *Response, oc openapi.OperationCont
 	return nil
 }
 
+func (r *Reflector) parseRawResponseBody(resp *Response, cu openapi.ContentUnit) {
+	if cu.Structure == nil {
+		return
+	}
+
+	refl.WalkTaggedFields(reflect.ValueOf(cu.Structure), func(_ reflect.Value, _ reflect.StructField, tag string) {
+		r.ensureResponseContentType(resp, tag, "")
+	}, tagContentType)
+}
+
 func (r *Reflector) setupResponse(o *Operation, oc openapi.OperationContext) error {
 	for _, cu := range oc.Response() {
 		if cu.HTTPStatus == 0 && !cu.IsDefault {
@@ -650,6 +693,8 @@ func (r *Reflector) setupResponse(o *Operation, oc openapi.OperationContext) err
 				return err
 			}
 
+			r.parseRawResponseBody(resp, cu)
+
 			if cu.ContentType != "" {
 				r.ensureResponseContentType(resp, cu.ContentType, cu.Format)
 			}
@@ -668,10 +713,16 @@ func (r *Reflector) setupResponse(o *Operation, oc openapi.OperationContext) err
 			resp.Description = http.StatusText(cu.HTTPStatus)
 		}
 
+		ror := ResponseOrRef{Response: resp}
+
+		if cu.Customize != nil {
+			cu.Customize(&ror)
+		}
+
 		if cu.IsDefault {
-			o.Responses.Default = &ResponseOrRef{Response: resp}
+			o.Responses.Default = &ror
 		} else {
-			o.Responses.WithMapOfResponseOrRefValuesItem(httpStatus, ResponseOrRef{Response: resp})
+			o.Responses.WithMapOfResponseOrRefValuesItem(httpStatus, ror)
 		}
 	}
 
