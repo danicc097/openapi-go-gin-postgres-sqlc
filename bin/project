@@ -285,7 +285,7 @@ x.install-tools() {
     commands=(
       "go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2"
       "go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0"
-      "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4"
+      "go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.8.0"
       "go install github.com/tufin/oasdiff@v1.10.9"
       "go install golang.org/x/tools/cmd/goimports@latest"
       "go install mvdan.cc/gofumpt@latest"
@@ -1254,27 +1254,28 @@ x.lint.go() {
 exhaustive_lint() {
   local lint_config=$(
     cat <<EOF
+version: 2
 linters:
-  disable-all: true
+  default: none
   enable:
     - exhaustruct
     - exhaustive
-linters-settings:
-  exhaustive:
-    explicit-exhaustive-switch: true
-    explicit-exhaustive-map: true
-    default-case-required: true
-  exhaustruct:
-    # lint struct usage in all packages that use them
-    include:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
-      # internal/rest may need to run this, alongside all services structs
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*'
-      # these are all adapters from service to db, so make sure they're always updated
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\..*$'
-    exclude:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*(UpdateParams|Joins)$'
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\.(HTTPError|ValidationError)$'
+  settings:
+    exhaustive:
+      explicit-exhaustive-switch: true
+      explicit-exhaustive-map: true
+      default-case-required: true
+    exhaustruct:
+      # lint struct usage in all packages that use them
+      include:
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
+        # internal/rest may need to run this, alongside all services structs
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*'
+        # these are all adapters from service to db, so make sure they're always updated
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\..*$'
+      exclude:
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*(UpdateParams|Joins)$'
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\.(HTTPError|ValidationError)$'
 # in case we want to run a linter on test files only
 # issues:
 #   exclude-rules:
@@ -1302,15 +1303,16 @@ EOF
 
   lint_config=$(
     cat <<EOF
+version: 2
 linters:
-  disable-all: true
+  default: none
   enable:
     - exhaustruct
-linters-settings:
-  exhaustruct:
-    include:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\.Services$'
+  settings:
+    exhaustruct:
+      include:
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+        - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\.Services$'
 EOF
   )
   LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") & # ensure repo initialization is complete on all pkgs
@@ -1664,7 +1666,7 @@ x.release() {
 
 # Runs the go type checker.
 x.backend.typecheck() {
-  golangci-lint run --no-config --disable-all --enable=typecheck --allow-parallel-runners --timeout=10m
+  go build -o /dev/null ./...
 }
 
 # depends on gen.xo output
