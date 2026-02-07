@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -9,10 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	server "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format/colors"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 func openBrowser(url string) {
@@ -28,7 +30,7 @@ func openBrowser(url string) {
 	case "darwin":
 		err = exec.Command("open", url).Start()
 	default:
-		err = fmt.Errorf("unsupported platform")
+		err = errors.New("unsupported platform")
 	}
 	if err != nil {
 		log.Default().Printf("Couldn't launch local browser: %s", err)
@@ -49,7 +51,7 @@ func main() {
 	}
 
 	if len(errs) > 0 {
-		log.Fatalf("error: \n" + strings.Join(errs, "\n"))
+		log.Fatalf("%s", "error: \n"+strings.Join(errs, "\n"))
 	}
 
 	// go openBrowser(url)

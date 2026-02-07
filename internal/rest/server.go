@@ -19,12 +19,17 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/pprof"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	rv8 "github.com/go-redis/redis/v8"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/zitadel/oidc/v2/pkg/client/rp"
 	httphelper "github.com/zitadel/oidc/v2/pkg/http"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -40,12 +45,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format/colors"
-	ginzap "github.com/gin-contrib/zap"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const ValidationErrorSeparator = "$$$$"
@@ -66,22 +65,22 @@ type Config struct {
 // TODO BuildServerConfig with implicit validation instead.
 func (c *Config) validate() error {
 	if c.Address == "" && os.Getenv("IS_TESTING") == "" {
-		return fmt.Errorf("no server address provided")
+		return errors.New("no server address provided")
 	}
 	if c.SpecPath == "" {
-		return fmt.Errorf("no openapi spec path provided")
+		return errors.New("no openapi spec path provided")
 	}
 	if c.Pool == nil {
-		return fmt.Errorf("no Postgres pool provided")
+		return errors.New("no Postgres pool provided")
 	}
 	if c.Redis == nil {
-		return fmt.Errorf("no Redis client provided")
+		return errors.New("no Redis client provided")
 	}
 	if c.Logger == nil {
-		return fmt.Errorf("no logger provided")
+		return errors.New("no logger provided")
 	}
 	if c.MovieSvcClient == nil {
-		return fmt.Errorf("no movie service client provided")
+		return errors.New("no movie service client provided")
 	}
 
 	return nil

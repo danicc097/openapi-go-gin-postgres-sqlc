@@ -11,10 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 type StreamRecorder struct {
@@ -43,7 +44,7 @@ func TestSSEStream(t *testing.T) {
 
 	res := NewStreamRecorder()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	srv, err := runTestServer(t, ctx, testPool,
 		func(c *gin.Context) {

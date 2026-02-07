@@ -7,9 +7,10 @@
 package postgresql_test
 
 import (
-	"context"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -17,7 +18,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/require"
 )
 
 func newRandomActivity(t *testing.T, d models.DBTX, project models.ProjectName) *models.Activity {
@@ -28,7 +28,7 @@ func newRandomActivity(t *testing.T, d models.DBTX, project models.ProjectName) 
 	// shared between projects, will require one as params.
 	ucp := postgresqlrandom.ActivityCreateParams(internal.ProjectIDByName[project])
 
-	activity, err := activityRepo.Create(context.Background(), d, ucp)
+	activity, err := activityRepo.Create(t.Context(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return activity
@@ -44,7 +44,7 @@ func newRandomDemoWorkItem(t *testing.T, d models.DBTX) *models.WorkItem {
 	kanbanStepID := internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]
 	cp := postgresqlrandom.DemoWorkItemCreateParams(kanbanStepID, workItemTypeID, team.TeamID)
-	dpwi, err := dpwiRepo.Create(context.Background(), d, cp)
+	dpwi, err := dpwiRepo.Create(t.Context(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return dpwi
@@ -57,7 +57,7 @@ func newRandomWorkItemTag(t *testing.T, d models.DBTX, projectID models.ProjectI
 
 	ucp := postgresqlrandom.WorkItemTagCreateParams(projectID)
 
-	wit, err := witRepo.Create(context.Background(), d, ucp)
+	wit, err := witRepo.Create(t.Context(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return wit
@@ -70,7 +70,7 @@ func newRandomTeam(t *testing.T, d models.DBTX, projectID models.ProjectID) *mod
 
 	ucp := postgresqlrandom.TeamCreateParams(projectID)
 
-	team, err := teamRepo.Create(context.Background(), d, ucp)
+	team, err := teamRepo.Create(t.Context(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return team
@@ -86,7 +86,7 @@ func newRandomDemoTwoWorkItem(t *testing.T, d models.DBTX) *models.WorkItem {
 	kanbanStepID := internal.DemoTwoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoTwoKanbanStepsValues())]
 	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoTwoWorkItemTypesValues())]
 	cp := postgresqlrandom.DemoTwoWorkItemCreateParams(kanbanStepID, workItemTypeID, team.TeamID)
-	dpwi, err := dpwiRepo.Create(context.Background(), d, cp)
+	dpwi, err := dpwiRepo.Create(t.Context(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return dpwi
@@ -101,7 +101,7 @@ func newRandomUser(t *testing.T, d models.DBTX) *models.User {
 
 	ucp := postgresqlrandom.UserCreateParams()
 
-	user, err := userRepo.Create(context.Background(), d, ucp)
+	user, err := userRepo.Create(t.Context(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return user
@@ -114,7 +114,7 @@ func newRandomTimeEntry(t *testing.T, d models.DBTX, activityID models.ActivityI
 
 	ucp := postgresqlrandom.TimeEntryCreateParams(activityID, userID, workItemID, teamID)
 
-	te, err := teRepo.Create(context.Background(), d, ucp)
+	te, err := teRepo.Create(t.Context(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return te
@@ -143,7 +143,7 @@ func newRandomWorkItemComment(t *testing.T, d models.DBTX, project models.Projec
 
 	cp := postgresqlrandom.WorkItemCommentCreateParams(user.UserID, workItemID)
 
-	workItemComment, err := workItemCommentRepo.Create(context.Background(), d, cp)
+	workItemComment, err := workItemCommentRepo.Create(t.Context(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return workItemComment

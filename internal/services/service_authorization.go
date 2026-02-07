@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // Role represents a predefined role that may be required
@@ -136,7 +137,7 @@ func (a *Authorization) HasRequiredRole(role Role, requiredRole models.Role) err
 func (a *Authorization) HasRequiredScopes(scopes models.Scopes, requiredScopes models.Scopes) error {
 	for _, rs := range requiredScopes {
 		if !slices.Contains(scopes, rs) {
-			return internal.NewErrorf(models.ErrorCodeUnauthorized, fmt.Sprintf("access restricted: missing scope %s", rs))
+			return internal.NewErrorf(models.ErrorCodeUnauthorized, "%s", fmt.Sprintf("access restricted: missing scope %s", rs))
 		}
 	}
 

@@ -19,7 +19,7 @@ func updateEntityWithParams(entity any, params any) {
 	paramsType := reflect.TypeOf(params).Elem()
 	paramsValue := reflect.ValueOf(params).Elem()
 
-	for i := 0; i < paramsType.NumField(); i++ {
+	for i := range paramsType.NumField() {
 		paramName := paramsType.Field(i).Name
 		paramValue := paramsValue.Field(i)
 

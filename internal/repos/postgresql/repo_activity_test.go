@@ -1,15 +1,15 @@
 package postgresql_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestActivity_ByIndexedQueries(t *testing.T) {
@@ -18,7 +18,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 	projectRepo := postgresql.NewProject()
 	activityRepo := postgresql.NewActivity()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	if err != nil {

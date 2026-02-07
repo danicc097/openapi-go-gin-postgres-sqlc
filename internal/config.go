@@ -119,7 +119,7 @@ func loadEnvToConfig(config any) error {
 		cfg = cfg.Elem()
 	}
 
-	for idx := 0; idx < cfg.NumField(); idx++ {
+	for idx := range cfg.NumField() {
 		fType := cfg.Type().Field(idx)
 		fld := cfg.Field(idx)
 

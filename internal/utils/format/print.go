@@ -19,7 +19,7 @@ func PrintJSONByTag(obj any, tag string) {
 	switch reflect.TypeOf(obj).Kind() {
 	case reflect.Slice:
 		s := reflect.ValueOf(obj)
-		for i := 0; i < s.Len(); i++ {
+		for i := range s.Len() {
 			PrintJSONByTag(s.Index(i).Interface(), tag)
 		}
 	default:

@@ -1,14 +1,14 @@
 package postgresql_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 )
 
 func TestAdvisoryLock(t *testing.T) {
@@ -28,25 +28,25 @@ func TestAdvisoryLock(t *testing.T) {
 		defer lock2.ReleaseConn()
 		require.NoError(t, err)
 
-		acquired, err := lock.TryLock(context.Background())
+		acquired, err := lock.TryLock(t.Context())
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
-		acquiredTwice, err := lock.TryLock(context.Background())
+		acquiredTwice, err := lock.TryLock(t.Context())
 		require.NoError(t, err)
 		assert.True(t, acquiredTwice)
 
 		locked := lock.Release()
 		require.True(t, locked)
 
-		acquired, err = lock2.TryLock(context.Background())
+		acquired, err = lock2.TryLock(t.Context())
 		require.NoError(t, err)
 		require.False(t, acquired, "Should have failed to acquire lock after only one release")
 
 		locked = lock.Release()
 		require.False(t, locked)
 
-		acquired, err = lock2.TryLock(context.Background())
+		acquired, err = lock2.TryLock(t.Context())
 		require.NoError(t, err)
 		require.True(t, acquired, "Should have acquired lock after second release")
 
@@ -73,11 +73,11 @@ func TestAdvisoryLock(t *testing.T) {
 		defer lockOwner.ReleaseConn()
 		require.NoError(t, err)
 
-		acquired, err := lockOwner.TryLock(context.Background())
+		acquired, err := lockOwner.TryLock(t.Context())
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
-		acquired, err = lock.TryLock(context.Background())
+		acquired, err = lock.TryLock(t.Context())
 		require.NoError(t, err)
 		require.False(t, acquired)
 
@@ -88,7 +88,7 @@ func TestAdvisoryLock(t *testing.T) {
 		err = lock.WaitForRelease(100, 50*time.Millisecond)
 		require.NoError(t, err)
 
-		lockAcquiredAfterWait, err := lock.TryLock(context.Background())
+		lockAcquiredAfterWait, err := lock.TryLock(t.Context())
 		require.NoError(t, err)
 		require.True(t, lockAcquiredAfterWait)
 

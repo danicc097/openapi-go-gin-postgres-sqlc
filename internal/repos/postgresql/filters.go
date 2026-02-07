@@ -110,18 +110,18 @@ func GenerateDefaultFilters(entity models.TableEntity, paginationParams models.P
 					case min != nil && max != nil:
 						filters[fmt.Sprintf("%[1]s > $i AND %[1]s < $i", dbfilter.Db)] = []interface{}{min, max}
 					case min != nil:
-						filters[fmt.Sprintf("%[1]s > $i", dbfilter.Db)] = []interface{}{min}
+						filters[dbfilter.Db+" > $i"] = []interface{}{min}
 					case max != nil:
-						filters[fmt.Sprintf("%[1]s < $i", dbfilter.Db)] = []interface{}{max}
+						filters[dbfilter.Db+" < $i"] = []interface{}{max}
 					}
 				} else {
 					switch {
 					case min != nil && max != nil:
 						filters[fmt.Sprintf("%[1]s >= $i AND %[1]s <= $i", dbfilter.Db)] = []interface{}{min, max}
 					case min != nil:
-						filters[fmt.Sprintf("%[1]s >= $i", dbfilter.Db)] = []interface{}{min}
+						filters[dbfilter.Db+" >= $i"] = []interface{}{min}
 					case max != nil:
-						filters[fmt.Sprintf("%[1]s <= $i", dbfilter.Db)] = []interface{}{max}
+						filters[dbfilter.Db+" <= $i"] = []interface{}{max}
 					}
 				}
 			}

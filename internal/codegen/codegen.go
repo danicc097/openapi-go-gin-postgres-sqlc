@@ -19,13 +19,12 @@ import (
 	"strings"
 	"text/template"
 
-	"mvdan.cc/gofumpt/format"
-
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/iancoleman/strcase"
 	"github.com/kenshaw/snaker"
+	"mvdan.cc/gofumpt/format"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
@@ -290,7 +289,7 @@ func (o *CodeGen) analyzeSpec() error {
 	}
 
 	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, "\n"))
+		return fmt.Errorf("%s", strings.Join(errors, "\n"))
 	}
 
 	return nil
@@ -507,7 +506,7 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf(strings.Join(errs, "\n"))
+		return fmt.Errorf("%s", strings.Join(errs, "\n"))
 	}
 
 	return nil
@@ -531,11 +530,11 @@ func (o *CodeGen) implementServerInterfaceMethods() error {
 		f, err := os.OpenFile(m.handlersFile,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
-			return fmt.Errorf("could not open file: %s", err)
+			return fmt.Errorf("could not open file: %w", err)
 		}
 		defer f.Close()
 		if _, err := f.WriteString(methodStr); err != nil {
-			return fmt.Errorf("could not write to file: %s", err)
+			return fmt.Errorf("could not write to file: %w", err)
 		}
 	}
 

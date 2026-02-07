@@ -7,6 +7,8 @@
 Example full stack app with an API-first and Database-first approach with OpenAPI v3, sqlc+xo codegen,
 generated backend, frontend client and validators and an unimaginative title.
 
+> NOTE: _This is a fever dream, though some features may inspire you regardless._
+
 ## What's this for?
 
 An example fully featured app to showcase how an OpenAPI v3 spec and database

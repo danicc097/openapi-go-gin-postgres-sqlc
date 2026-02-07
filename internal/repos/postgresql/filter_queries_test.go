@@ -1,7 +1,6 @@
 package postgresql_test
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -34,7 +33,7 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 			var err error
 
 			args := []reflect.Value{
-				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(t.Context()),
 				reflect.ValueOf(testPool),
 			}
 
@@ -62,7 +61,7 @@ func runGenericFilterTests[T any](t *testing.T, tc filterTestCase[T]) {
 			var err error
 
 			args := []reflect.Value{
-				reflect.ValueOf(context.Background()),
+				reflect.ValueOf(t.Context()),
 				reflect.ValueOf(testPool),
 			}
 
@@ -116,7 +115,7 @@ func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 			args = append(args, reflect.ValueOf(uuid.Nil))
 		}
 	case reflect.Slice: // assume testing with multiple parameters
-		for i := 0; i < filter.Len(); i++ {
+		for i := range filter.Len() {
 			elem := filter.Index(i)
 			elemArgs, err := buildFilterArgs(elem, zero)
 			if err != nil {

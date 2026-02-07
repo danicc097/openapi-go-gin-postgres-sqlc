@@ -1,7 +1,6 @@
 package rest_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -12,11 +11,11 @@ import (
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.setupCleanup(t)
 
-	res, err := srv.client.PingWithResponse(context.Background())
+	res, err := srv.client.PingWithResponse(t.Context())
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))

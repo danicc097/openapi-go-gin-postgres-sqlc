@@ -1,8 +1,11 @@
 package services_test
 
 import (
-	"context"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
@@ -10,9 +13,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/jackc/pgx/v5"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type testUsers struct {
@@ -93,7 +93,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
-			ctx := context.Background()
+			ctx := t.Context()
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
@@ -291,7 +291,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
-			ctx := context.Background()
+			ctx := t.Context()
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
@@ -325,27 +325,27 @@ func createTestUsers(t *testing.T) testUsers {
 
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	guest := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	guest := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		Role:       models.RoleGuest,
 		WithAPIKey: true,
 	})
 
-	user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	user := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		Role:       models.RoleUser,
 		WithAPIKey: true,
 	})
 
-	advancedUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	advancedUser := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdvancedUser,
 		WithAPIKey: true,
 	})
 
-	manager := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	manager := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		Role:       models.RoleManager,
 		WithAPIKey: true,
 	})
 
-	admin := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	admin := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})

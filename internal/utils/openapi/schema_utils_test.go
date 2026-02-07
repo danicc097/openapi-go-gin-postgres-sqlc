@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// .nolint: gochecknoglobals
+// .nolint: gochecknoglobals.
 var (
 	explode   = openapi3.BoolPtr(true)
 	noExplode = openapi3.BoolPtr(false)
@@ -20,7 +20,7 @@ var (
 		if len(args)%2 != 0 {
 			panic("invalid arguments. must be an even number of arguments")
 		}
-		for i := 0; i < len(args)/2; i++ {
+		for i := range len(args) / 2 {
 			propName, _ := args[i*2].(string)
 			propSchema, _ := args[i*2+1].(*openapi3.SchemaRef)
 			s.Value.Properties[propName] = propSchema

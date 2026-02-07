@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -25,17 +26,17 @@ func formatCursorValue(value interface{}) (string, error) {
 // This allows for dynamic pagination parameters.
 func getNextCursor(entity interface{}, jsonFieldName string, tableEntity models.TableEntity) (string, error) {
 	if entity == nil {
-		return "", fmt.Errorf("no entity given")
+		return "", errors.New("no entity given")
 	}
 
 	if _, ok := models.EntityFields[tableEntity]; !ok {
-		return "", fmt.Errorf("no entity found")
+		return "", errors.New("no entity found")
 	}
 
 	entityType := reflect.TypeOf(entity)
 	entityValue := reflect.ValueOf(entity)
 
-	for i := 0; i < entityType.NumField(); i++ {
+	for i := range entityType.NumField() {
 		structField := entityType.Field(i)
 		jsonTag := structField.Tag.Get("json")
 		if jsonTag == jsonFieldName {

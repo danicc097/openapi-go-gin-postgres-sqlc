@@ -3,6 +3,7 @@ package rest_test
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,24 +11,22 @@ import (
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/gin-gonic/gin"
+	redis "github.com/go-redis/redis/v8"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/stretchr/testify/assert"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	redis "github.com/go-redis/redis/v8"
-	"github.com/stretchr/testify/assert"
-
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/gin-gonic/gin"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/sdk/trace/tracetest"
-
-	_ "embed"
 )
 
 var (
@@ -73,7 +72,7 @@ type testServer struct {
 func (s *testServer) setupCleanup(t *testing.T) {
 	t.Cleanup(func() {
 		s.server.Close()
-		s.tp.Shutdown(context.Background())
+		s.tp.Shutdown(t.Context())
 	})
 }
 

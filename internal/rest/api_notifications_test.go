@@ -1,18 +1,18 @@
 package rest_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetPaginatedNotificationsRoute(t *testing.T) {
@@ -20,7 +20,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, context.Background(), testPool)
+	srv, err := runTestServer(t, t.Context(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -30,15 +30,15 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 	t.Run("user notifications", func(t *testing.T) {
 		t.Parallel()
 
-		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(t.Context(), servicetestutil.CreateUserParams{
 			WithAPIKey: true,
 		})
 		require.NoError(t, err)
 
-		notification := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.UserID})
+		notification := ff.CreatePersonalNotification(t.Context(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.UserID})
 
 		p := &models.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: pointers.New("0")}
-		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))
+		nres, err := srv.client.GetPaginatedNotificationsWithResponse(t.Context(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, nres.StatusCode())
 
@@ -48,6 +48,6 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		assert.EqualValues(t, fmt.Sprint(notification.UserNotificationID), *body.Page.NextCursor)
 		// this would actually be a duplicated test
 		assert.Len(t, *body.Items, 1)
-		assert.True(t, (*body.Items)[0].UserID == ufixture.UserID)
+		assert.Equal(t, (*body.Items)[0].UserID, ufixture.UserID)
 	})
 }

@@ -8,14 +8,15 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // ErrorHandler is called when there is an error in validation.
@@ -164,7 +165,7 @@ func ValidateRequestFromContext(c *gin.Context, router routers.Router, options *
 		case *routers.RouteError:
 			// We've got a bad request, the path requested doesn't match
 			// either server, or path, or something.
-			return internal.NewErrorf(models.ErrorCodeRequestValidation, e.Reason)
+			return internal.NewErrorf(models.ErrorCodeRequestValidation, "%s", e.Reason)
 		default:
 			// This should never happen today, but if our upstream code changes,
 			// we don't want to crash the server, so handle the unexpected error.

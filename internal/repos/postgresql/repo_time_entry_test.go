@@ -1,15 +1,15 @@
 package postgresql_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTimeEntry_ByIndexedQueries(t *testing.T) {
@@ -43,7 +43,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 		// test num_nonnulls which is repo's responsibility
 		ucp := postgresqlrandom.TimeEntryCreateParams(activity.ActivityID, user.UserID, nil, nil)
 
-		_, err := timeEntryRepo.Create(context.Background(), testPool, ucp)
+		_, err := timeEntryRepo.Create(t.Context(), testPool, ucp)
 		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

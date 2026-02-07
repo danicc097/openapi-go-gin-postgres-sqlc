@@ -225,11 +225,9 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	}()
 
 	go func() {
-		log.Printf("Listening and serving on http://localhost" + addr)
+		log.Printf("%s", "Listening and serving on http://localhost"+addr)
 
-		var err error
-
-		err = httpsrv.ListenAndServe()
+		var err error = httpsrv.ListenAndServe()
 
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errC <- err

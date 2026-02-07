@@ -6,14 +6,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kenshaw/snaker"
 
-	"github.com/jackc/pgerrcode"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 )
 
 var errorUniqueViolationRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
@@ -36,7 +36,7 @@ func ParseDBErrorDetail(err error) error {
 
 	if errors.As(err, &xoErr) {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return internal.NewErrorf(models.ErrorCodeNotFound, xoErr.Entity+" not found")
+			return internal.NewErrorf(models.ErrorCodeNotFound, "%s", xoErr.Entity+" not found")
 		}
 	}
 
@@ -71,10 +71,10 @@ func ParseDBErrorDetail(err error) error {
 				columns := strings.Split(column, ", ")
 				values := strings.Split(value, ", ")
 				multierr := []string{}
-				for i := 0; i < len(columns); i++ {
+				for i := range len(columns) {
 					multierr = append(multierr, fmt.Sprintf("%s=%s", snaker.ForceLowerCamelIdentifier(columns[i]), values[i]))
 				}
-				msg = fmt.Sprintf("combination of %s", slices.JoinWithAnd(multierr))
+				msg = "combination of " + slices.JoinWithAnd(multierr)
 			}
 
 			msgSuffix := ""
@@ -87,13 +87,13 @@ func ParseDBErrorDetail(err error) error {
 				code = models.ErrorCodeAlreadyExists
 			}
 
-			newErr = internal.NewErrorWithLocf(code, loc, msg+msgSuffix)
+			newErr = internal.NewErrorWithLocf(code, loc, "%s", msg+msgSuffix)
 		default:
 			msg := pgErr.Message // always set
 			if pgErr.Detail != "" {
 				msg += fmt.Sprintf(" (%s)", pgErr.Detail)
 			}
-			newErr = internal.NewErrorf(models.ErrorCodeUnknown, msg)
+			newErr = internal.NewErrorf(models.ErrorCodeUnknown, "%s", msg)
 		}
 	}
 

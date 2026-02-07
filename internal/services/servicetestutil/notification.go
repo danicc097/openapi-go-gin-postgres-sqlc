@@ -2,13 +2,14 @@ package servicetestutil
 
 import (
 	"context"
-	"fmt"
+	"strconv"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/stretchr/testify/require"
 )
 
 type CreateNotificationParams struct {
@@ -23,7 +24,7 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: models.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
-			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
+			Labels:           []string{"label " + strconv.Itoa(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.UserID,
@@ -44,7 +45,7 @@ func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params C
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: models.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
-			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
+			Labels:           []string{"label " + strconv.Itoa(testutil.RandomInt(1, 9999))},
 			Link:             pointers.New("https://somelink"),
 			Title:            testutil.RandomNameIdentifier(0, "-"),
 			Sender:           admin.UserID,

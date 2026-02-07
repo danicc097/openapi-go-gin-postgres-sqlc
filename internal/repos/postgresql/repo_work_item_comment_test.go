@@ -1,17 +1,17 @@
 package postgresql_test
 
 import (
-	"context"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWorkItemComment_Update(t *testing.T) {
@@ -52,7 +52,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 			t.Parallel()
 
 			r := postgresql.NewWorkItemComment()
-			got, err := r.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
+			got, err := r.Update(t.Context(), testPool, tc.args.id, &tc.args.params)
 			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 
@@ -104,10 +104,10 @@ func TestWorkItemComment_Delete(t *testing.T) {
 			t.Parallel()
 
 			workItemCommentRepo := postgresql.NewWorkItemComment()
-			_, err := workItemCommentRepo.Delete(context.Background(), testPool, tc.args.id)
+			_, err := workItemCommentRepo.Delete(t.Context(), testPool, tc.args.id)
 			require.NoError(t, err)
 
-			_, err = workItemCommentRepo.ByID(context.Background(), testPool, tc.args.id)
+			_, err = workItemCommentRepo.ByID(t.Context(), testPool, tc.args.id)
 			require.ErrorContains(t, err, errNoRows)
 			/* row was deleted
 			workitemcomment, err = workItemCommentRepo.ByID(context.Background(), testPool, tc.args.id, db.WithDeletedWorkItemCommentOnly())
