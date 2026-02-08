@@ -59,7 +59,9 @@ manual instrumentation) and backend services (manual instrumentation) via
 Jaeger, TimescaleDB and ~~Promscale~~ (discontinued, should look at options like
 `mimir`).
 
-Example generated form with tracing:
+## Example generated form with tracing:
+
+By logging in with one of the predefined auth server users and visiting `https://localhost:3020/project/create-work-item-tag`:
 
 <details>
 <img
