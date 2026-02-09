@@ -130,7 +130,7 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 	v := params.Value
 	s := params.Schema
 
-	reflectEnum(s, "", v.Interface())
+	reflectEnum(params.Context, s, "", "", v.Interface())
 
 	var e Exposer
 
@@ -543,15 +543,23 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 	return schema, nil
 }
 
-func checkTextMarshaler(t reflect.Type, schema *Schema) bool {
+func isTextMarshaler(t reflect.Type) bool {
 	if (t.Implements(typeOfTextUnmarshaler) || reflect.PtrTo(t).Implements(typeOfTextUnmarshaler)) &&
 		(t.Implements(typeOfTextMarshaler) || reflect.PtrTo(t).Implements(typeOfTextMarshaler)) {
 		if !t.Implements(typeOfJSONMarshaler) && !reflect.PtrTo(t).Implements(typeOfJSONMarshaler) {
-			schema.TypeEns().WithSimpleTypes(String)
-			schema.Type.SliceOfSimpleTypeValues = nil
-
 			return true
 		}
+	}
+
+	return false
+}
+
+func checkTextMarshaler(t reflect.Type, schema *Schema) bool {
+	if isTextMarshaler(t) {
+		schema.TypeEns().WithSimpleTypes(String)
+		schema.Type.SliceOfSimpleTypeValues = nil
+
+		return true
 	}
 
 	return false
@@ -867,9 +875,26 @@ func (r *Reflector) kindSwitch(t reflect.Type, v reflect.Value, schema *Schema, 
 			itemValue = v.Index(0).Interface()
 		}
 
+		prevTagPrefix := rc.parentTagPrefix
+		defer func() {
+			rc.parentTagPrefix = prevTagPrefix
+		}()
+
+		rc.parentTagPrefix += "items."
+
 		itemsSchema, err := r.reflect(itemValue, rc, false, schema)
 		if err != nil {
 			return err
+		}
+
+		if rc.parentStructField != nil && itemsSchema.Ref == nil {
+			if err := refl.PopulateFieldsFromTags(&itemsSchema, rc.parentStructField.Tag, func(o *refl.FieldsFromTagsOptions) {
+				o.TagPrefix = rc.parentTagPrefix
+			}); err != nil {
+				return err
+			}
+
+			reflectEnum(rc, &itemsSchema, rc.parentTagPrefix, rc.parentStructField.Tag, itemValue)
 		}
 
 		schema.AddType(Array)
@@ -898,9 +923,26 @@ func (r *Reflector) kindSwitch(t reflect.Type, v reflect.Value, schema *Schema, 
 			}
 		}
 
+		prevTagPrefix := rc.parentTagPrefix
+		defer func() {
+			rc.parentTagPrefix = prevTagPrefix
+		}()
+
+		rc.parentTagPrefix += "additionalProperties."
+
 		additionalPropertiesSchema, err := r.reflect(itemValue, rc, false, schema)
 		if err != nil {
 			return err
+		}
+
+		if rc.parentStructField != nil && additionalPropertiesSchema.Ref == nil {
+			if err := refl.PopulateFieldsFromTags(&additionalPropertiesSchema, rc.parentStructField.Tag, func(o *refl.FieldsFromTagsOptions) {
+				o.TagPrefix = rc.parentTagPrefix
+			}); err != nil {
+				return err
+			}
+
+			reflectEnum(rc, &additionalPropertiesSchema, rc.parentTagPrefix, rc.parentStructField.Tag, itemValue)
 		}
 
 		schema.AddType(Object)
@@ -1032,8 +1074,9 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 		}
 
 		deepIndirect := refl.DeepIndirect(field.Type)
+		propName := strings.Split(tag, ",")[0]
 
-		if tag == "" && field.Anonymous &&
+		if propName == "" && field.Anonymous &&
 			(field.Type.Kind() == reflect.Struct || deepIndirect.Kind() == reflect.Struct) {
 			forceReference := (field.Type.Implements(typeOfEmbedReferencer) && field.Tag.Get("refer") == "") ||
 				field.Tag.Get("refer") == "true"
@@ -1089,7 +1132,6 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			continue
 		}
 
-		propName := strings.Split(tag, ",")[0]
 		omitEmpty := strings.Contains(tag, ",omitempty")
 		required := false
 
@@ -1134,6 +1176,9 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			}
 		}
 
+		f := field
+		rc.parentStructField = &f
+
 		propertySchema, err := r.reflect(fieldVal, rc, true, parent)
 		if err != nil {
 			if errors.Is(err, ErrSkipProperty) {
@@ -1142,6 +1187,8 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 
 			return err
 		}
+
+		rc.parentStructField = nil
 
 		checkNullability(&propertySchema, rc, ft, omitEmpty, nullable)
 
@@ -1161,20 +1208,15 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 			return err
 		}
 
-		deprecated := false
-		if err := refl.ReadBoolTag(field.Tag, "deprecated", &deprecated); err != nil {
-			return err
-		} else if deprecated {
-			propertySchema.WithExtraPropertiesItem("deprecated", true)
-		}
-
 		if !rc.SkipNonConstraints {
 			if err := reflectExamples(rc, &propertySchema, field); err != nil {
 				return err
 			}
 		}
 
-		reflectEnum(&propertySchema, field.Tag, nil)
+		if propertySchema.Ref == nil {
+			reflectEnum(rc, &propertySchema, "", field.Tag, fieldVal)
+		}
 
 		// Remove temporary kept type from referenced schema.
 		if propertySchema.Ref != nil {
@@ -1381,9 +1423,14 @@ func reflectExample(rc *ReflectContext, propertySchema *Schema, field reflect.St
 	return nil
 }
 
-func reflectEnum(schema *Schema, fieldTag reflect.StructTag, fieldVal interface{}) {
+func reflectEnum(rc *ReflectContext, schema *Schema, tagPrefix string, fieldTag reflect.StructTag, fieldVal interface{}) {
 	enum := enum{}
-	enum.loadFromField(fieldTag, fieldVal)
+	enum.loadFromField(tagPrefix, fieldTag, fieldVal)
+
+	enumNames := XEnumNames
+	if rc.EnumNames != "" {
+		enumNames = rc.EnumNames
+	}
 
 	if len(enum.items) > 0 {
 		schema.Enum = enum.items
@@ -1392,19 +1439,18 @@ func reflectEnum(schema *Schema, fieldTag reflect.StructTag, fieldVal interface{
 				schema.ExtraProperties = make(map[string]interface{}, 1)
 			}
 
-			schema.ExtraProperties[XEnumNames] = enum.names
+			schema.ExtraProperties[enumNames] = enum.names
 		}
 	}
 }
 
-// enum can be use for sending enum data that need validate.
 type enum struct {
 	items []interface{}
 	names []string
 }
 
 // loadFromField loads enum from field tag: json array or comma-separated string.
-func (enum *enum) loadFromField(fieldTag reflect.StructTag, fieldVal interface{}) {
+func (enum *enum) loadFromField(tagPrefix string, fieldTag reflect.StructTag, fieldVal interface{}) {
 	fv := reflect.ValueOf(fieldVal)
 
 	if e, isEnumer := safeInterface(fv).(NamedEnum); isEnumer {
@@ -1419,21 +1465,58 @@ func (enum *enum) loadFromField(fieldTag reflect.StructTag, fieldVal interface{}
 		enum.items = e.Enum()
 	}
 
-	if enumTag := fieldTag.Get("enum"); enumTag != "" {
+	if enumTag := fieldTag.Get(tagPrefix + "enum"); enumTag != "" {
 		var e []interface{}
 
 		err := json.Unmarshal([]byte(enumTag), &e)
 		if err != nil {
-			es := strings.Split(enumTag, ",")
-			e = make([]interface{}, len(es))
-
-			for i, s := range es {
-				e[i] = s
-			}
+			e = enum.inferType(enumTag, fv)
 		}
 
 		enum.items = e
 	}
+}
+
+func (enum *enum) inferType(enumTag string, fv reflect.Value) []interface{} {
+	es := strings.Split(enumTag, ",")
+	e := make([]interface{}, 0, len(es))
+
+	if isTextMarshaler(fv.Type()) {
+		for _, s := range es {
+			e = append(e, s)
+		}
+
+		return e
+	}
+
+	switch {
+	case strings.HasPrefix(fv.Kind().String(), "int"):
+		for _, s := range es {
+			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
+				e = append(e, v)
+			}
+		}
+	case strings.HasPrefix(fv.Kind().String(), "uint"):
+		for _, s := range es {
+			if v, err := strconv.ParseUint(s, 10, 64); err == nil {
+				e = append(e, v)
+			}
+		}
+
+	case strings.HasPrefix(fv.Kind().String(), "float"):
+		for _, s := range es {
+			if v, err := strconv.ParseFloat(s, 64); err == nil {
+				e = append(e, v)
+			}
+		}
+
+	default:
+		for _, s := range es {
+			e = append(e, s)
+		}
+	}
+
+	return e
 }
 
 type (
