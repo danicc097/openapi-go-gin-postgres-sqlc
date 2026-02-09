@@ -27,7 +27,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/gzuidhof/tygo v0.2.14
 	github.com/iancoleman/strcase v0.3.0
@@ -47,17 +47,17 @@ require (
 	github.com/prometheus/client_golang v1.19.0
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/jsonschema-go v0.3.72
 	github.com/swaggest/openapi-go v0.2.53
 	github.com/zitadel/oidc/v2 v2.12.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.49.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.27.0
-	go.opentelemetry.io/otel v1.27.0
+	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.27.0
 	go.opentelemetry.io/otel/sdk v1.27.0
-	go.opentelemetry.io/otel/trace v1.27.0
+	go.opentelemetry.io/otel/trace v1.40.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
 	golang.org/x/sync v0.19.0
@@ -74,7 +74,7 @@ require (
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20240618133044-5a0af90af097 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gorilla/schema v1.2.1 // indirect
@@ -103,7 +103,8 @@ require (
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	github.com/zitadel/logging v0.6.0 // indirect
-	go.opentelemetry.io/otel/metric v1.27.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
+	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
@@ -113,7 +114,7 @@ require (
 
 require (
 	github.com/alicebob/miniredis/v2 v2.32.1
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
