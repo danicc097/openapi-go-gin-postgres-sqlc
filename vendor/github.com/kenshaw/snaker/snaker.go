@@ -5,69 +5,21 @@
 package snaker
 
 import (
-	"regexp"
 	"strings"
 	"unicode"
 )
 
-func init() {
-	// initialize common default initialisms.
-	DefaultInitialisms = NewDefaultInitialisms()
-}
+// DefaultInitialisms is the set of default (common) initialisms used by the
+// package level conversions funcs.
+var DefaultInitialisms *Initialisms
 
-// CommonInitialisms returns the set of common initialisms.
-//
-// Originally built from the list in golang.org/x/lint @ 738671d.
-//
-// Note: golang.org/x/lint has since been deprecated, and some additional
-// initialisms have since been added.
-func CommonInitialisms() []string {
-	return []string{
-		"ACL",
-		"API",
-		"ASCII",
-		"CPU",
-		"CSS",
-		"DNS",
-		"EOF",
-		"GUID",
-		"HTML",
-		"HTTPS",
-		"HTTP",
-		"ID",
-		"IP",
-		"JSON",
-		"LHS",
-		"QPS",
-		"RAM",
-		"RHS",
-		"RPC",
-		"SLA",
-		"SMTP",
-		"SQL",
-		"SSH",
-		"TCP",
-		"TLS",
-		"TTL",
-		"UDP",
-		"UID",
-		"UI",
-		"URI",
-		"URL",
-		"UTC",
-		"UTF8",
-		"UUID",
-		"VM",
-		"XML",
-		"XMPP",
-		"XSRF",
-		"XSS",
-		"YAML",
+func init() {
+	// initialize common default initialisms
+	var err error
+	if DefaultInitialisms, err = NewDefaultInitialisms(); err != nil {
+		panic(err)
 	}
 }
-
-// DefaultInitialisms is a set of default (common) initialisms.
-var DefaultInitialisms *Initialisms
 
 // CamelToSnake converts name from camel case ("AnIdentifier") to snake case
 // ("an_identifier").
@@ -104,22 +56,9 @@ func ForceLowerCamelIdentifier(name string) string {
 	return DefaultInitialisms.ForceLowerCamelIdentifier(name)
 }
 
-// Peek returns the next longest possible initialism in r.
-func Peek(r []rune) string {
-	return DefaultInitialisms.Peek(r)
-}
-
 // IsInitialism indicates whether or not s is a registered initialism.
 func IsInitialism(s string) bool {
-	return DefaultInitialisms.IsInitialism(s)
-}
-
-// IsIdentifierChar determines if ch is a valid character for a Go identifier.
-//
-// See: go/src/go/scanner/scanner.go
-func IsIdentifierChar(ch rune) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= 0x80 && unicode.IsLetter(ch) ||
-		'0' <= ch && ch <= '9' || ch >= 0x80 && unicode.IsDigit(ch)
+	return DefaultInitialisms.Is(s)
 }
 
 // ToIdentifier cleans s so that it is usable as an identifier.
@@ -131,33 +70,126 @@ func IsIdentifierChar(ch rune) bool {
 //
 // Makes no changes to case.
 func ToIdentifier(s string) string {
-	// replace bad chars with _
-	s = subUnderscores(strings.TrimSpace(s))
-	// fix 2 or more __ and remove leading numbers/underscores
-	s = underscoreRE.ReplaceAllString(s, "_")
-	s = leadingRE.ReplaceAllString(s, "_")
-	// remove leading/trailing underscores
-	s = strings.TrimLeft(s, "_")
-	s = strings.TrimRight(s, "_")
+	return toIdent(s, '_')
+}
+
+// ToKebab changes s to kebab case.
+//
+// Substitutes invalid characters with a hyphen, removes any leading
+// numbers/hyphens, and removes trailing hyphens.
+//
+// Additionally collapses multiple hyphens to a single hyphen.
+//
+// Converts the string to lower case.
+func ToKebab(s string) string {
+	return strings.ToLower(toIdent(s, '-'))
+}
+
+// CommonInitialisms returns the set of common initialisms.
+//
+// Originally built from the list in golang.org/x/lint @ 738671d.
+//
+// Note: golang.org/x/lint has since been deprecated, and some additional
+// initialisms have since been added.
+func CommonInitialisms() []string {
+	return []string{
+		"ACL",
+		"API",
+		"ASCII",
+		"CPU",
+		"CSS",
+		"CSV",
+		"DNS",
+		"EOF",
+		"GPU",
+		"GUID",
+		"HTML",
+		"HTTP",
+		"HTTPS",
+		"ID",
+		"IP",
+		"JSON",
+		"LHS",
+		"QPS",
+		"RAM",
+		"RHS",
+		"RPC",
+		"SLA",
+		"SMTP",
+		"SQL",
+		"SSH",
+		"TCP",
+		"TLS",
+		"TSV",
+		"TTL",
+		"UDP",
+		"UI",
+		"UID",
+		"URI",
+		"URL",
+		"UTC",
+		"UTF8",
+		"UUID",
+		"VM",
+		"XML",
+		"XMPP",
+		"XSRF",
+		"XSS",
+		"YAML",
+	}
+}
+
+// CommonPlurals returns initialisms that have a common plural of s.
+func CommonPlurals() []string {
+	return []string{
+		"ACL",
+		"API",
+		"CPU",
+		"CSV",
+		"GPU",
+		"GUID",
+		"ID",
+		"IP",
+		"TSV",
+		"UID",
+		"URI",
+		"URL",
+		"UUID",
+		"VM",
+	}
+}
+
+// toIdent converts s to a identifier.
+func toIdent(s string, c rune) string {
+	// replace bad chars with c, and compact multiple c to single
+	s = sub(strings.TrimSpace(s), c)
+	// remove leading numbers and c
+	s = strings.TrimLeftFunc(s, func(r rune) bool {
+		return unicode.IsNumber(r) || c == r
+	})
+	// remove trailing c
+	s = strings.TrimRightFunc(s, func(r rune) bool {
+		return c == r
+	})
 	return s
 }
 
-// underscoreRE matches underscores.
-var underscoreRE = regexp.MustCompile(`_+`)
-
-// leadingRE matches leading numbers.
-var leadingRE = regexp.MustCompile(`^[0-9_]+`)
-
-// subUnderscores substitues underscrose in place of runes that are invalid for
+// sub substitutes underscrose in place of runes that are invalid for
 // Go identifiers.
-func subUnderscores(s string) string {
-	var r []rune
-	for _, c := range s {
-		if IsIdentifierChar(c) {
-			r = append(r, c)
-		} else {
-			r = append(r, '_')
+func sub(s string, c rune) string {
+	r := []rune(s)
+	for i, ch := range r {
+		if !isIdentifierChar(ch) {
+			r[i] = c
 		}
 	}
 	return string(r)
+}
+
+// isIdentifierChar determines if ch is a valid character for a Go identifier.
+//
+// See: go/src/go/scanner/scanner.go.
+func isIdentifierChar(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch >= 0x80 && unicode.IsLetter(ch) ||
+		'0' <= ch && ch <= '9' || ch >= 0x80 && unicode.IsDigit(ch)
 }
