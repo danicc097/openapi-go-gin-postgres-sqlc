@@ -37,7 +37,7 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kenshaw/inflector v0.2.0
-	github.com/kenshaw/snaker v0.2.0
+	github.com/kenshaw/snaker v0.4.3
 	github.com/oapi-codegen/oapi-codegen/v2 v2.3.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/oapi-codegen/testutil v1.1.0

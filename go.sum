@@ -258,8 +258,8 @@ github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHm
 github.com/juju/gnuflag v0.0.0-20171113085948-2ce1bb71843d/go.mod h1:2PavIy+JPciBPrBUjwbNvtwB6RQlve+hkpll6QSNmOE=
 github.com/kenshaw/inflector v0.2.0 h1:6HuXXlzqIIptlIkKvZ4fFSgfr0opnV6/LVIg+1+DlqY=
 github.com/kenshaw/inflector v0.2.0/go.mod h1:g5nxVgwZsIPE0eesk201Sp4YBwDDHZDfJHl6L2PUTM4=
-github.com/kenshaw/snaker v0.2.0 h1:DPlxCtAv9mw1wSsvIN1khUAPJUIbFJUckMIDWSQ7TC8=
-github.com/kenshaw/snaker v0.2.0/go.mod h1:DNyRUqHMZ18/zioxr6R7m4kSxxf2+QmB0BXoORsXRaY=
+github.com/kenshaw/snaker v0.4.3 h1:KhB7v9iouD5RdMvAIRfaj7y3tGTpufLjxQiF7NIikwo=
+github.com/kenshaw/snaker v0.4.3/go.mod h1:SChlK7Kp/gq+iwlBqzIW4rimhwpw40HGqRtZbn38M+w=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.2.7 h1:ZWSB3igEs+d0qvnxR/ZBzXVmxkgt8DdzP6m9pfuVLDM=
