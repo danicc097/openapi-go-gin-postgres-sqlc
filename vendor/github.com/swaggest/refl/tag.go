@@ -41,10 +41,10 @@ type WalkFieldFn func(v reflect.Value, sf reflect.StructField, path []reflect.St
 
 // WalkFieldsRecursively walks scalar and non-scalar fields of a struct recursively and calls user function on them.
 func WalkFieldsRecursively(v reflect.Value, f WalkFieldFn) {
-	walkFieldsRecursively(v, f, nil)
+	walkFieldsRecursively(v, f, nil, make(map[reflect.Type]struct{}))
 }
 
-func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.StructField) {
+func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.StructField, visited map[reflect.Type]struct{}) {
 	if v.Kind() == 0 {
 		return
 	}
@@ -69,8 +69,14 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 		if v.IsValid() {
 			fieldVal = v.Field(i)
 		} else {
+			if _, ok := visited[field.Type]; ok {
+				continue
+			}
+
 			fieldVal = reflect.Zero(field.Type)
 		}
+
+		visited[field.Type] = struct{}{}
 
 		if fieldVal.CanAddr() {
 			fieldVal = fieldVal.Addr()
@@ -89,10 +95,14 @@ func walkFieldsRecursively(v reflect.Value, f WalkFieldFn, path []reflect.Struct
 				pp += "." + p.Name
 			}
 
+			for k := range visited {
+				println("visited:", k.String())
+			}
+
 			panic("too deep recursion, possible cyclic reference: " + pp)
 		}
 
-		walkFieldsRecursively(fieldVal, f, append(path, field))
+		walkFieldsRecursively(fieldVal, f, append(path, field), visited)
 	}
 }
 
@@ -291,16 +301,37 @@ func JoinErrors(errs ...error) error {
 	return nil
 }
 
+// FieldsFromTagsOptions controls advanced behavior of PopulateFieldsFromTags.
+type FieldsFromTagsOptions struct {
+	// TagPrefix adds a prefix to looked up tags, for example "items.".
+	TagPrefix string
+
+	// FieldToTag defines how Go field name is mapped into a tag name.
+	// Default is lowercasing first char.
+	FieldToTag func(field string) string
+}
+
 // PopulateFieldsFromTags extracts values from field tag and puts them in according property of structPtr.
-func PopulateFieldsFromTags(structPtr interface{}, fieldTag reflect.StructTag) error {
+func PopulateFieldsFromTags(structPtr interface{}, fieldTag reflect.StructTag, options ...func(o *FieldsFromTagsOptions)) error {
 	pv := reflect.ValueOf(structPtr).Elem()
 	pt := pv.Type()
 
 	var errs []error
 
+	opts := &FieldsFromTagsOptions{}
+	for _, option := range options {
+		option(opts)
+	}
+
+	if opts.FieldToTag == nil {
+		opts.FieldToTag = func(field string) string {
+			return strings.ToLower(field[0:1]) + field[1:]
+		}
+	}
+
 	for i := 0; i < pv.NumField(); i++ {
 		ptf := pt.Field(i)
-		tagName := strings.ToLower(ptf.Name[0:1]) + ptf.Name[1:]
+		tagName := opts.TagPrefix + opts.FieldToTag(ptf.Name)
 		pvf := pv.Field(i).Addr().Interface()
 
 		var err error

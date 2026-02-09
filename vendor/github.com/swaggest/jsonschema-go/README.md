@@ -90,6 +90,9 @@ These tags can be used:
 * [`example`](https://json-schema.org/draft/2020-12/json-schema-validation.html#name-examples), a scalar value that matches type of parent property, for an array it is applied to items
 * [`examples`](https://json-schema.org/draft/2020-12/json-schema-validation.html#name-examples), a JSON array value
 * [`const`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.3), can be scalar or JSON value
+* [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation#name-deprecated), boolean
+* [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation#name-deprecated), boolean
+* [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation#name-deprecated), boolean
 * [`pattern`](https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5.2.3), string
 * [`format`](https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.7), string
 * [`multipleOf`](https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5.1.1), float > 0
@@ -127,6 +130,17 @@ type MyObj struct {
    SpecialString string `json:"specialString" pattern:"^[a-z]{4}$" minLength:"4" maxLength:"4"`
    // These parent schema tags would only be applied to `query` schema reflection (not for `json`).
    _ struct{} `query:"_" additionalProperties:"false" description:"MyObj is my object."`
+}
+```
+
+Complex nested maps and slices/arrays can be configured with path-prefixed field tags.
+
+```go
+type MyObj struct {
+	Ints          []int            `json:"ints" items.title:"My int"`
+	ExtraFloats   [][]float64      `json:"extra_floats" items.items.title:"My float" items.items.enum:"1.23,4.56"`
+	MappedStrings map[int]string   `json:"mapped_strings" additionalProperties.enum:"abc,def"`
+	VeryDeep      map[int][]string `json:"very_deep" additionalProperties.items.enum:"abc,def"`
 }
 ```
 
