@@ -34,7 +34,7 @@ require (
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 	github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
-	github.com/jackc/pgx/v5 v5.6.0
+	github.com/jackc/pgx/v5 v5.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kenshaw/inflector v0.2.0
 	github.com/kenshaw/snaker v0.2.0
@@ -47,7 +47,7 @@ require (
 	github.com/prometheus/client_golang v1.19.0
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/jsonschema-go v0.3.72
 	github.com/swaggest/openapi-go v0.2.53
 	github.com/zitadel/oidc/v2 v2.12.0
@@ -84,7 +84,7 @@ require (
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/jackc/pgtype v1.14.3 // indirect
-	github.com/jackc/puddle/v2 v2.2.1 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/muhlemmer/gu v0.3.1 // indirect
@@ -129,7 +129,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
